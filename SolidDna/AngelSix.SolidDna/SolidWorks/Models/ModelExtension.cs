@@ -16,6 +16,8 @@ namespace AngelSix.SolidDna
         /// </summary>
         public Model Parent { get; set; }
 
+        public int NeedRebuild => BaseObject.NeedsRebuild2;
+
         #endregion
 
         #region Constructor
@@ -118,5 +120,19 @@ namespace AngelSix.SolidDna
         }
 
         #endregion
+
+        public bool Rebuild(swRebuildOptions_e buildOption)
+        {
+            return ((ModelDocExtension)mBaseObject).Rebuild((int)buildOption);
+        }
+
+        public bool Rename(string oldName, string newName)
+        {
+            var swModelDocExt = ((ModelDocExtension)mBaseObject);
+            if (swModelDocExt.SelectByID2(oldName, "COMPONENT", 0, 0, 0, false, 0, null, 0))
+                if (swModelDocExt.RenameDocument(newName) == 0)
+                    return true;
+            return false;
+        }
     }
 }
