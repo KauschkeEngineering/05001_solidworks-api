@@ -806,7 +806,9 @@ namespace AngelSix.SolidDna
         /// <returns>Array of Booleans indicating the suppression states for the feature in the specified configurations</returns>
         public bool[] IsSuppressed(ModelConfigurationOptions configurationOption, string[] configurationNames = null)
         {
-            return (bool[])BaseObject.IsSuppressed2((int)configurationOption, configurationNames);
+            if (BaseObject != null)
+                return (bool[])BaseObject.IsSuppressed2((int)configurationOption, configurationNames);
+            return new bool[] { };
         }
 
         #endregion
@@ -820,7 +822,9 @@ namespace AngelSix.SolidDna
         protected string GetFeatureTypeName()
         {
             // TODO: Handle Intant3D feature, then call GetTypeName instead of 2
-            return BaseObject.GetTypeName2();
+            if (BaseObject != null)
+                return BaseObject.GetTypeName2();
+            return string.Empty;
         }
 
         #endregion
@@ -843,5 +847,43 @@ namespace AngelSix.SolidDna
         }
 
         #endregion
+
+        public ModelFeature GetNextFeature()
+        {
+            if (BaseObject != null)
+                return new ModelFeature((Feature)BaseObject.GetNextFeature());
+            return null;
+        }
+
+        public ModelFeature GetFirstSubFeature()
+        {
+            if (BaseObject != null)
+                return new ModelFeature((Feature)BaseObject.GetFirstSubFeature());
+            return null;
+        }
+
+        public ModelFeature GetNextSubFeature()
+        {
+            if (BaseObject != null)
+                return new ModelFeature((Feature)BaseObject.GetNextSubFeature());
+            return null;
+        }
+
+        public Component GetComponent()
+        {
+            if (SpecificFeature != null && SpecificFeature is Component2)
+            {
+                return new Component((Component2)SpecificFeature);
+            }
+            return null;
+        }
+
+        public bool SelectFirst()
+        {
+            if (BaseObject != null)
+                return BaseObject.Select2(false, 0);
+            return false;
+        }
+
     }
 }
