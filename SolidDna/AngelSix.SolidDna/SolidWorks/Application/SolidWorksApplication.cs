@@ -6,6 +6,7 @@ using System.Linq;
 using System.IO;
 using System.Xml.Linq;
 using SolidWorks.Interop.swconst;
+using SolidWorks.Interop.swdocumentmgr;
 
 namespace AngelSix.SolidDna
 {
@@ -14,6 +15,9 @@ namespace AngelSix.SolidDna
     /// </summary>
     public partial class SolidWorksApplication : SharedSolidDnaObject<SldWorks>
     {
+        private const string API_LICENCE_KEY = "KauschkeEngineeringServicesGmbH:swdocmgr_general-11785-02051-00064-01025-08567-34307-00007-16944-03729-52630-20621-27155-52442-46742-57351-01653-28064-37004-12470-18657-42155-23021-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-7,swdocmgr_previews-11785-02051-00064-01025-08567-34307-00007-23424-25180-19561-08976-33418-56614-15908-28672-33039-34039-15128-63516-16802-33026-22959-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-4,swdocmgr_dimxpert-11785-02051-00064-01025-08567-34307-00007-02224-60566-22735-30039-32017-34229-26945-40960-13408-24595-25589-46377-44335-06006-23917-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-4,swdocmgr_geometry-11785-02051-00064-01025-08567-34307-00007-25440-44169-22552-63994-59551-37072-09667-14340-27239-01502-21198-57986-04466-22801-22651-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-5,swdocmgr_xml-11785-02051-00064-01025-08567-34307-00007-65328-31737-49269-00552-43417-32429-25145-30724-20516-24804-09579-38046-62867-26541-24480-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-6,swdocmgr_tessellation-11785-02051-00064-01025-08567-34307-00007-48088-40139-18107-01106-37523-23509-29212-14337-40415-34512-32340-56451-08411-09207-22831-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-2";
+        //Old 2015 - private const string API_LICENCE_KEY = "KauschkeEngineeringServicesGmbH:swdocmgr_general-11785-02051-00064-17409-08473-34307-00007-19656-13610-17716-24516-52581-13763-62678-28678-03781-27226-07511-14366-10812-12747-23344-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-1,swdocmgr_previews-11785-02051-00064-17409-08473-34307-00007-51024-52025-35553-51281-51480-35643-63443-14342-31683-18932-27645-24746-19372-11348-23297-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-1,swdocmgr_xml-11785-02051-00064-17409-08473-34307-00007-13784-50962-42612-58001-63569-50093-44301-40960-12153-36851-02018-22860-03363-63670-23674-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-5";
+
         #region Protected Members
 
         /// <summary>
@@ -110,6 +114,8 @@ namespace AngelSix.SolidDna
         {
             // Set preferences
             Preferences = new SolidWorksPreferences();
+            var loadExternal = BaseObject.GetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swLoadExternalReferences);
+            BaseObject.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swLoadExternalReferences, (int)swLoadExternalReferences_e.swLoadExternalReferences_None);
 
             // Store cookie Id
             mSwCookie = cookie;
@@ -126,6 +132,13 @@ namespace AngelSix.SolidDna
             BaseObject.FileOpenPreNotify += FileOpenPreNotify;
             BaseObject.FileOpenPostNotify += FileOpenPostNotify;
             BaseObject.FileNewNotify2 += FileNewPostNotify;
+
+            // this speeds up the interaction between SW and stand alone app extremly
+            BaseObject.CommandInProgress = true;
+            BaseObject.UserControl = false;
+            BaseObject.UserControlBackground = false;
+            BaseObject.Visible = false;
+            ((IFrame)BaseObject.Frame()).KeepInvisible = true;
 
             // If we have a cookie...
             if (cookie > 0)
@@ -220,7 +233,8 @@ namespace AngelSix.SolidDna
                     mFileLoading = null;
 
                     // And update all properties and models
-                    ReloadActiveModelInformation();
+                    // TODO: Check how to reload properly to get sync into both directions
+                    //ReloadActiveModelInformation();
 
                     // Inform listeners
                     FileOpened(filename, mActiveModel);
@@ -383,13 +397,13 @@ namespace AngelSix.SolidDna
                     if (Disposing)
                         // If we are disposing SolidWorks, there is no need to reload active model info.
                         return;
-                    
+                    // TODO: Check how to reload properly to get sync into both directions
                     // Now if we have none open, reload information
                     // ActiveDoc is quickly set to null after the last document is closed
                     // GetDocumentCount takes longer to go to zero for big assemblies, but it might be a more reliable indicator.
-                    if (BaseObject?.ActiveDoc == null || BaseObject?.GetDocumentCount() == 0)
-                        ReloadActiveModelInformation();
-                    
+                    //if (BaseObject?.ActiveDoc == null || BaseObject?.GetDocumentCount() == 0)
+                    //    ReloadActiveModelInformation();
+
                 }
             });
         }
@@ -460,7 +474,7 @@ namespace AngelSix.SolidDna
                 SolidDnaErrorCode.SolidWorksApplicationGetMaterialsError,
                 Localization.GetString("SolidWorksApplicationGetMaterialsError"));
         }
-        
+
         /// <summary>
         /// Attempts to find the material from a SolidWorks material database file (SLDMAT)
         /// If found, returns the full information about the material
@@ -512,7 +526,7 @@ namespace AngelSix.SolidDna
                     var materials = new List<Material>();
 
                     // Iterate all classification nodes and inside are the materials
-                    xmlDoc.Root.Elements("classification")?.ToList()?.ForEach(f => 
+                    xmlDoc.Root.Elements("classification")?.ToList()?.ForEach(f =>
                     {
                         // Get classification name
                         var classification = f.Attribute("name")?.Value;
@@ -589,9 +603,9 @@ namespace AngelSix.SolidDna
 
                 // If we succeed, create SolidDna object
                 return new Taskpane(comTaskpane);
-            }, 
+            },
                 SolidDnaErrorTypeCode.SolidWorksTaskpane,
-                SolidDnaErrorCode.SolidWorksTaskpaneCreateError, 
+                SolidDnaErrorCode.SolidWorksTaskpaneCreateError,
                 await Localization.GetStringAsync("ErrorSolidWorksTaskpaneCreateError"));
         }
 
@@ -608,7 +622,7 @@ namespace AngelSix.SolidDna
         public SolidWorksMessageBoxResult ShowMessageBox(string message, SolidWorksMessageBoxIcon icon = SolidWorksMessageBoxIcon.Information, SolidWorksMessageBoxButtons buttons = SolidWorksMessageBoxButtons.Ok)
         {
             // Send message to user
-            return (SolidWorksMessageBoxResult) BaseObject.SendMsgToUser2(message, (int)icon, (int) buttons);
+            return (SolidWorksMessageBoxResult)BaseObject.SendMsgToUser2(message, (int)icon, (int)buttons);
         }
 
         #endregion
@@ -638,5 +652,285 @@ namespace AngelSix.SolidDna
         }
 
         #endregion
+
+        private SwDmDocumentType GetDocumentType(string filePath)
+        {
+            // Determine type of SOLIDWORKS file based on file extension
+            if (filePath.ToLower().EndsWith(PartDocument.FILE_EXTENSION))
+            {
+                return SwDmDocumentType.swDmDocumentPart;
+            }
+            else if (filePath.ToLower().EndsWith(AssemblyDocument.FILE_EXTENSION))
+            {
+                return SwDmDocumentType.swDmDocumentAssembly;
+            }
+            else if (filePath.ToLower().EndsWith(DrawingDocument.FILE_EXTENSION))
+            {
+                return SwDmDocumentType.swDmDocumentDrawing;
+            }
+            else
+            {
+                return SwDmDocumentType.swDmDocumentUnknown;
+            }
+        }
+
+        public object GetPreviewBitmap(string filePath, bool isDrawingSheet = false, string drawingSheetName = "")
+        {
+            var swClassFact = new SwDMClassFactory();
+            var swDocMgr = (SwDMApplication)swClassFact.GetApplication(API_LICENCE_KEY);
+            if (swDocMgr != null)
+            {
+                var swDoc = (SwDMDocument12)swDocMgr.GetDocument(filePath, GetDocumentType(filePath), true, out var nRetVal);
+                if (swDoc != null)
+                {
+                    if (isDrawingSheet)
+                    {
+                        var drawingSheets = (object[])swDoc.GetSheets();
+                        foreach (var drawingSheet in drawingSheets)
+                        {
+                            if (((SwDMSheet2)drawingSheet).Name.Equals(drawingSheetName))
+                                return ((SwDMSheet2)drawingSheet).GetPreviewPNGBitmap(out var error);
+                        }
+                    }
+                    else
+                        return swDoc.GetPreviewBitmap(out var error);
+                }
+            }
+            // SwDMDocument10::GetPreviewBitmap throws an unmanaged COM exception 
+            // for out-of-process C# console applications
+            // Use the following code in SOLIDWORKS C# macros and add-ins  
+            return null;
+        }
+
+        public List<DrawingSheet> GetDrawingSheets(string drawingFilePath)
+        {
+            var drawingSheets = new List<DrawingSheet>();
+            var swClassFact = new SwDMClassFactory();
+            var swDocMgr = (SwDMApplication)swClassFact.GetApplication(API_LICENCE_KEY);
+            if (swDocMgr != null)
+            {
+                var swDoc = (SwDMDocument12)swDocMgr.GetDocument(drawingFilePath, SwDmDocumentType.swDmDocumentDrawing, true, out var nRetVal);
+                if (swDoc != null)
+                {
+                    var sheets = (object[])swDoc.GetSheets();
+
+                    foreach (var sheet in sheets)
+                    {
+                        drawingSheets.Add(new DrawingSheet((SwDMSheet2)sheet));
+                    }
+                    return drawingSheets;
+                }
+            }
+            return drawingSheets;
+        }
+
+        public object GetDPreviewBitmap(string drawingFilePath)
+        {
+            return ((SwDMSheet2)mBaseObject).GetPreviewPNGBitmap(out var error);
+        }
+
+        public void CloseDocument(string documentPath)
+        {
+            BaseObject.CloseDoc(documentPath);
+        }
+
+        private void SpeedUpInteraction()
+        {
+            BaseObject.Visible = false;
+            if (BaseObject.ActiveDoc != null)
+            {
+                var model = (ModelDoc2)BaseObject.ActiveDoc;
+                if (model != null)
+                {
+                    ((FeatureManager)model.FeatureManager).EnableFeatureTree = false;
+                    ((IModelView)model.ActiveView).EnableGraphicsUpdate = false;
+                }
+            }
+        }
+
+        public int OpenDocument(string fullDocumentFilePath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true)
+        {
+            Tuple<Model, int> solidWorksModel = null;
+
+            solidWorksModel = OpenDocumentWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents);
+            BaseObject.SetCurrentWorkingDirectory(fullDocumentFilePath.Replace(fullDocumentFilePath.Split('\\').Last(), ""));
+
+            if (solidWorksModel != null)
+            {
+                if (solidWorksModel.Item1 != null)
+                {
+                    mActiveModel = solidWorksModel.Item1;
+                }
+            }
+
+            SpeedUpInteraction();
+            return solidWorksModel.Item2;
+        }
+
+        private Tuple<Model, int> OpenDocumentWithSpecification(string fullDocumentFilePath, bool readOnly, bool openSilent, bool useLightWeightDefault, bool loadLightWeight, bool ignoreHiddenComponents)
+        {
+            var swDocSpecification = default(DocumentSpecification);
+            swDocSpecification = (DocumentSpecification)BaseObject.GetOpenDocSpec(fullDocumentFilePath);
+            swDocSpecification.ReadOnly = readOnly;
+            swDocSpecification.Silent = openSilent;
+            swDocSpecification.UseLightWeightDefault = useLightWeightDefault;
+            swDocSpecification.LightWeight = loadLightWeight;
+            swDocSpecification.IgnoreHiddenComponents = ignoreHiddenComponents;
+            swDocSpecification.Selective = false;
+
+            switch (GetDocumentType(fullDocumentFilePath))
+            {
+                case SwDmDocumentType.swDmDocumentUnknown:
+                    swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocNONE;
+                    break;
+                case SwDmDocumentType.swDmDocumentPart:
+                    swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocPART;
+                    break;
+                case SwDmDocumentType.swDmDocumentAssembly:
+                    swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocASSEMBLY;
+                    break;
+                case SwDmDocumentType.swDmDocumentDrawing:
+                    swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocDRAWING;
+                    break;
+                default:
+                    swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocNONE;
+                    break;
+            }
+
+            // shows the document as it is loaded
+            BaseObject.DocumentVisible(true, (int)swDocSpecification.DocumentType);
+
+            return new Tuple<Model, int>(new Model((ModelDoc2)BaseObject.OpenDoc7(swDocSpecification)), swDocSpecification.Error);
+
+        }
+
+
+        //assembly/part document needs to stay open otherwise it is not fully accessable
+        public Tuple<Model, int> LoadModelInMemory(string documentPath, bool ignoreHiddenComponents)
+        {
+            Tuple<Model, int> solidWorksModel = null;
+
+            var documentType = 0;
+            var isDrawing = false;
+            switch (GetDocumentType(documentPath))
+            {
+                case SwDmDocumentType.swDmDocumentUnknown:
+                    documentType = (int)swDocumentTypes_e.swDocNONE;
+                    break;
+                case SwDmDocumentType.swDmDocumentPart:
+                    documentType = (int)swDocumentTypes_e.swDocPART;
+                    break;
+                case SwDmDocumentType.swDmDocumentAssembly:
+                    documentType = (int)swDocumentTypes_e.swDocASSEMBLY;
+                    break;
+                case SwDmDocumentType.swDmDocumentDrawing:
+                    documentType = (int)swDocumentTypes_e.swDocDRAWING;
+                    isDrawing = true;
+                    break;
+                default:
+                    documentType = (int)swDocumentTypes_e.swDocNONE;
+                    break;
+            }
+
+            // hides the document as it is loaded
+            BaseObject.DocumentVisible(false, documentType);
+
+            solidWorksModel = OpenDocumentWithSpecification(documentPath, false, true, false, false, ignoreHiddenComponents);
+            //if (isDrawing)
+            //    CloseDocument(documentPath);
+            return solidWorksModel;
+        }
+
+        public string GetDefaultAssemblyTemplatePath()
+        {
+            return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplateAssembly);
+        }
+
+        public string GetDefaultPartTemplatePath()
+        {
+            return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplatePart);
+        }
+
+        public string GetDefaultDrawingTemplatePath()
+        {
+            return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplateDrawing);
+        }
+
+        public bool IsTopParentAssembly(string assemblyFilePath, string searchPath)
+        {
+
+            var swClassFact = new SwDMClassFactory();
+            var swDocMgr = swClassFact.GetApplication(API_LICENCE_KEY);
+            var swSearchOpt = swDocMgr.GetSearchOptionObject();
+            swSearchOpt.ClearAllSearchPaths();
+            swSearchOpt.AddSearchPath(searchPath);
+            var nRetVal = SwDmDocumentOpenError.swDmDocumentOpenErrorNone;
+
+            var swDoc = (SwDMDocumentClass)swDocMgr.GetDocument(assemblyFilePath, SwDmDocumentType.swDmDocumentAssembly, true, out nRetVal);
+            if (swDoc != null)
+            {
+                var references = swDoc.WhereUsed(swSearchOpt);
+                if (references == null ||
+                    ((string[])references).Where(referencedFile => referencedFile.ToLower().Contains(AssemblyDocument.FILE_EXTENSION)).Count() == 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public string[] GetDocumentReferences(string documentFileName)
+        {
+            var swClassFact = default(SwDMClassFactory);
+            var swDocMgr = default(SwDMApplication);
+            var swDoc = default(SwDMDocumentClass);
+            var swSearchOpt = default(SwDMSearchOption);
+            var nDocType = 0;
+
+            switch (GetDocumentType(documentFileName))
+            {
+                case SwDmDocumentType.swDmDocumentUnknown:
+                    nDocType = (int)SwDmDocumentType.swDmDocumentUnknown;
+                    return null;
+                case SwDmDocumentType.swDmDocumentPart:
+                    nDocType = (int)SwDmDocumentType.swDmDocumentPart;
+                    break;
+                case SwDmDocumentType.swDmDocumentAssembly:
+                    nDocType = (int)SwDmDocumentType.swDmDocumentAssembly;
+                    break;
+                case SwDmDocumentType.swDmDocumentDrawing:
+                    nDocType = (int)SwDmDocumentType.swDmDocumentDrawing;
+                    break;
+                default:
+                    nDocType = (int)SwDmDocumentType.swDmDocumentUnknown;
+                    return null;
+            }
+
+            swClassFact = new SwDMClassFactory();
+            swDocMgr = (SwDMApplication)swClassFact.GetApplication(API_LICENCE_KEY);
+            swSearchOpt = swDocMgr.GetSearchOptionObject();
+            var nRetVal = SwDmDocumentOpenError.swDmDocumentOpenErrorNone;
+            swDoc = (SwDMDocumentClass)swDocMgr.GetDocument(documentFileName, (SwDmDocumentType)nDocType, true, out nRetVal);
+            if (swDoc != null)
+                return (string[])swDoc.GetAllExternalReferences(swSearchOpt);
+            return null;
+        }
+
+        public List<Model.MajorSolidWorksVersions> GetFileSWVersion(string fileName)
+        {
+            var solidWorksFileVersion = new List<Model.MajorSolidWorksVersions>();
+            if (BaseObject != null)
+            {
+                var fileVersionHistories = (string[])BaseObject.VersionHistory(fileName);
+                foreach (var fileVersionHistory in fileVersionHistories)
+                {
+                    var majorVersion = fileVersionHistory.Split('[')[0];
+                    solidWorksFileVersion.Add((Model.MajorSolidWorksVersions)int.Parse(majorVersion));
+                }
+                return solidWorksFileVersion;
+            }
+            return solidWorksFileVersion;
+        }
+
     }
 }
