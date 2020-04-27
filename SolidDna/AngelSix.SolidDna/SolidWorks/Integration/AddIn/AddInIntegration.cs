@@ -1,9 +1,11 @@
 ﻿using Dna;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swpublished;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +14,15 @@ using static Dna.FrameworkDI;
 
 namespace AngelSix.SolidDna
 {
+    public enum SWProgIdVersion
+    {
+        UNKNOWN = -1,
+        SW_2016 = 24,
+        SW_2017,
+        SW_2018,
+        SW_2019
+    }
+
     /// <summary>
     /// Integrates into SolidWorks as an add-in and registers for callbacks provided by SolidWorks
     /// 
@@ -82,7 +93,7 @@ namespace AngelSix.SolidDna
         ///     If true, sets the SolidWorks Application to the active instance
         ///     (if available) so the environment can be used from a stand alone application.
         /// </param>
-        public AddInIntegration(bool standAlone = false)
+        public AddInIntegration(SWProgIdVersion progIdVersion, bool standAlone = false)
         {
             try
             {
@@ -120,7 +131,7 @@ namespace AngelSix.SolidDna
                 // If we are in stand-alone mode...
                 if (standAlone)
                     // Connect to active SolidWorks
-                    ConnectToActiveSolidWork();
+                    ConnectToActiveSolidWork(progIdVersion);
             }
             catch (Exception ex)
             {
@@ -176,7 +187,7 @@ namespace AngelSix.SolidDna
 
             PlugInIntegration.OnCallback(arg);
         }
-        
+
         /// <summary>
         /// Called when SolidWorks has loaded our add-in and wants us to do our connection logic
         /// </summary>
@@ -324,10 +335,10 @@ namespace AngelSix.SolidDna
         /// </summary>
         /// <param name="t"></param>
         [ComRegisterFunction()]
-        protected static void ComRegister(Type t)
+        protected static void ComRegister(Type t, SWProgIdVersion progIdVersion)
         {
             // Create new instance of ComRegister add-in to setup DI
-            new ComRegisterAddInIntegration();
+            new ComRegisterAddInIntegration(progIdVersion);
 
             try
             {
@@ -402,7 +413,7 @@ namespace AngelSix.SolidDna
         /// Attempts to set the SolidWorks property to the active SolidWorks instance
         /// </summary>
         /// <returns></returns>
-        public bool ConnectToActiveSolidWork()
+        public bool ConnectToActiveSolidWork(SWProgIdVersion progIdVersion)
         {
             try
             {
@@ -410,7 +421,7 @@ namespace AngelSix.SolidDna
                 TearDown();
 
                 // Try and get the active SolidWorks instance
-                SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject("SldWorks.Application"), 0);
+                SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject(string.Format("SldWorks.Application.{0}", (int)progIdVersion)), 0);
 
                 // Log it
                 Logger.LogDebugSource($"Aquired active instance SolidWorks in Stand-Alone mode");
@@ -419,7 +430,7 @@ namespace AngelSix.SolidDna
                 return SolidWorks != null;
             }
             // If we failed to get active instance...
-            catch (COMException)
+            catch (COMException ex)
             {
                 // Log it
                 Logger.LogDebugSource($"Failed to get active instance of SolidWorks in Stand-Alone mode");
@@ -434,13 +445,176 @@ namespace AngelSix.SolidDna
         /// Remember to call <see cref="TearDown"/> once done.
         /// </summary>
         /// <returns></returns>
-        public static bool ConnectToActiveSolidWorks()
+        public static bool ConnectToActiveSolidWorks(SWProgIdVersion progIdVersion)
         {
             // Create new blank add-in
-            var addin = new BlankAddInIntegration();
+            var addin = new BlankAddInIntegration(progIdVersion);
 
             // Return if we successfully got an instance
-            return addin.ConnectToActiveSolidWork();
+            return addin.ConnectToActiveSolidWork(progIdVersion);
+        }
+
+        public bool StartSolidWork(string solidWorksExePath)
+        {
+            Process _solidWorksProcess = null;
+            if (!solidWorksExePath.Equals(string.Empty))
+            {
+                try
+                {
+                    var processInfo = new ProcessStartInfo()
+                    {
+                        FileName = solidWorksExePath,
+                        Arguments = "/r", //no splash screen will be shown while loading SolidWorks application
+                        CreateNoWindow = false,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+
+                    _solidWorksProcess = Process.Start(processInfo);
+
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+
+            return true;
+        }
+
+        public static bool StartSolidWorks(string solidWorksExePath, SWProgIdVersion progIdVersion)
+        {
+            var addin = new BlankAddInIntegration(progIdVersion);
+            return addin.StartSolidWork(solidWorksExePath);
+        }
+
+        public static List<Tuple<SWProgIdVersion, string>> GetInstalledSolidWorksVersionExePaths()
+        {
+            var installedSolidWorksVersions = new List<Tuple<SWProgIdVersion, string>>();
+
+            for (var version = 2016; version <= 2019; version++)
+            {
+                using (var baseRegistryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(string.Format("Software\\SolidWorks\\SOLIDWORKS {0}\\Setup", version)))
+                {
+                    if (baseRegistryKey != null)
+                    {
+                        var registryValue = baseRegistryKey.GetValue("SolidWorks Folder");
+                        if (registryValue != null)
+                        {
+                            switch (version)
+                            {
+                                case 2016:
+                                    installedSolidWorksVersions.Add(new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2016, registryValue.ToString()));
+                                    break;
+                                case 2017:
+                                    installedSolidWorksVersions.Add(new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2017, registryValue.ToString()));
+                                    break;
+                                case 2018:
+                                    installedSolidWorksVersions.Add(new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2018, registryValue.ToString()));
+                                    break;
+                                case 2019:
+                                    installedSolidWorksVersions.Add(new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2019, registryValue.ToString()));
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+            return installedSolidWorksVersions;
+        }
+
+        public static Tuple<SWProgIdVersion, string> GetInstalledSolidWorksVersionExePath(SWProgIdVersion sWProgIdVersion)
+        {
+            var version = string.Empty;
+            switch (sWProgIdVersion)
+            {
+                case SWProgIdVersion.SW_2016:
+                    version = "2016";
+                    break;
+                case SWProgIdVersion.SW_2017:
+                    version = "2017";
+                    break;
+                case SWProgIdVersion.SW_2018:
+                    version = "2018";
+                    break;
+                case SWProgIdVersion.SW_2019:
+                    version = "2019";
+                    break;
+            }
+            if (version.Equals("") == false)
+            {
+                using (var baseRegistryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(string.Format("Software\\SolidWorks\\SOLIDWORKS {0}\\Setup", version)))
+                {
+                    if (baseRegistryKey != null)
+                    {
+                        var registryValue = baseRegistryKey.GetValue("SolidWorks Folder");
+                        if (registryValue != null)
+                        {
+                            switch (sWProgIdVersion)
+                            {
+                                case SWProgIdVersion.SW_2016:
+                                    return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2016, registryValue.ToString());
+                                case SWProgIdVersion.SW_2017:
+                                    return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2017, registryValue.ToString());
+                                case SWProgIdVersion.SW_2018:
+                                    return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2018, registryValue.ToString());
+                                case SWProgIdVersion.SW_2019:
+                                    return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2019, registryValue.ToString()); ;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static List<SWProgIdVersion> GetRunningSolidWorksVersionProgIds()
+        {
+            var runningSolidWorksVersionProgIds = new List<SWProgIdVersion>();
+            foreach (var progIdVersion in Enum.GetValues(typeof(SWProgIdVersion)))
+            {
+                try
+                {
+                    var solidWorksInstance = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject(string.Format("SldWorks.Application.{0}", (int)progIdVersion)), 0);
+                    runningSolidWorksVersionProgIds.Add((SWProgIdVersion)progIdVersion);
+                    // If we have an reference...
+                    if (solidWorksInstance != null)
+                    {
+
+                        // Dispose SolidWorks COM
+                        solidWorksInstance?.Dispose();
+                    }
+
+                    // Set to null
+                    solidWorksInstance = null;
+                }
+                catch (COMException ex)
+                {
+
+                }
+            }
+            return runningSolidWorksVersionProgIds;
+        }
+
+        public static bool IsSolidWorksApplicationRunning(SWProgIdVersion sWProgIdVersion)
+        {
+            try
+            {
+                var solidWorksInstance = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject(string.Format("SldWorks.Application.{0}", (int)sWProgIdVersion)), 0);
+                // If we have an reference...
+                if (solidWorksInstance != null)
+                {
+
+                    // Dispose SolidWorks COM
+                    solidWorksInstance?.Dispose();
+                    solidWorksInstance = null;
+                    return true;
+                }
+            }
+            catch (COMException ex)
+            {
+
+            }
+            return false;
         }
 
         #endregion
