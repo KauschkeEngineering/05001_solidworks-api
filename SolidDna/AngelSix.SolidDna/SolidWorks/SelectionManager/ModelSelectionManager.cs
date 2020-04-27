@@ -72,6 +72,11 @@ namespace AngelSix.SolidDna
 
         }
 
+        public Component GetComponent(int index, int mark)
+        {
+            return new Component(BaseObject.GetSelectedObject6(index, mark) as Component2);
+        }
+
         #endregion
     }
 }
