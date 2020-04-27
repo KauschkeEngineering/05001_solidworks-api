@@ -8,6 +8,12 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class PartDocument
     {
+        #region Constants
+
+        public const string FILE_EXTENSION = ".sldprt";
+
+        #endregion
+
         #region Protected Members
 
         /// <summary>
@@ -64,5 +70,6 @@ namespace AngelSix.SolidDna
         }
 
         #endregion
+
     }
 }
