@@ -27,6 +27,8 @@ namespace AngelSix.SolidDna
         /// </summary>
         public double PositionY => ((double[])BaseObject.Position)[1];
 
+        public string ReferencedConfigurationName => BaseObject.ReferencedConfiguration;
+
         /// <summary>
         /// The bounding box of the view
         /// </summary>
@@ -49,6 +51,13 @@ namespace AngelSix.SolidDna
         /// <param name="comObject">The underlying COM object</param>
         public DrawingView(View comObject) : base(comObject)
         {
+        }
+
+        public DrawingView GetNextDrawingView()
+        {
+            if (BaseObject != null)
+                return new DrawingView((View)BaseObject.GetNextView());
+            return null;
         }
 
         #endregion
