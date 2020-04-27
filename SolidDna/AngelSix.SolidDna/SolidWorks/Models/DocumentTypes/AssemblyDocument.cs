@@ -1,5 +1,7 @@
 ﻿using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
 using System;
+using System.Collections.Generic;
 
 namespace AngelSix.SolidDna
 {
@@ -8,6 +10,20 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class AssemblyDocument
     {
+        public enum ComponentResolveStatus
+        {
+            ResolveAbortedByUser = swComponentResolveStatus_e.swResolveAbortedByUser,
+            ResolveError = swComponentResolveStatus_e.swResolveError,
+            ResolveNotPerformed = swComponentResolveStatus_e.swResolveNotPerformed,
+            ResolveOk = swComponentResolveStatus_e.swResolveOk
+        }
+
+        #region Constants
+
+        public const string FILE_EXTENSION = ".sldasm";
+
+        #endregion
+
         #region Protected Members
 
         /// <summary>
@@ -24,6 +40,8 @@ namespace AngelSix.SolidDna
         /// WARNING: Use with caution. You must handle all disposal from this point on
         /// </summary>
         public AssemblyDoc UnsafeObject => mBaseObject;
+
+        public int LightWeightComponentCount => mBaseObject.GetLightWeightComponentCount();
 
         #endregion
 
@@ -64,6 +82,17 @@ namespace AngelSix.SolidDna
                 Localization.GetString(nameof(SolidDnaErrorCode.SolidWorksModelAssemblyGetFeatureByNameError)));
         }
 
+        public ComponentResolveStatus ResolveAllLightWeightComponents()
+        {
+            return (ComponentResolveStatus)mBaseObject.ResolveAllLightWeightComponents(false);
+        }
+
+        public bool ResolveAllLightWeightChildComponents()
+        {
+            return mBaseObject.ResolveAllLightweight();
+        }
+
         #endregion
+
     }
 }
