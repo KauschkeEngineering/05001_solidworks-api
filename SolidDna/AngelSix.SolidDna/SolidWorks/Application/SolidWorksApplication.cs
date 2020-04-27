@@ -824,6 +824,7 @@ namespace AngelSix.SolidDna
                     documentType = (int)swDocumentTypes_e.swDocASSEMBLY;
                     break;
                 case SwDmDocumentType.swDmDocumentDrawing:
+                    BaseObject.EnableBackgroundProcessing = true;
                     documentType = (int)swDocumentTypes_e.swDocDRAWING;
                     isDrawing = true;
                     break;
@@ -836,7 +837,15 @@ namespace AngelSix.SolidDna
             BaseObject.DocumentVisible(false, documentType);
 
             solidWorksModel = OpenDocumentWithSpecification(documentPath, false, true, false, false, ignoreHiddenComponents);
-            //if (isDrawing)
+            if (isDrawing)
+            {
+                if (solidWorksModel.Item1 != null && solidWorksModel.Item1.Drawing != null)
+                {
+                    // TODO: Add event handlers for background processing
+                    solidWorksModel.Item1.Drawing.SetBackgroundProcessingOption(DrawingDocument.BackgroundProcessOptions.BackgroundProcessingDeferToApplication);
+                }
+                BaseObject.EnableBackgroundProcessing = false;
+            }
             //    CloseDocument(documentPath);
             return solidWorksModel;
         }
