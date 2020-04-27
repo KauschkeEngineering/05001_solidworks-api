@@ -12,7 +12,7 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Default constructor
         /// </summary>
-        public BlankAddInIntegration() : base()
+        public BlankAddInIntegration(SWProgIdVersion progIdVersion) : base(progIdVersion)
         {
 
         }

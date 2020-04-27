@@ -9,6 +9,11 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class ComRegisterAddInIntegration : AddInIntegration
     {
+        public ComRegisterAddInIntegration(SWProgIdVersion progIdVersion) : base(progIdVersion)
+        {
+
+        }
+
         public override void ApplicationStartup()
         {
 
