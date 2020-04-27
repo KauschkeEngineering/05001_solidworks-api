@@ -12,12 +12,56 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class Model : SharedSolidDnaObject<ModelDoc2>
     {
+        public enum MajorSolidWorksVersions
+        {
+            SOLIDWORKS_95 = 44,
+            SOLIDWORKS_96 = 243,
+            SOLIDWORKS_97 = 483,
+            SOLIDWORKS_97Plus = 629,
+            SOLIDWORKS_98 = 822,
+            SOLIDWORKS_98Plus = 1008,
+            SOLIDWORKS_99 = 1137,
+            SOLIDWORKS_2000 = 1500,
+            SOLIDWORKS_2001 = 1750,
+            SOLIDWORKS_2001Plus = 1950,
+            SOLIDWORKS_2003 = 2200,
+            SOLIDWORKS_2004 = 2500,
+            SOLIDWORKS_2005 = 2800,
+            SOLIDWORKS_2006 = 3100,
+            SOLIDWORKS_2007 = 3400,
+            SOLIDWORKS_2008 = 3800,
+            SOLIDWORKS_2009 = 4100,
+            SOLIDWORKS_2010 = 4400,
+            SOLIDWORKS_2011 = 4700,
+            SOLIDWORKS_2012 = 5000,
+            SOLIDWORKS_2013 = 6000,
+            SOLIDWORKS_2014 = 7000,
+            SOLIDWORKS_2015 = 8000,
+            SOLIDWORKS_2016 = 9000,
+            SOLIDWORKS_2017 = 10000,
+            SOLIDWORKS_2018 = 11000,
+            SOLIDWORKS_2019 = 12000,
+            SOLIDWORKS_2020 = 13000
+        }
+
         #region Public Properties
 
         /// <summary>
         /// The absolute file path of this model if it has been saved
         /// </summary>
         public string FilePath { get; protected set; }
+
+        public string Name { get; protected set; }
+        //{
+        //    get
+        //    {
+        //       if (FilePath.Equals("") == false)
+        //        {
+        //            return FilePath.Split('\\')[FilePath.Split('\\').Length - 1];
+        //        }
+        //        return "";
+        //    }
+        //}
 
         /// <summary>
         /// Indicates if this file has been saved (so exists on disk).
@@ -78,7 +122,7 @@ namespace AngelSix.SolidDna
         #endregion
 
         #region Public Events
-        
+
         /// <summary>
         /// Called after the a drawing sheet was added
         /// </summary>
@@ -93,7 +137,7 @@ namespace AngelSix.SolidDna
         /// Called before the active drawing sheet changes
         /// </summary>
         public event Action<string> DrawingActiveSheetChanging = (sheetName) => { };
-        
+
         /// <summary>
         /// Called after the a drawing sheet was deleted
         /// </summary>
@@ -183,6 +227,8 @@ namespace AngelSix.SolidDna
             // Get the file path
             FilePath = BaseObject.GetPathName();
 
+            Name = BaseObject.GetTitle();
+
             // Get the models type
             ModelType = (ModelType)BaseObject.GetType();
 
@@ -205,7 +251,7 @@ namespace AngelSix.SolidDna
             Assembly = IsAssembly ? new AssemblyDocument((AssemblyDoc)BaseObject) : null;
 
             // Inform listeners
-            ModelInformationChanged();            
+            ModelInformationChanged();
         }
 
         /// <summary>
@@ -377,7 +423,7 @@ namespace AngelSix.SolidDna
         {
             // Update filepath
             FilePath = BaseObject.GetPathName();
-        
+
             // Inform listeners
             ModelSaved();
 
@@ -481,21 +527,21 @@ namespace AngelSix.SolidDna
         /// NOTE: Check the <see cref="ModelType"/> to confirm this model is of the correct type before casting
         /// </summary>
         /// <returns></returns>
-        public AssemblyDoc AsAssembly() { return (AssemblyDoc) BaseObject; }
+        public AssemblyDoc AsAssembly() { return (AssemblyDoc)BaseObject; }
 
         /// <summary>
         /// Casts the current model to a part
         /// NOTE: Check the <see cref="ModelType"/> to confirm this model is of the correct type before casting
         /// </summary>
         /// <returns></returns>
-        public PartDoc AsPart() { return (PartDoc) BaseObject; }
+        public PartDoc AsPart() { return (PartDoc)BaseObject; }
 
         /// <summary>
         /// Casts the current model to a drawing
         /// NOTE: Check the <see cref="ModelType"/> to confirm this model is of the correct type before casting
         /// </summary>
         /// <returns></returns>
-        public DrawingDoc AsDrawing() { return (DrawingDoc) BaseObject; }
+        public DrawingDoc AsDrawing() { return (DrawingDoc)BaseObject; }
 
         /// <summary>
         /// Accesses the current model as a drawing to expose all Drawing API calls.
@@ -514,6 +560,17 @@ namespace AngelSix.SolidDna
         /// Check <see cref="IsAssembly"/> before calling into this.
         /// </summary>
         public AssemblyDocument Assembly { get; private set; }
+
+        public bool IsLoaded
+        {
+            get
+            {
+                if (BaseObject != null)
+                    return true;
+                else
+                    return false;
+            }
+        }
 
         #endregion
 
@@ -643,7 +700,7 @@ namespace AngelSix.SolidDna
                 SolidDnaErrorCode.SolidWorksModelGetMaterialError,
                 Localization.GetString("SolidWorksModelGetMaterialError"));
         }
-        
+
         /// <summary>
         /// Sets the material for the model
         /// </summary>
@@ -682,12 +739,19 @@ namespace AngelSix.SolidDna
         /// <returns></returns>
         public void SelectedObjects(Action<List<SelectedObject>> action)
         {
-             SelectionManager?.SelectedObjects(action);
+            SelectionManager?.SelectedObjects(action);
         }
 
         #endregion
 
         #region Features
+
+        public ModelFeature GetFirstFeature()
+        {
+            if (UnsafeObject != null)
+                return new ModelFeature((Feature)UnsafeObject.FirstFeature());
+            return null;
+        }
 
         /// <summary>
         /// Recurses the model for all of it's features and sub-features
@@ -706,7 +770,7 @@ namespace AngelSix.SolidDna
         /// <param name="featureAction">The callback action that is called for each feature in the model</param>
         /// <param name="startFeature">The feature to start at</param>
         /// <param name="featureDepth">The current depth of the sub-features based on the original calling feature</param>
-        private static void RecurseFeatures(Action<ModelFeature, int> featureAction, Feature startFeature = null, int featureDepth = 0)
+        private void RecurseFeatures(Action<ModelFeature, int> featureAction, Feature startFeature = null, int featureDepth = 0)
         {
             // Get the current feature
             var currentFeature = startFeature;
@@ -760,6 +824,24 @@ namespace AngelSix.SolidDna
             }
         }
 
+        private IEnumerable<Type> FindSpecificInterfacesFromDispatch(object disp)
+        {
+            if (disp == null)
+            {
+                throw new ArgumentNullException("disp");
+            }
+
+            var types = typeof(ISldWorks).Assembly.GetTypes();
+
+            foreach (var type in types)
+            {
+                if (type.IsInstanceOfType(disp))
+                {
+                    yield return type;
+                }
+            }
+        }
+
         #endregion
 
         #endregion
@@ -773,6 +855,11 @@ namespace AngelSix.SolidDna
         public void Components(Action<Component, int> componentAction)
         {
             RecurseComponents(componentAction, new Component(ActiveConfiguration.UnsafeObject?.GetRootComponent3(true)));
+        }
+
+        public Component GetRootComponent()
+        {
+            return new Component(ActiveConfiguration.UnsafeObject?.GetRootComponent3(true));
         }
 
         #region Private Component Helpers
@@ -896,5 +983,120 @@ namespace AngelSix.SolidDna
         }
 
         #endregion
+
+        public bool RebuildAndSave()
+        {
+            var errors = 0;
+            var warnings = 0;
+            Extension.Rebuild(swRebuildOptions_e.swRebuildAll);
+            return BaseObject.Save3((int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced, ref errors, ref warnings);
+        }
+
+        public bool Rename(string oldName, string newName)
+        {
+            //Set up event
+            AttachEventHandlers();
+            if (Extension.Rename(oldName, newName))
+            {
+                return RebuildAndSave();
+            }
+            return false;
+        }
+
+        public void AttachEventHandlers()
+        {
+            AttachSWEvents();
+        }
+
+        public void AttachSWEvents()
+        {
+            if (BaseObject != null)
+            {
+                if (IsAssembly)
+                {
+                    ((AssemblyDoc)BaseObject).RenameItemNotify += RenameItemNotify;
+                    ((AssemblyDoc)BaseObject).RenamedDocumentNotify += RenamedDocumentNotify;
+                }
+                else if (IsPart)
+                {
+                    ((PartDoc)BaseObject).RenameItemNotify += RenameItemNotify;
+                    ((PartDoc)BaseObject).RenamedDocumentNotify += RenamedDocumentNotify;
+                }
+                else if (IsDrawing)
+                {
+                    ((DrawingDoc)BaseObject).RenameItemNotify += RenameItemNotify;
+                }
+            }
+        }
+
+        //Fire notification when item is renamed
+        public int RenameItemNotify(int entType, string oldName, string newName)
+        {
+            return 0;
+        }
+
+
+        //Fire notification for Rename Documents dialog
+        public int RenamedDocumentNotify(ref object swObj)
+        {
+            var swRenamedDocumentReferences = default(RenamedDocumentReferences);
+            object[] searchPaths = null;
+            object[] pathNames = null;
+            var i = 0;
+            var nbr = 0;
+
+            swRenamedDocumentReferences = (RenamedDocumentReferences)swObj;
+
+            swRenamedDocumentReferences.UpdateWhereUsedReferences = true;
+            swRenamedDocumentReferences.IncludeFileLocations = true;
+
+            //get search paths
+            searchPaths = (object[])swRenamedDocumentReferences.GetSearchPath();
+            nbr = searchPaths.Length - 1;
+
+            swRenamedDocumentReferences.Search();
+
+            //get references
+            pathNames = (object[])swRenamedDocumentReferences.ReferencesArray();
+            nbr = pathNames.Length - 1;
+
+            swRenamedDocumentReferences.CompletionAction = (int)swRenamedDocumentFinalAction_e.swRenamedDocumentFinalAction_Ok;
+
+            return 0;
+        }
+
+        public bool HasDrawingFileDocument(string componentName)
+        {
+            var componentPathName = ((ModelDoc2)mBaseObject).GetPathName();
+            var componentPath = new FileInfo(componentPathName).Directory;
+            return File.Exists(componentPath + "\\" + componentName + DrawingDocument.FILE_EXTENSION);
+        }
+
+        public static Model GetModel(object component)
+        {
+            return Component.GetComponent(component).AsModel;
+        }
+
+        public Component GetSelectedComponentAt(int index)
+        {
+            var comp = SelectionManager.GetComponent(index, -1);
+            return comp;
+        }
+
+        public Component GetComponentOfFeature(ModelFeature modelFeature)
+        {
+            if (modelFeature.FeatureType == ModelFeatureType.MateReference)
+            {
+                modelFeature.SelectFirst();
+                return SelectionManager.GetComponent(1, -1);
+            }
+            return null;
+        }
+
+        public void SetVisible(bool isVisible)
+        {
+            BaseObject.Visible = isVisible;
+        }
+
     }
 }
