@@ -11,6 +11,13 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class DrawingDocument
     {
+        public enum BackgroundProcessOptions
+        {
+            BackgroundProcessingDisabled = 0,
+            BackgroundProcessingEnabled,
+            BackgroundProcessingDeferToApplication
+        }
+
         #region Constants
 
         public const string FILE_EXTENSION = ".slddrw";
@@ -308,6 +315,16 @@ namespace AngelSix.SolidDna
             if (UnsafeObject != null)
                 return new DrawingView((View)UnsafeObject.GetFirstView());
             return null;
+        }
+
+        public bool SetBackgroundProcessingOption(BackgroundProcessOptions backgroundProcessOption)
+        {
+            if (mBaseObject != null)
+            {
+                mBaseObject.BackgroundProcessingOption = (int)backgroundProcessOption;
+                return true;
+            }
+            return false;
         }
 
         #endregion
