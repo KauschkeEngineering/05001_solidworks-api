@@ -1,4 +1,5 @@
 ﻿using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swdocumentmgr;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,18 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class DrawingDocument
     {
+        #region Constants
+
+        public const string FILE_EXTENSION = ".slddrw";
+
+        #endregion
+
+        #region Private Members
+
+        private List<DrawingSheet> mDrawingSheets;
+
+        #endregion
+
         #region Protected Members
 
         /// <summary>
@@ -240,6 +253,61 @@ namespace AngelSix.SolidDna
 
             // Add line style
             return mBaseObject.AddLineStyle(styleName, segmentString);
+        }
+
+        public List<DrawingSheet> GetAllSheets()
+        {
+            mDrawingSheets = new List<DrawingSheet>();
+
+            string[] sheetNames = null;
+            var i = 0;
+            var bRet = false;
+            string sheetName;
+            // Get the sheets in the drawing document
+            sheetNames = (string[])mBaseObject.GetSheetNames();
+
+            // Traverse the sheets and determine whether
+
+            // they're loaded
+
+            for (i = 0; i < sheetNames.Length; i++)
+
+            {
+
+                sheetName = (string)sheetNames[i];
+
+                bRet = mBaseObject.ActivateSheet(sheetName);
+                var swSheet = mBaseObject.get_Sheet(sheetNames[i]);
+
+                // TODO: Check if swSheet can be casted to SwDMSheet2
+                mDrawingSheets.Add(new DrawingSheet((SwDMSheet2)swSheet));
+
+                if ((swSheet.IsLoaded()))
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+            return mDrawingSheets;
+        }
+
+        public Component GetDrawingComponent()
+        {
+            foreach (var item in (object[])mBaseObject.GetViews())
+            {
+                var comp = ((View)item).RootDrawingComponent;
+            }
+            return null;
+        }
+
+        public DrawingView GetFirstDrawingView()
+        {
+            if (UnsafeObject != null)
+                return new DrawingView((View)UnsafeObject.GetFirstView());
+            return null;
         }
 
         #endregion
