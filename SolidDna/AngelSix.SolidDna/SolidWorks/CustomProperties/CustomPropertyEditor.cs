@@ -1,5 +1,6 @@
 ﻿using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,6 +11,16 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class CustomPropertyEditor : SolidDnaObject<CustomPropertyManager>
     {
+        public enum PropertyDataTypes
+        {
+            Unknown = 0,
+            Integer = 3,
+            Double = 5,
+            Boolean = 11,
+            String = 30,
+            DateTime = 64
+        }
+
         #region Constructor
 
         /// <summary>
@@ -30,7 +41,6 @@ namespace AngelSix.SolidDna
         public bool CustomPropertyExists(string name)
         {
             // TODO: Add error checking and exception catching
-
             return GetCustomProperties().Any(f => string.Equals(f.Name, name, System.StringComparison.InvariantCultureIgnoreCase));
         }
 
@@ -40,7 +50,7 @@ namespace AngelSix.SolidDna
         /// <param name="name">The name of the custom property</param>
         /// <param name="resolve">True to resolve the custom property value</param>
         /// <returns></returns>
-        public string GetCustomProperty(string name, bool resolve = false)
+        public string GetCustomPropertyValue(string name, bool resolve = false)
         {
             // TODO: Add error checking and exception catching
 
@@ -58,7 +68,7 @@ namespace AngelSix.SolidDna
         /// <param name="value">The value of the custom property</param>
         /// <param name="type">The type of the custom property</param>
         /// <returns></returns>
-        public void SetCustomProperty(string name, string value, swCustomInfoType_e type = swCustomInfoType_e.swCustomInfoText)
+        public void SetCustomPropertyValue(string name, string value, swCustomInfoType_e type = swCustomInfoType_e.swCustomInfoText)
         {
             // TODO: Add error checking and exception catching
 
@@ -105,5 +115,38 @@ namespace AngelSix.SolidDna
             // Return the list
             return list;
         }
+
+        /// <summary>
+        /// Gets a specified custom properties
+        /// </summary>
+        /// <returns></returns>
+        public Type GetCustomPropertyType(string name)
+        {
+            // TODO: Add error checking and exception catching
+
+            // Create an empty list
+            var list = new List<CustomProperty>();
+
+            // Get all properties
+            var names = (string[])BaseObject.GetNames();
+
+            return new CustomProperty(this, names.FirstOrDefault(propertyName => propertyName.Equals(name))).DataType;
+        }
+
+
+        public List<string> GetCustomPropertyNames()
+        {
+            if (BaseObject != null && BaseObject.Count > 0)
+                return ((string[])BaseObject.GetNames()).ToList();
+            return new List<string>();
+        }
+
+        public PropertyDataTypes GetTypeOfProperty(string name)
+        {
+            if (BaseObject != null)
+                return (PropertyDataTypes)BaseObject.GetType2(name);
+            return PropertyDataTypes.Unknown;
+        }
+
     }
 }
