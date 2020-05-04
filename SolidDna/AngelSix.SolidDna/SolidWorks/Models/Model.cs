@@ -583,13 +583,13 @@ namespace AngelSix.SolidDna
         /// <param name="name">The name of the property</param>
         /// <param name="value">The value of the property</param>
         /// <param name="configuration">The configuration to set the properties from, otherwise set custom property</param>
-        public void SetCustomProperty(string name, string value, string configuration = null)
+        public void SetCustomPropertyValue(string name, string value, string configuration = null)
         {
             // Get the custom property editor
             using (var editor = Extension.CustomPropertyEditor(configuration))
             {
                 // Set the property
-                editor.SetCustomProperty(name, value);
+                editor.SetCustomPropertyValue(name, value);
             }
         }
 
@@ -600,13 +600,13 @@ namespace AngelSix.SolidDna
         /// <param name="configuration">The configuration to get the properties from, otherwise get custom property</param>
         ///<param name="resolved">True to get the resolved value of the property, false to get the actual text</param>
         /// <returns></returns>
-        public string GetCustomProperty(string name, string configuration = null, bool resolved = false)
+        public string GetCustomPropertyValue(string name, string configuration = null, bool resolved = false)
         {
             // Get the custom property editor
             using (var editor = Extension.CustomPropertyEditor(configuration))
             {
                 // Get the property
-                return editor.GetCustomProperty(name, resolve: resolved);
+                return editor.GetCustomPropertyValue(name, resolve: resolved);
             }
         }
 
@@ -628,6 +628,29 @@ namespace AngelSix.SolidDna
                 // Let the action use them
                 action(properties);
             }
+        }
+
+        public Type GetCustomPropertyType(string name, string configuration = null)
+        {
+            // Get the custom property editor
+            using (var editor = Extension.CustomPropertyEditor(configuration))
+            {
+                // Get the properties
+                return editor.GetCustomPropertyType(name);
+            }
+        }
+
+        public List<string> CustomPropertyNames(string configuration = null)
+        {
+            if (Extension != null)
+            {
+                // Get the custom property editor
+                using (var editor = Extension.CustomPropertyEditor(configuration))
+                {
+                    return editor.GetCustomPropertyNames();
+                }
+            }
+            return new List<string>();
         }
 
         #endregion
