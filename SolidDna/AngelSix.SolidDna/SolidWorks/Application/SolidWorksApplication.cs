@@ -115,7 +115,7 @@ namespace AngelSix.SolidDna
             // Set preferences
             Preferences = new SolidWorksPreferences();
             var loadExternal = BaseObject.GetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swLoadExternalReferences);
-            BaseObject.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swLoadExternalReferences, (int)swLoadExternalReferences_e.swLoadExternalReferences_None);
+            //BaseObject.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swLoadExternalReferences, (int)swLoadExternalReferences_e.swLoadExternalReferences_None);
 
             // Store cookie Id
             mSwCookie = cookie;
@@ -752,7 +752,7 @@ namespace AngelSix.SolidDna
         {
             Tuple<Model, int> solidWorksModel = null;
 
-            solidWorksModel = OpenDocumentWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents);
+            solidWorksModel = OpenDocumentWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, false);
             BaseObject.SetCurrentWorkingDirectory(fullDocumentFilePath.Replace(fullDocumentFilePath.Split('\\').Last(), ""));
 
             if (solidWorksModel != null)
@@ -767,7 +767,7 @@ namespace AngelSix.SolidDna
             return solidWorksModel.Item2;
         }
 
-        private Tuple<Model, int> OpenDocumentWithSpecification(string fullDocumentFilePath, bool readOnly, bool openSilent, bool useLightWeightDefault, bool loadLightWeight, bool ignoreHiddenComponents)
+        private Tuple<Model, int> OpenDocumentWithSpecification(string fullDocumentFilePath, bool readOnly, bool openSilent, bool useLightWeightDefault, bool loadLightWeight, bool ignoreHiddenComponents, bool selective)
         {
             var swDocSpecification = default(DocumentSpecification);
             swDocSpecification = (DocumentSpecification)BaseObject.GetOpenDocSpec(fullDocumentFilePath);
@@ -776,7 +776,7 @@ namespace AngelSix.SolidDna
             swDocSpecification.UseLightWeightDefault = useLightWeightDefault;
             swDocSpecification.LightWeight = loadLightWeight;
             swDocSpecification.IgnoreHiddenComponents = ignoreHiddenComponents;
-            swDocSpecification.Selective = false;
+            swDocSpecification.Selective = selective;
 
             switch (GetDocumentType(fullDocumentFilePath))
             {
@@ -836,7 +836,7 @@ namespace AngelSix.SolidDna
             // hides the document as it is loaded
             BaseObject.DocumentVisible(false, documentType);
 
-            solidWorksModel = OpenDocumentWithSpecification(documentPath, false, true, false, false, ignoreHiddenComponents);
+            solidWorksModel = OpenDocumentWithSpecification(documentPath, false, true, false, false, ignoreHiddenComponents, false);
             if (isDrawing)
             {
                 if (solidWorksModel.Item1 != null && solidWorksModel.Item1.Drawing != null)
@@ -939,6 +939,22 @@ namespace AngelSix.SolidDna
                 return solidWorksFileVersion;
             }
             return solidWorksFileVersion;
+        }
+
+		// TODO: Dont forget to delete the template model after retriving the desired data
+        public Model GetModelDummyByTemplate(string templateFilePath)
+        {
+            if (BaseObject != null)
+            {
+                return new Model(BaseObject.INewDocument2(templateFilePath, 0, 0, 0));
+            }
+            return null;
+        }
+
+        public void ExitApplication()
+        {
+            if (BaseObject != null)
+                BaseObject.ExitApp();
         }
 
     }
