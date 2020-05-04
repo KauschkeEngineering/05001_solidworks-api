@@ -1,10 +1,40 @@
-﻿namespace AngelSix.SolidDna
+﻿using System;
+using static AngelSix.SolidDna.CustomPropertyEditor;
+
+namespace AngelSix.SolidDna
 {
     /// <summary>
     /// A custom property of a model that can be edit directly
     /// </summary>
     public class CustomProperty
     {
+        public Type DataType
+        {
+            get
+            {
+                if (mEditor != null && Name.Equals("") == false)
+                {
+                    switch (mEditor.GetTypeOfProperty(Name))
+                    {
+                        case PropertyDataTypes.Unknown:
+                            return typeof(object);
+                        case PropertyDataTypes.Integer:
+                            return typeof(int);
+                        case PropertyDataTypes.Double:
+                            return typeof(double);
+                        case PropertyDataTypes.Boolean:
+                            return typeof(bool);
+                        case PropertyDataTypes.String:
+                            return typeof(string);
+                        case PropertyDataTypes.DateTime:
+                            return typeof(DateTime);
+                        default:
+                            return null;
+                    }
+                }
+                return null;
+            }
+        }
         #region Private Members
 
         /// <summary>
@@ -26,14 +56,14 @@
         /// </summary>
         public string Value
         {
-            get => mEditor.GetCustomProperty(Name);
-            set => mEditor.SetCustomProperty(Name, value);
+            get => mEditor.GetCustomPropertyValue(Name);
+            set => mEditor.SetCustomPropertyValue(Name, value);
         }
 
         /// <summary>
         /// The resolved value of the custom property
         /// </summary>
-        public string ResolvedValue => mEditor.GetCustomProperty(Name, resolve: true);
+        public string ResolvedValue => mEditor.GetCustomPropertyValue(Name, resolve: true);
 
         #endregion
 
