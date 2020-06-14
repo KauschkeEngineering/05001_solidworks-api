@@ -15,6 +15,14 @@ namespace AngelSix.SolidDna
     /// </summary>
     public partial class SolidWorksApplication : SharedSolidDnaObject<SldWorks>
     {
+        public enum RebuildOnActivation
+        {
+            UserDecision = swRebuildOnActivation_e.swUserDecision,
+            DontRebuildActiveDoc = swRebuildOnActivation_e.swDontRebuildActiveDoc,
+            RebuildActiveDoc = swRebuildOnActivation_e.swRebuildActiveDoc
+        }
+
+
         private const string API_LICENCE_KEY = "KauschkeEngineeringServicesGmbH:swdocmgr_general-11785-02051-00064-01025-08567-34307-00007-16944-03729-52630-20621-27155-52442-46742-57351-01653-28064-37004-12470-18657-42155-23021-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-7,swdocmgr_previews-11785-02051-00064-01025-08567-34307-00007-23424-25180-19561-08976-33418-56614-15908-28672-33039-34039-15128-63516-16802-33026-22959-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-4,swdocmgr_dimxpert-11785-02051-00064-01025-08567-34307-00007-02224-60566-22735-30039-32017-34229-26945-40960-13408-24595-25589-46377-44335-06006-23917-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-4,swdocmgr_geometry-11785-02051-00064-01025-08567-34307-00007-25440-44169-22552-63994-59551-37072-09667-14340-27239-01502-21198-57986-04466-22801-22651-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-5,swdocmgr_xml-11785-02051-00064-01025-08567-34307-00007-65328-31737-49269-00552-43417-32429-25145-30724-20516-24804-09579-38046-62867-26541-24480-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-6,swdocmgr_tessellation-11785-02051-00064-01025-08567-34307-00007-48088-40139-18107-01106-37523-23509-29212-14337-40415-34512-32340-56451-08411-09207-22831-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-2";
         //Old 2015 - private const string API_LICENCE_KEY = "KauschkeEngineeringServicesGmbH:swdocmgr_general-11785-02051-00064-17409-08473-34307-00007-19656-13610-17716-24516-52581-13763-62678-28678-03781-27226-07511-14366-10812-12747-23344-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-1,swdocmgr_previews-11785-02051-00064-17409-08473-34307-00007-51024-52025-35553-51281-51480-35643-63443-14342-31683-18932-27645-24746-19372-11348-23297-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-1,swdocmgr_xml-11785-02051-00064-17409-08473-34307-00007-13784-50962-42612-58001-63569-50093-44301-40960-12153-36851-02018-22860-03363-63670-23674-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-5";
 
@@ -79,6 +87,8 @@ namespace AngelSix.SolidDna
         /// </summary>
         public bool Disposing { get; private set; }
 
+        public bool IsVisible => BaseObject.Visible;
+
         #endregion
 
         #region Public Events
@@ -119,7 +129,6 @@ namespace AngelSix.SolidDna
 
             // Store cookie Id
             mSwCookie = cookie;
-
             //
             //   NOTE: As we are in our own AppDomain, the callback is registered in the main SolidWorks AppDomain
             //         We then pass that into our domain
@@ -132,13 +141,7 @@ namespace AngelSix.SolidDna
             BaseObject.FileOpenPreNotify += FileOpenPreNotify;
             BaseObject.FileOpenPostNotify += FileOpenPostNotify;
             BaseObject.FileNewNotify2 += FileNewPostNotify;
-
-            // this speeds up the interaction between SW and stand alone app extremly
-            BaseObject.CommandInProgress = true;
-            BaseObject.UserControl = false;
-            BaseObject.UserControlBackground = false;
-            BaseObject.Visible = false;
-            ((IFrame)BaseObject.Frame()).KeepInvisible = true;
+            BaseObject.OnIdleNotify += OnIdleIsLoadedNotify;
 
             // If we have a cookie...
             if (cookie > 0)
@@ -150,6 +153,11 @@ namespace AngelSix.SolidDna
         }
 
         #endregion
+
+        private int OnIdleIsLoadedNotify()
+        {
+            return 0;
+        }
 
         #region Public Callback Events
 
@@ -234,7 +242,7 @@ namespace AngelSix.SolidDna
 
                     // And update all properties and models
                     // TODO: Check how to reload properly to get sync into both directions
-                    //ReloadActiveModelInformation();
+                    ReloadActiveModelInformation();
 
                     // Inform listeners
                     FileOpened(filename, mActiveModel);
@@ -401,8 +409,8 @@ namespace AngelSix.SolidDna
                     // Now if we have none open, reload information
                     // ActiveDoc is quickly set to null after the last document is closed
                     // GetDocumentCount takes longer to go to zero for big assemblies, but it might be a more reliable indicator.
-                    //if (BaseObject?.ActiveDoc == null || BaseObject?.GetDocumentCount() == 0)
-                    //    ReloadActiveModelInformation();
+                    if (BaseObject?.ActiveDoc == null || BaseObject?.GetDocumentCount() == 0)
+                        ReloadActiveModelInformation();
 
                 }
             });
@@ -680,6 +688,7 @@ namespace AngelSix.SolidDna
             var swDocMgr = (SwDMApplication)swClassFact.GetApplication(API_LICENCE_KEY);
             if (swDocMgr != null)
             {
+                var ver = (Model.MajorSolidWorksVersions)swDocMgr.GetLatestSupportedFileVersion();
                 var swDoc = (SwDMDocument12)swDocMgr.GetDocument(filePath, GetDocumentType(filePath), true, out var nRetVal);
                 if (swDoc != null)
                 {
@@ -729,30 +738,21 @@ namespace AngelSix.SolidDna
             return ((SwDMSheet2)mBaseObject).GetPreviewPNGBitmap(out var error);
         }
 
-        public void CloseDocument(string documentPath)
+        public void CloseDocumentWithoutSaving(string documentPath)
         {
-            BaseObject.CloseDoc(documentPath);
+            BaseObject.QuitDoc(documentPath);
         }
 
-        private void SpeedUpInteraction()
+        public void CloseDocument(string documentName)
         {
-            BaseObject.Visible = false;
-            if (BaseObject.ActiveDoc != null)
-            {
-                var model = (ModelDoc2)BaseObject.ActiveDoc;
-                if (model != null)
-                {
-                    ((FeatureManager)model.FeatureManager).EnableFeatureTree = false;
-                    ((IModelView)model.ActiveView).EnableGraphicsUpdate = false;
-                }
-            }
+            BaseObject.CloseDoc(documentName);
         }
 
-        public int OpenDocument(string fullDocumentFilePath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true)
+        public int OpenDocument(string fullDocumentFilePath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true, bool loadExternalReferencesInMemory = true)
         {
             Tuple<Model, int> solidWorksModel = null;
 
-            solidWorksModel = OpenDocumentWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, false);
+            solidWorksModel = OpenDocumentWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, loadExternalReferencesInMemory, false);
             BaseObject.SetCurrentWorkingDirectory(fullDocumentFilePath.Replace(fullDocumentFilePath.Split('\\').Last(), ""));
 
             if (solidWorksModel != null)
@@ -760,14 +760,16 @@ namespace AngelSix.SolidDna
                 if (solidWorksModel.Item1 != null)
                 {
                     mActiveModel = solidWorksModel.Item1;
+                    mActiveModel.SetUserControlable(false, false, false, true);
                 }
             }
 
-            SpeedUpInteraction();
             return solidWorksModel.Item2;
         }
 
-        private Tuple<Model, int> OpenDocumentWithSpecification(string fullDocumentFilePath, bool readOnly, bool openSilent, bool useLightWeightDefault, bool loadLightWeight, bool ignoreHiddenComponents, bool selective)
+        //assembly/part document needs to stay open otherwise it is not fully accessable
+
+        private Tuple<Model, int> OpenDocumentWithSpecification(string fullDocumentFilePath, bool readOnly, bool openSilent, bool useLightWeightDefault, bool loadLightWeight, bool ignoreHiddenComponents, bool loadExternalReferencesInMemory, bool selective)
         {
             var swDocSpecification = default(DocumentSpecification);
             swDocSpecification = (DocumentSpecification)BaseObject.GetOpenDocSpec(fullDocumentFilePath);
@@ -775,14 +777,12 @@ namespace AngelSix.SolidDna
             swDocSpecification.Silent = openSilent;
             swDocSpecification.UseLightWeightDefault = useLightWeightDefault;
             swDocSpecification.LightWeight = loadLightWeight;
-            swDocSpecification.IgnoreHiddenComponents = ignoreHiddenComponents;
+            swDocSpecification.IgnoreHiddenComponents = ignoreHiddenComponents; 
+            swDocSpecification.LoadExternalReferencesInMemory = true;
             swDocSpecification.Selective = selective;
 
             switch (GetDocumentType(fullDocumentFilePath))
             {
-                case SwDmDocumentType.swDmDocumentUnknown:
-                    swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocNONE;
-                    break;
                 case SwDmDocumentType.swDmDocumentPart:
                     swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocPART;
                     break;
@@ -792,61 +792,59 @@ namespace AngelSix.SolidDna
                 case SwDmDocumentType.swDmDocumentDrawing:
                     swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocDRAWING;
                     break;
-                default:
-                    swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocNONE;
-                    break;
             }
 
-            // shows the document as it is loaded
+            // creating a document invisibly by passing false to DocumentVisible method, then it is not possible to make it visible with IModelDoc2:Visible
+            // if only set to true for drawing the SOLIDWORKS session will also be terminated
+            // so every document nees to be se to true
             BaseObject.DocumentVisible(true, (int)swDocSpecification.DocumentType);
 
-            return new Tuple<Model, int>(new Model((ModelDoc2)BaseObject.OpenDoc7(swDocSpecification)), swDocSpecification.Error);
-
+            // Use KeepInvisible when SOLIDWORKS is invisible and it shall activate a component and SOLIDWORKS has to be prevented from becoming visible
+            // be sure to set this property back to false after the operation for which it was to true completes
+            var modelData = new Tuple<Model, int>(new Model((ModelDoc2)BaseObject.OpenDoc7(swDocSpecification)), swDocSpecification.Error);
+            BaseObject.DocumentVisible(false, (int)swDocSpecification.DocumentType);
+            return modelData;
         }
 
 
-        //assembly/part document needs to stay open otherwise it is not fully accessable
-        public Tuple<Model, int> LoadModelInMemory(string documentPath, bool ignoreHiddenComponents)
+        public Tuple<Model, int> LoadModelInMemory(string documentPath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true, bool loadExternalReferencesInMemory = true)
         {
             Tuple<Model, int> solidWorksModel = null;
 
-            var documentType = 0;
-            var isDrawing = false;
+            //1. Set ISldWorks::EnableBackgroundProcessing to true.
+            //2. Use ISldWorks Event BackgroundProcessingStartNotify to handle the background processing start event.
+            //3. Open the drawing document by calling either ISldWorks::OpenDoc6 or ISldWorks::OpenDoc7.
+            //4. Set IDrawingDoc::BackgroundProcessingOption to swBackgroundProcessOption_e.swBackgroundProcessing_DeferToApplication.
+            //5. Call ISldWorks::IsBackgroundProcessingCompleted repeatedly, which polls the status of the open operation, to know when background processing ends.
+            //6. Use ISldWorks Event BackgroundProcessingEndNotify to handle the background processing end event.
+            //7. When the open operation is finished, set ISldWorks::EnableBackgroundProcessing to false.
+
             switch (GetDocumentType(documentPath))
             {
-                case SwDmDocumentType.swDmDocumentUnknown:
-                    documentType = (int)swDocumentTypes_e.swDocNONE;
-                    break;
-                case SwDmDocumentType.swDmDocumentPart:
-                    documentType = (int)swDocumentTypes_e.swDocPART;
-                    break;
-                case SwDmDocumentType.swDmDocumentAssembly:
-                    documentType = (int)swDocumentTypes_e.swDocASSEMBLY;
-                    break;
                 case SwDmDocumentType.swDmDocumentDrawing:
+                    // set EnableBackgroundProcessing = true to more efficiently and programmatically open a drawing document that requires a lot of CPU time and no user input
                     BaseObject.EnableBackgroundProcessing = true;
-                    documentType = (int)swDocumentTypes_e.swDocDRAWING;
-                    isDrawing = true;
                     break;
                 default:
-                    documentType = (int)swDocumentTypes_e.swDocNONE;
                     break;
             }
 
-            // hides the document as it is loaded
-            BaseObject.DocumentVisible(false, documentType);
+            solidWorksModel = OpenDocumentWithSpecification(documentPath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, loadExternalReferencesInMemory, false);
 
-            solidWorksModel = OpenDocumentWithSpecification(documentPath, false, true, false, false, ignoreHiddenComponents, false);
-            if (isDrawing)
+            if (solidWorksModel != null)
             {
-                if (solidWorksModel.Item1 != null && solidWorksModel.Item1.Drawing != null)
+                if (solidWorksModel.Item1 != null)
                 {
-                    // TODO: Add event handlers for background processing
-                    solidWorksModel.Item1.Drawing.SetBackgroundProcessingOption(DrawingDocument.BackgroundProcessOptions.BackgroundProcessingDeferToApplication);
+                    solidWorksModel.Item1.SetUserControlable(false, false, false, true);
+                    if (solidWorksModel.Item1.IsDrawing == true)
+                    {
+                        // TODO: Add event handlers for background processing
+                        solidWorksModel.Item1.Drawing.SetBackgroundProcessingOption(DrawingDocument.BackgroundProcessOptions.BackgroundProcessingDeferToApplication);
+                    }
                 }
-                BaseObject.EnableBackgroundProcessing = false;
             }
-            //    CloseDocument(documentPath);
+            // set EnableBackgroundProcessing = false when the open operation is finished
+            BaseObject.EnableBackgroundProcessing = false;
             return solidWorksModel;
         }
 
@@ -941,12 +939,31 @@ namespace AngelSix.SolidDna
             return solidWorksFileVersion;
         }
 
-		// TODO: Dont forget to delete the template model after retriving the desired data
+        // TODO: Dont forget to delete the template model after retriving the desired data
         public Model GetModelDummyByTemplate(string templateFilePath)
         {
             if (BaseObject != null)
             {
-                return new Model(BaseObject.INewDocument2(templateFilePath, 0, 0, 0));
+                var nDocType = -1;
+                if (templateFilePath.EndsWith(".asmdot"))
+                {
+                    nDocType = (int)SwDmDocumentType.swDmDocumentAssembly;
+                }
+                else if (templateFilePath.EndsWith(".prtdot"))
+                {
+                    nDocType = (int)SwDmDocumentType.swDmDocumentPart;
+                }
+                else if (templateFilePath.EndsWith(".drwdot"))
+                {
+                    nDocType = (int)SwDmDocumentType.swDmDocumentDrawing;
+                }
+
+                BaseObject.DocumentVisible(true, nDocType);
+                var dummyModel = new Model((ModelDoc2)BaseObject.NewDocument(templateFilePath, 0, 0, 0));
+                BaseObject.DocumentVisible(false, nDocType);
+
+                dummyModel.SetUserControlable(false, false, false, true);
+                return dummyModel;
             }
             return null;
         }
@@ -954,7 +971,97 @@ namespace AngelSix.SolidDna
         public void ExitApplication()
         {
             if (BaseObject != null)
+            {
+                while (HasOpenDocuments())
+                {
+                    BaseObject.CloseAllDocuments(true);
+                }
                 BaseObject.ExitApp();
+            }
+        }
+
+        public bool CloseAllDoucments(bool closeUnsafed)
+        {
+            if (BaseObject != null)
+                return BaseObject.CloseAllDocuments(closeUnsafed);
+            return false;
+        }
+
+        public bool MoveFile(string sourceFilePath, string destinationFilePath)
+        {
+            if (BaseObject != null)
+                if (BaseObject.MoveDocument(sourceFilePath, destinationFilePath, null, null, 1) == 0)
+                    return true;
+            return false;
+        }
+
+        public void SetUserControlable(bool controlable, bool isApplicationVisible)
+        {
+            if (BaseObject != null)
+            {
+                BaseObject.CommandInProgress = !controlable;
+                BaseObject.UserControl = controlable;
+                BaseObject.UserControlBackground = controlable;
+                BaseObject.Visible = isApplicationVisible;
+                ((IFrame)BaseObject.Frame()).KeepInvisible = !isApplicationVisible;
+            }
+        }
+
+        public void SetApplicationVisible(bool isApplicationVisible)
+        {
+            if (BaseObject != null)
+            {
+                BaseObject.Visible = isApplicationVisible;
+                ((IFrame)BaseObject.Frame()).KeepInvisible = !isApplicationVisible;
+            }
+        }
+
+        public IntPtr GetWindowHandleX64()
+        {
+            if (BaseObject != null)
+                return new IntPtr(((IFrame)BaseObject.Frame()).GetHWndx64());
+            return new IntPtr(-1);
+        }
+
+        public void ActivateDocument(string documentName)
+        {
+            if (BaseObject != null)
+            {
+                var error = 0;
+                BaseObject.ActivateDoc3(documentName, false, (int)RebuildOnActivation.RebuildActiveDoc, ref error);
+            }
+        }
+
+        public bool HasOpenDocuments()
+        {
+            if (BaseObject != null)
+            {
+                if (BaseObject.GetFirstDocument() != null)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void CheckModelWindows()
+        {
+            var swFrame = (Frame)BaseObject.Frame();
+            var modelWindows = (object[])swFrame.ModelWindows;
+            foreach (var obj in modelWindows)
+            {
+                var swModelWindow = (ModelWindow)obj;
+                //Get the model document in this model window
+                var swModelDoc = (ModelDoc2)swModelWindow.ModelDoc;
+                //Rebuild the document
+                swModelDoc.EditRebuild3();
+                swModelDoc = null;
+                //Show the model window
+                swFrame.ShowModelWindow(swModelWindow);
+                //Get and print the model window handle
+                var HWnd = swModelWindow.HWnd;
+                var title = swModelWindow.Title;
+            }
         }
 
     }
