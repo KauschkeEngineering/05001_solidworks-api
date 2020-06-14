@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static AngelSix.SolidDna.CustomPropertyEditor;
 
 namespace AngelSix.SolidDna
 {
@@ -118,6 +119,10 @@ namespace AngelSix.SolidDna
         /// The mass properties of the part
         /// </summary>
         public MassProperties MassProperties => Extension.GetMassProperties();
+
+        public bool IsVisible => BaseObject.Visible;
+
+        public ModelView ActiveModelView => new ModelView(BaseObject.IActiveView);
 
         #endregion
 
@@ -422,7 +427,10 @@ namespace AngelSix.SolidDna
         protected int FileSavePostNotify(int saveType, string fileName)
         {
             // Update filepath
-            FilePath = BaseObject.GetPathName();
+            if (BaseObject != null)
+                FilePath = BaseObject.GetPathName();
+            else
+                FilePath = fileName;
 
             // Inform listeners
             ModelSaved();
@@ -583,13 +591,45 @@ namespace AngelSix.SolidDna
         /// <param name="name">The name of the property</param>
         /// <param name="value">The value of the property</param>
         /// <param name="configuration">The configuration to set the properties from, otherwise set custom property</param>
-        public void SetCustomPropertyValue(string name, string value, string configuration = null)
+        public CustomInfoSetResult SetCustomPropertyValue(string name, string value, string configuration = null)
         {
             // Get the custom property editor
             using (var editor = Extension.CustomPropertyEditor(configuration))
             {
                 // Set the property
-                editor.SetCustomPropertyValue(name, value);
+                return editor.SetCustomPropertyValue(name, value);
+            }
+        }
+
+        /// <summary>
+        /// Adds a custom property.
+        /// If a configuration is specified then the configuration-specific property is set
+        /// </summary>
+        /// <param name="name">The name of the custom property</param>
+        /// <param name="type">The type of the custom property</param>
+        /// <param name="option">The option how to handle existing custom property</param>
+        /// <param name="value">The value of the custom property</param>
+        public CustomInfoAddResult AddCustomPropertyValue(string name, CustomInfoTypes type, string value, CustomPropertyAddOption option, string configuration = null)
+        {
+            // Get the custom property editor
+            using (var editor = Extension.CustomPropertyEditor(configuration))
+            {
+                // Add the property
+                return editor.AddCustomPropertyValue(name, type, value, option);
+            }
+        }
+
+        /// <summary>
+        /// Checks if a custom property exists
+        /// </summary>
+        /// <param name="name">The name of the custom property</param>
+        /// <returns></returns>
+        public bool CustomPropertyExists(string name, string configuration = null)
+        {
+            // Get the custom property editor
+            using (var editor = Extension.CustomPropertyEditor(configuration))
+            {
+                return editor.CustomPropertyExists(name);
             }
         }
 
@@ -600,13 +640,13 @@ namespace AngelSix.SolidDna
         /// <param name="configuration">The configuration to get the properties from, otherwise get custom property</param>
         ///<param name="resolved">True to get the resolved value of the property, false to get the actual text</param>
         /// <returns></returns>
-        public string GetCustomPropertyValue(string name, string configuration = null, bool resolved = false)
+        public Tuple<CustomInfoGetResult, string> GetCustomPropertyValue(string name, string configuration = null, bool resolved = false)
         {
             // Get the custom property editor
             using (var editor = Extension.CustomPropertyEditor(configuration))
             {
                 // Get the property
-                return editor.GetCustomPropertyValue(name, resolve: resolved);
+                return editor.GetCustomPropertyValue(name, resolved);
             }
         }
 
@@ -651,6 +691,21 @@ namespace AngelSix.SolidDna
                 }
             }
             return new List<string>();
+        }
+
+        /// <summary>
+        /// Deletes a existing custom property.
+        /// If a configuration is specified then the configuration-specific property is set
+        /// </summary>
+        /// <param name="name">The name of the custom property</param>
+        public CustomInfoDeleteResult DeleteCustomPropertyValue(string name, string configuration = null)
+        {
+            // Get the custom property editor
+            using (var editor = Extension.CustomPropertyEditor(configuration))
+            {
+                // Add the property
+                return editor.DeleteCustomProperty(name);
+            }
         }
 
         #endregion
@@ -1007,31 +1062,36 @@ namespace AngelSix.SolidDna
 
         #endregion
 
-        public bool RebuildAndSave()
+        public delegate int AttachedRenamedDocumentNotify(ref object target);
+
+        public bool RebuildAndSave(AttachedRenamedDocumentNotify attachedRenamedDocumentNotify, bool updateReferences, bool rebuildNecessaryModels, bool ignoreSaveFlag = false)
         {
             var errors = 0;
             var warnings = 0;
-            Extension.Rebuild(swRebuildOptions_e.swRebuildAll);
-            return BaseObject.Save3((int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced, ref errors, ref warnings);
+            // rebuilds only those features that need to be rebuilt in the active configuration in the model
+            if (rebuildNecessaryModels)
+                BaseObject.EditRebuild3();
+            // rebuilds the model in assembly and drawing documents and returns the status of the rebuild. 
+            //Extension.Rebuild(swRebuildOptions_e.swRebuildAll);
+
+            if (BaseObject.GetSaveFlag() || ignoreSaveFlag)
+            {
+                if (updateReferences)
+                    AttachEventHandlers(attachedRenamedDocumentNotify);
+                var ret = BaseObject.Save3((int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced, ref errors, ref warnings);
+                if (updateReferences)
+                    DetachEventHandlers(attachedRenamedDocumentNotify);
+                return ret;
+            }
+            return true;
         }
 
         public bool Rename(string oldName, string newName)
         {
-            //Set up event
-            AttachEventHandlers();
-            if (Extension.Rename(oldName, newName))
-            {
-                return RebuildAndSave();
-            }
-            return false;
+            return Extension.Rename(oldName, newName);
         }
 
-        public void AttachEventHandlers()
-        {
-            AttachSWEvents();
-        }
-
-        public void AttachSWEvents()
+        private void AttachEventHandlers(AttachedRenamedDocumentNotify attachedRenamedDocumentNotify)
         {
             if (BaseObject != null)
             {
@@ -1039,15 +1099,44 @@ namespace AngelSix.SolidDna
                 {
                     ((AssemblyDoc)BaseObject).RenameItemNotify += RenameItemNotify;
                     ((AssemblyDoc)BaseObject).RenamedDocumentNotify += RenamedDocumentNotify;
+                    if (attachedRenamedDocumentNotify != null)
+                        ((AssemblyDoc)BaseObject).RenamedDocumentNotify += new DAssemblyDocEvents_RenamedDocumentNotifyEventHandler(attachedRenamedDocumentNotify);
                 }
                 else if (IsPart)
                 {
                     ((PartDoc)BaseObject).RenameItemNotify += RenameItemNotify;
                     ((PartDoc)BaseObject).RenamedDocumentNotify += RenamedDocumentNotify;
+                    if (attachedRenamedDocumentNotify != null)
+                        ((PartDoc)BaseObject).RenamedDocumentNotify += new DPartDocEvents_RenamedDocumentNotifyEventHandler(attachedRenamedDocumentNotify);
                 }
                 else if (IsDrawing)
                 {
                     ((DrawingDoc)BaseObject).RenameItemNotify += RenameItemNotify;
+                }
+            }
+        }
+
+        private void DetachEventHandlers(AttachedRenamedDocumentNotify attachedRenamedDocumentNotify)
+        {
+            if (BaseObject != null)
+            {
+                if (IsAssembly)
+                {
+                    ((AssemblyDoc)BaseObject).RenameItemNotify -= RenameItemNotify;
+                    ((AssemblyDoc)BaseObject).RenamedDocumentNotify -= RenamedDocumentNotify;
+                    if (attachedRenamedDocumentNotify != null)
+                        ((AssemblyDoc)BaseObject).RenamedDocumentNotify -= new DAssemblyDocEvents_RenamedDocumentNotifyEventHandler(attachedRenamedDocumentNotify);
+                }
+                else if (IsPart)
+                {
+                    ((PartDoc)BaseObject).RenameItemNotify -= RenameItemNotify;
+                    ((PartDoc)BaseObject).RenamedDocumentNotify -= RenamedDocumentNotify;
+                    if (attachedRenamedDocumentNotify != null)
+                        ((PartDoc)BaseObject).RenamedDocumentNotify -= new DPartDocEvents_RenamedDocumentNotifyEventHandler(attachedRenamedDocumentNotify);
+                }
+                else if (IsDrawing)
+                {
+                    ((DrawingDoc)BaseObject).RenameItemNotify -= RenameItemNotify;
                 }
             }
         }
@@ -1065,8 +1154,6 @@ namespace AngelSix.SolidDna
             var swRenamedDocumentReferences = default(RenamedDocumentReferences);
             object[] searchPaths = null;
             object[] pathNames = null;
-            var i = 0;
-            var nbr = 0;
 
             swRenamedDocumentReferences = (RenamedDocumentReferences)swObj;
 
@@ -1075,24 +1162,21 @@ namespace AngelSix.SolidDna
 
             //get search paths
             searchPaths = (object[])swRenamedDocumentReferences.GetSearchPath();
-            nbr = searchPaths.Length - 1;
 
             swRenamedDocumentReferences.Search();
 
             //get references
             pathNames = (object[])swRenamedDocumentReferences.ReferencesArray();
-            nbr = pathNames.Length - 1;
 
             swRenamedDocumentReferences.CompletionAction = (int)swRenamedDocumentFinalAction_e.swRenamedDocumentFinalAction_Ok;
 
             return 0;
         }
 
-        public bool HasDrawingFileDocument(string componentName)
+        public bool HasDrawingFileDocument(string drawingName)
         {
-            var componentPathName = ((ModelDoc2)mBaseObject).GetPathName();
-            var componentPath = new FileInfo(componentPathName).Directory;
-            return File.Exists(componentPath + "\\" + componentName + DrawingDocument.FILE_EXTENSION);
+            var modelPath = new FileInfo(FilePath).Directory;
+            return File.Exists(modelPath + "\\" + drawingName + DrawingDocument.FILE_EXTENSION);
         }
 
         public static Model GetModel(object component)
@@ -1118,8 +1202,110 @@ namespace AngelSix.SolidDna
 
         public void SetVisible(bool isVisible)
         {
-            BaseObject.Visible = isVisible;
+            if (BaseObject != null)
+                BaseObject.Visible = isVisible;
         }
 
+        public void SetUserControlable(bool isFeatureTreeEnabled, bool isGraphicsUpdateEnabled, bool isVisible, bool isLocked)
+        {
+            if (BaseObject != null)
+            {
+                ((FeatureManager)BaseObject.FeatureManager).EnableFeatureTree = isFeatureTreeEnabled;
+                if (ActiveModelView != null)
+                {
+                    ActiveModelView.EnableGraphicsUpdate = isGraphicsUpdateEnabled;
+                }
+                SetVisible(isVisible);
+                SetLocked(isLocked);
+            }
+        }
+
+        public void SetLocked(bool isLocked)
+        {
+            if (BaseObject != null)
+            {
+                if (isLocked)
+                    BaseObject.Lock();
+                else
+                    BaseObject.UnLock();
+            }
+        }
+
+        public void ZoomModelViewToFit()
+        {
+            if (BaseObject != null)
+            {
+                BaseObject.ShowNamedView2("*Isometric", 7);
+                BaseObject.ViewZoomtofit2();
+            }
+        }
+
+        public void ZoomModelViewIn()
+        {
+            BaseObject?.ViewZoomin();
+        }
+
+        public void ZoomModelViewOut()
+        {
+            BaseObject?.ViewZoomout();
+        }
+
+        public bool HideAllItemTypes()
+        {
+            // 198 = swViewDisplayHideAllTypes  
+            return BaseObject.SetUserPreferenceToggle(198, true);
+
+        }
+
+        public bool ShowAllItemTypes()
+        {
+            // 198 = swViewDisplayHideAllTypes  
+            return BaseObject.SetUserPreferenceToggle(198, false);
+
+        }
+
+        public void HideCompleteSketch()
+        {
+            BaseObject.ClearSelection2(true);
+
+            var boolstatus = BaseObject.Extension.SelectByID2("", "SKETCH", 0, 0, 0, false, 0, null, 0);
+            BaseObject.BlankSketch();
+        }
+
+        public void ShowCompleteSketch()
+        {
+            BaseObject.ClearSelection2(true);
+
+            var boolstatus = BaseObject.Extension.SelectByID2("", "SKETCH", 0, 0, 0, false, 0, null, 0);
+            BaseObject.UnblankSketch();
+        }
+
+        private void SelectAllSketchPoints()
+        {
+            if (BaseObject.SketchManager.ActiveSketch != null)
+            {
+                if (BaseObject.SketchManager.ActiveSketch.GetSketchPoints2() != null)
+                {
+                    foreach (var sketchPoint in (ISketchPoint[])BaseObject.SketchManager.ActiveSketch.GetSketchPoints2())
+                    {
+                        sketchPoint.Select4(true, null);
+                    }
+                }
+            }
+        }
+
+        private void SelectAllSketchSegments()
+        {
+            if (BaseObject.SketchManager.ActiveSketch != null)
+            {
+                if (BaseObject.SketchManager.ActiveSketch.GetSketchSegments() != null)
+                {
+                    foreach (var sketchSegment in (ISketchSegment[])BaseObject.SketchManager.ActiveSketch.GetSketchSegments())
+                    {
+                        sketchSegment.Select4(true, null);
+                    }
+                }
+            }
+        }
     }
 }
