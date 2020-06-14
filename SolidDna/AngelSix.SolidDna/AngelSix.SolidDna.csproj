@@ -32,8 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dna.Framework" Version="1.0.7.9" />
-    <PackageReference Include="System.Net.Http" Version="4.3.3" />
+    <PackageReference Include="Dna.Framework" Version="1.0.7.18" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,7 +63,6 @@
     </Reference>
     <Reference Include="SolidWorks.Interop.swdocumentmgr">
       <HintPath>..\..\References\2019\SolidWorks.Interop.swdocumentmgr.dll</HintPath>
-      <EmbedInteropTypes>false</EmbedInteropTypes>
     </Reference>
     <Reference Include="SolidWorks.Interop.swmotionstudy">
       <HintPath>..\..\References\2019\SolidWorks.Interop.swmotionstudy.dll</HintPath>
