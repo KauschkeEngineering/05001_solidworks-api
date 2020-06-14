@@ -128,11 +128,31 @@ namespace AngelSix.SolidDna
 
         public bool Rename(string oldName, string newName)
         {
-            var swModelDocExt = ((ModelDocExtension)mBaseObject);
-            if (swModelDocExt.SelectByID2(oldName, "COMPONENT", 0, 0, 0, false, 0, null, 0))
-                if (swModelDocExt.RenameDocument(newName) == 0)
-                    return true;
+            if (BaseObject != null)
+            {
+                if (BaseObject.SelectByID2(oldName, "COMPONENT", 0, 0, 0, false, 0, null, 0))
+                    if (BaseObject.RenameDocument(newName) == 0)
+                        return true;
+            }
             return false;
+
+        }
+
+        public bool Select()
+        {
+            if (BaseObject != null)
+            {
+                return BaseObject.SelectByID2(Parent.Name, "COMPONENT", 0, 0, 0, false, 0, null, 0);
+            }
+            return false;
+        }
+
+        public void SetIsometricZoomToFitView(bool showIsometric)
+        {
+            if (BaseObject != null)
+            {
+                BaseObject.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swImageQualityZoomToFitForPreviewImages, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, showIsometric);
+            }
         }
     }
 }
