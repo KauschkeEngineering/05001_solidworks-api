@@ -16,17 +16,17 @@ namespace AngelSix.SolidDna
                 {
                     switch (mEditor.GetTypeOfProperty(Name))
                     {
-                        case PropertyDataTypes.Unknown:
+                        case CustomInfoTypes.Unknown:
                             return typeof(object);
-                        case PropertyDataTypes.Integer:
-                            return typeof(int);
-                        case PropertyDataTypes.Double:
+                        case CustomInfoTypes.Number:
+                            return typeof(long);
+                        case CustomInfoTypes.Double:
                             return typeof(double);
-                        case PropertyDataTypes.Boolean:
+                        case CustomInfoTypes.YesOrNo:
                             return typeof(bool);
-                        case PropertyDataTypes.String:
+                        case CustomInfoTypes.Text:
                             return typeof(string);
-                        case PropertyDataTypes.DateTime:
+                        case CustomInfoTypes.Date:
                             return typeof(DateTime);
                         default:
                             return null;
@@ -56,14 +56,14 @@ namespace AngelSix.SolidDna
         /// </summary>
         public string Value
         {
-            get => mEditor.GetCustomPropertyValue(Name);
+            get => mEditor.GetCustomPropertyValue(Name).Item2;
             set => mEditor.SetCustomPropertyValue(Name, value);
         }
 
         /// <summary>
         /// The resolved value of the custom property
         /// </summary>
-        public string ResolvedValue => mEditor.GetCustomPropertyValue(Name, resolve: true);
+        public string ResolvedValue => mEditor.GetCustomPropertyValue(Name, true).Item2;
 
         #endregion
 
@@ -88,9 +88,9 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Deletes this custom property
         /// </summary>
-        public void Delete()
+        public CustomInfoDeleteResult Delete()
         {
-            mEditor.DeleteCustomProperty(Name);
+            return mEditor.DeleteCustomProperty(Name);
         }
 
         #endregion
