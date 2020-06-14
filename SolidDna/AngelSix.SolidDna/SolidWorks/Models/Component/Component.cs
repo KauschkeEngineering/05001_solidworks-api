@@ -1,5 +1,6 @@
 ﻿using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using System.IO;
 using System.Linq;
 
 namespace AngelSix.SolidDna
@@ -105,6 +106,12 @@ namespace AngelSix.SolidDna
         public static Component GetComponent(object component)
         {
             return new Component((Component2)component);
+        }
+
+        public bool HasDrawingFileDocument()
+        {
+            var componentPath = new FileInfo(FilePath).Directory;
+            return File.Exists(componentPath + "\\" + Name + DrawingDocument.FILE_EXTENSION);
         }
 
         #region Dispose
