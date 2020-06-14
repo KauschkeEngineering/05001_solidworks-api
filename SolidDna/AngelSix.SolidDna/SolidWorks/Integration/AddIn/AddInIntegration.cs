@@ -469,7 +469,7 @@ namespace AngelSix.SolidDna
                     {
                         FileName = solidWorksExePath,
                         Arguments = "/r", //no splash screen will be shown while loading SolidWorks application
-                        CreateNoWindow = true,
+                        CreateNoWindow = false,
                     };
 
                     _solidWorksProcess = Process.Start(processInfo);
@@ -605,11 +605,9 @@ namespace AngelSix.SolidDna
             try
             {
                 var solidWorksInstance = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject(string.Format("SldWorks.Application.{0}", (int)sWProgIdVersion)), 0);
-                // If there is already an running app
+                // if there is already an running app
                 if (solidWorksInstance != null)
                 {
-                    //solidWorksInstance.SetApplicationVisible(true);
-
                     // Dispose SolidWorks COM
                     solidWorksInstance?.Dispose();
                     solidWorksInstance = null;
