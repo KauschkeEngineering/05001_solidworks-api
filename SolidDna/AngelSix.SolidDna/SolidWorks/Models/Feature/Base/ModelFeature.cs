@@ -881,6 +881,7 @@ namespace AngelSix.SolidDna
         public bool SelectFirst()
         {
             if (BaseObject != null)
+                // selects and marks this feature and replaces the current selection list
                 return BaseObject.Select2(false, 0);
             return false;
         }
