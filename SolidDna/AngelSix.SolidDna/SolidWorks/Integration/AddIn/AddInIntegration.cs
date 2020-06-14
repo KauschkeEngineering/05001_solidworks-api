@@ -20,7 +20,8 @@ namespace AngelSix.SolidDna
         SW_2016 = 24,
         SW_2017,
         SW_2018,
-        SW_2019
+        SW_2019,
+        SW_2020
     }
 
     /// <summary>
@@ -31,6 +32,8 @@ namespace AngelSix.SolidDna
     /// </summary>
     public abstract class AddInIntegration : ISwAddin
     {
+        private static Process _solidWorksProcess = null;
+
         #region Protected Members
 
         /// <summary>
@@ -61,6 +64,8 @@ namespace AngelSix.SolidDna
         /// Gets the list of all known reference assemblies in this solution
         /// </summary>
         public AssemblyName[] ReferencedAssemblies => mReferencedAssemblies.ToArray();
+
+        public static Process SolidWorksProcess => _solidWorksProcess;
 
         #endregion
 
@@ -456,7 +461,6 @@ namespace AngelSix.SolidDna
 
         public bool StartSolidWork(string solidWorksExePath)
         {
-            Process _solidWorksProcess = null;
             if (!solidWorksExePath.Equals(string.Empty))
             {
                 try
@@ -465,11 +469,12 @@ namespace AngelSix.SolidDna
                     {
                         FileName = solidWorksExePath,
                         Arguments = "/r", //no splash screen will be shown while loading SolidWorks application
-                        CreateNoWindow = false,
-                        WindowStyle = ProcessWindowStyle.Hidden
+                        CreateNoWindow = true,
                     };
 
                     _solidWorksProcess = Process.Start(processInfo);
+                    // set the priorty to high for SOLIDWORKS to gain more CPU time
+                    _solidWorksProcess.PriorityClass = ProcessPriorityClass.High;
 
                 }
                 catch (Exception)
@@ -600,9 +605,10 @@ namespace AngelSix.SolidDna
             try
             {
                 var solidWorksInstance = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject(string.Format("SldWorks.Application.{0}", (int)sWProgIdVersion)), 0);
-                // If we have an reference...
+                // If there is already an running app
                 if (solidWorksInstance != null)
                 {
+                    //solidWorksInstance.SetApplicationVisible(true);
 
                     // Dispose SolidWorks COM
                     solidWorksInstance?.Dispose();
@@ -617,6 +623,27 @@ namespace AngelSix.SolidDna
             return false;
         }
 
+        public static void SetSolidWorksProcess()
+        {
+            // get the current process of SolidWorks
+            if (_solidWorksProcess == null)
+            {
+                _solidWorksProcess = Process.GetProcessesByName("SLDWORKS").FirstOrDefault();
+            }
+        }
+
+        public static bool KillHangSolidWorksProcess()
+        {
+            // get the current process of SolidWorks
+            if (_solidWorksProcess != null)
+            {
+                _solidWorksProcess.Kill();
+                _solidWorksProcess.Dispose();
+                _solidWorksProcess = null;
+                return true;
+            }
+            return false;
+        }
         #endregion
 
         #region Assembly Resolve Methods
