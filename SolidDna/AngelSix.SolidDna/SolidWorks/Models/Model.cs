@@ -1173,12 +1173,6 @@ namespace AngelSix.SolidDna
             return 0;
         }
 
-        public bool HasDrawingFileDocument(string drawingName)
-        {
-            var modelPath = new FileInfo(FilePath).Directory;
-            return File.Exists(modelPath + "\\" + drawingName + DrawingDocument.FILE_EXTENSION);
-        }
-
         public static Model GetModel(object component)
         {
             return Component.GetComponent(component).AsModel;
