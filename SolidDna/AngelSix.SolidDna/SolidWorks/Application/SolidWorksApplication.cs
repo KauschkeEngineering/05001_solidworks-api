@@ -962,7 +962,7 @@ namespace AngelSix.SolidDna
                 var dummyModel = new Model((ModelDoc2)BaseObject.NewDocument(templateFilePath, 0, 0, 0));
                 BaseObject.DocumentVisible(false, nDocType);
 
-                dummyModel.SetUserControlable(false, false, false, true);
+                //dummyModel.SetUserControlable(false, false, false, true);
                 return dummyModel;
             }
             return null;
