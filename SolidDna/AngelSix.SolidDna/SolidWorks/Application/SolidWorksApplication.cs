@@ -748,28 +748,43 @@ namespace AngelSix.SolidDna
             BaseObject.CloseDoc(documentName);
         }
 
-        public int OpenDocument(string fullDocumentFilePath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true, bool loadExternalReferencesInMemory = true)
+        public Tuple<int, Model> OpenDocumentInvisible(string fullDocumentFilePath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true, bool loadExternalReferencesInMemory = true, bool useNewWindow = false)
         {
-            Tuple<Model, int> solidWorksModel = null;
-
-            solidWorksModel = OpenDocumentWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, loadExternalReferencesInMemory, false);
-            BaseObject.SetCurrentWorkingDirectory(fullDocumentFilePath.Replace(fullDocumentFilePath.Split('\\').Last(), ""));
-
-            if (solidWorksModel != null)
+            var solidWorksModelData = OpenDocumenInvisibleInWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, loadExternalReferencesInMemory, false); ;
+            if (ActiveModel != null)
             {
-                if (solidWorksModel.Item1 != null)
+                // creates a client window containing the active document. 
+                if (useNewWindow)
                 {
-                    mActiveModel = solidWorksModel.Item1;
-                    mActiveModel.SetUserControlable(false, false, false, true);
+                    BaseObject.CreateNewWindow();
+                }
+                // set the loaded model to invisble an not controlable
+                ActiveModel.SetUserControlable(false, false, false, true);
+
+                // if opening a assembly or part file the the working directorty need to be set
+                if ((ActiveModel.IsAssembly || ActiveModel.IsPart) && ActiveModel.GetRootComponent().IsRoot)
+                {
+                    BaseObject.SetCurrentWorkingDirectory(fullDocumentFilePath.Replace(fullDocumentFilePath.Split('\\').Last(), ""));
+                }
+
+                if (ActiveModel.IsDrawing == true)
+                {
+                    // TODO: Add event handlers for background processing
+                    ActiveModel.Drawing.SetBackgroundProcessingOption(DrawingDocument.BackgroundProcessOptions.BackgroundProcessingDeferToApplication);
                 }
             }
-
-            return solidWorksModel.Item2;
+            return solidWorksModelData;
         }
 
         //assembly/part document needs to stay open otherwise it is not fully accessable
-
-        private Tuple<Model, int> OpenDocumentWithSpecification(string fullDocumentFilePath, bool readOnly, bool openSilent, bool useLightWeightDefault, bool loadLightWeight, bool ignoreHiddenComponents, bool loadExternalReferencesInMemory, bool selective)
+        //1. Set ISldWorks::EnableBackgroundProcessing to true (for drawings only).
+        //2. Use ISldWorks Event BackgroundProcessingStartNotify to handle the background processing start event.
+        //3. Open the drawing document by calling either ISldWorks::OpenDoc6 or ISldWorks::OpenDoc7.
+        //4. Set IDrawingDoc::BackgroundProcessingOption to swBackgroundProcessOption_e.swBackgroundProcessing_DeferToApplication.
+        //5. Call ISldWorks::IsBackgroundProcessingCompleted repeatedly, which polls the status of the open operation, to know when background processing ends.
+        //6. Use ISldWorks Event BackgroundProcessingEndNotify to handle the background processing end event.
+        //7. When the open operation is finished, set ISldWorks::EnableBackgroundProcessing to false.
+        private Tuple<int, Model> OpenDocumenInvisibleInWithSpecification(string fullDocumentFilePath, bool readOnly, bool openSilent, bool useLightWeightDefault, bool loadLightWeight, bool ignoreHiddenComponents, bool loadExternalReferencesInMemory, bool selective)
         {
             var swDocSpecification = default(DocumentSpecification);
             swDocSpecification = (DocumentSpecification)BaseObject.GetOpenDocSpec(fullDocumentFilePath);
@@ -777,7 +792,7 @@ namespace AngelSix.SolidDna
             swDocSpecification.Silent = openSilent;
             swDocSpecification.UseLightWeightDefault = useLightWeightDefault;
             swDocSpecification.LightWeight = loadLightWeight;
-            swDocSpecification.IgnoreHiddenComponents = ignoreHiddenComponents; 
+            swDocSpecification.IgnoreHiddenComponents = ignoreHiddenComponents;
             swDocSpecification.LoadExternalReferencesInMemory = true;
             swDocSpecification.Selective = selective;
 
@@ -790,6 +805,8 @@ namespace AngelSix.SolidDna
                     swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocASSEMBLY;
                     break;
                 case SwDmDocumentType.swDmDocumentDrawing:
+                    // set EnableBackgroundProcessing = true to more efficiently and programmatically open a drawing document that requires a lot of CPU time and no user input
+                    BaseObject.EnableBackgroundProcessing = true;
                     swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocDRAWING;
                     break;
             }
@@ -798,54 +815,14 @@ namespace AngelSix.SolidDna
             // if only set to true for drawing the SOLIDWORKS session will also be terminated
             // so every document nees to be se to true
             BaseObject.DocumentVisible(true, (int)swDocSpecification.DocumentType);
-
             // Use KeepInvisible when SOLIDWORKS is invisible and it shall activate a component and SOLIDWORKS has to be prevented from becoming visible
             // be sure to set this property back to false after the operation for which it was to true completes
-            var modelData = new Tuple<Model, int>(new Model((ModelDoc2)BaseObject.OpenDoc7(swDocSpecification)), swDocSpecification.Error);
+            var modelData = new Tuple<int, Model>(swDocSpecification.Error, new Model((ModelDoc2)BaseObject.OpenDoc7(swDocSpecification)));
             BaseObject.DocumentVisible(false, (int)swDocSpecification.DocumentType);
-            return modelData;
-        }
 
-
-        public Tuple<Model, int> LoadModelInMemory(string documentPath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true, bool loadExternalReferencesInMemory = true)
-        {
-            Tuple<Model, int> solidWorksModel = null;
-
-            //1. Set ISldWorks::EnableBackgroundProcessing to true.
-            //2. Use ISldWorks Event BackgroundProcessingStartNotify to handle the background processing start event.
-            //3. Open the drawing document by calling either ISldWorks::OpenDoc6 or ISldWorks::OpenDoc7.
-            //4. Set IDrawingDoc::BackgroundProcessingOption to swBackgroundProcessOption_e.swBackgroundProcessing_DeferToApplication.
-            //5. Call ISldWorks::IsBackgroundProcessingCompleted repeatedly, which polls the status of the open operation, to know when background processing ends.
-            //6. Use ISldWorks Event BackgroundProcessingEndNotify to handle the background processing end event.
-            //7. When the open operation is finished, set ISldWorks::EnableBackgroundProcessing to false.
-
-            switch (GetDocumentType(documentPath))
-            {
-                case SwDmDocumentType.swDmDocumentDrawing:
-                    // set EnableBackgroundProcessing = true to more efficiently and programmatically open a drawing document that requires a lot of CPU time and no user input
-                    BaseObject.EnableBackgroundProcessing = true;
-                    break;
-                default:
-                    break;
-            }
-
-            solidWorksModel = OpenDocumentWithSpecification(documentPath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, loadExternalReferencesInMemory, false);
-
-            if (solidWorksModel != null)
-            {
-                if (solidWorksModel.Item1 != null)
-                {
-                    solidWorksModel.Item1.SetUserControlable(false, false, false, true);
-                    if (solidWorksModel.Item1.IsDrawing == true)
-                    {
-                        // TODO: Add event handlers for background processing
-                        solidWorksModel.Item1.Drawing.SetBackgroundProcessingOption(DrawingDocument.BackgroundProcessOptions.BackgroundProcessingDeferToApplication);
-                    }
-                }
-            }
             // set EnableBackgroundProcessing = false when the open operation is finished
             BaseObject.EnableBackgroundProcessing = false;
-            return solidWorksModel;
+            return modelData;
         }
 
         public string GetDefaultAssemblyTemplatePath()
@@ -961,19 +938,30 @@ namespace AngelSix.SolidDna
                 BaseObject.DocumentVisible(true, nDocType);
                 var dummyModel = new Model((ModelDoc2)BaseObject.NewDocument(templateFilePath, 0, 0, 0));
                 BaseObject.DocumentVisible(false, nDocType);
-
+                // create the dummy model in a new window 
+                // this is done to more efficient close the dummy model without the need to make the app or the model visible
+                BaseObject.CreateNewWindow();
                 return dummyModel;
             }
             return null;
         }
 
-        public void ExitApplication()
+        public void ExitApplication(bool saveAllDirtyDocuments)
         {
             if (BaseObject != null)
             {
                 while (HasOpenDocuments())
                 {
-                    BaseObject.CloseAllDocuments(true);
+                    var openDocuments = (object[])BaseObject.GetDocuments();
+                    foreach (var model in openDocuments)
+                    {
+                        var modelDoc = new Model((ModelDoc2)model);
+                        BaseObject.CloseDoc(modelDoc.FilePath);
+                    }
+                    //if (saveAllDirtyDocuments == false)
+                    //{
+                    //    BaseObject.CloseAllDocuments(true);
+                    //}
                 }
                 BaseObject.ExitApp();
             }
@@ -1035,7 +1023,7 @@ namespace AngelSix.SolidDna
         {
             if (BaseObject != null)
             {
-                if (BaseObject.GetFirstDocument() != null)
+                if (BaseObject.GetDocuments() != null)
                 {
                     return true;
                 }
