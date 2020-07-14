@@ -10,23 +10,6 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class Component : SolidDnaObject<Component2>
     {
-        public enum SuppressionStates
-        {
-            Suppressed = swComponentSuppressionState_e.swComponentSuppressed,
-            Lightweight = swComponentSuppressionState_e.swComponentLightweight,
-            FullyResolved = swComponentSuppressionState_e.swComponentFullyResolved,
-            Resolved = swComponentSuppressionState_e.swComponentResolved,
-            FullyLightweight = swComponentSuppressionState_e.swComponentFullyLightweight,
-            InternalIdMismatch = swComponentSuppressionState_e.swComponentInternalIdMismatch
-        }
-
-        public enum SuppressionErrors
-        {
-            BadComponent = swSuppressionError_e.swSuppressionBadComponent,
-            BadState = swSuppressionError_e.swSuppressionBadState,
-            ChangeOk = swSuppressionError_e.swSuppressionChangeOk,
-            ChangeFailed = swSuppressionError_e.swSuppressionChangeFailed
-        }
 
         #region Public Properties
 
@@ -63,7 +46,7 @@ namespace AngelSix.SolidDna
 
         public string FilePath => BaseObject.GetPathName();
 
-        public SuppressionStates SuppressionState => (SuppressionStates)BaseObject.GetSuppression();
+        public ComponentSuppressionStates SuppressionState => (ComponentSuppressionStates)BaseObject.GetSuppression();
 
         public bool IsSuppressed => BaseObject.IsSuppressed();
 
@@ -94,14 +77,28 @@ namespace AngelSix.SolidDna
         /// </summary>
         public Component(Component2 component) : base(component)
         {
-        }
 
-        public SuppressionErrors SetSupressionState(SuppressionStates suppressionState)
-        {
-            return (SuppressionErrors)BaseObject.SetSuppression2((int)suppressionState);
         }
 
         #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a user-friendly string with component properties.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"Name: {Name}. Is root: {IsRoot}";
+        }
+
+        #endregion
+
+        public ComponentSuppressionErrors SetSupressionState(ComponentSuppressionStates suppressionState)
+        {
+            return (ComponentSuppressionErrors)BaseObject.SetSuppression2((int)suppressionState);
+        }
 
         public static Component GetComponent(object component)
         {
