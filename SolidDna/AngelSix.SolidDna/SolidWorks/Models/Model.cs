@@ -591,7 +591,7 @@ namespace AngelSix.SolidDna
         /// <param name="name">The name of the property</param>
         /// <param name="value">The value of the property</param>
         /// <param name="configuration">The configuration to set the properties from, otherwise set custom property</param>
-        public CustomInfoSetResult SetCustomPropertyValue(string name, string value, string configuration = null)
+        public CustomPropertySetResult SetCustomPropertyValue(string name, string value, string configuration = null)
         {
             // Get the custom property editor
             using (var editor = Extension.CustomPropertyEditor(configuration))
@@ -609,7 +609,7 @@ namespace AngelSix.SolidDna
         /// <param name="type">The type of the custom property</param>
         /// <param name="option">The option how to handle existing custom property</param>
         /// <param name="value">The value of the custom property</param>
-        public CustomInfoAddResult AddCustomPropertyValue(string name, CustomInfoTypes type, string value, CustomPropertyAddOption option, string configuration = null)
+        public CustomPropertyAddResult AddCustomPropertyValue(string name, CustomPropertyTypes type, string value, CustomPropertyAddOption option, string configuration = null)
         {
             // Get the custom property editor
             using (var editor = Extension.CustomPropertyEditor(configuration))
@@ -640,7 +640,7 @@ namespace AngelSix.SolidDna
         /// <param name="configuration">The configuration to get the properties from, otherwise get custom property</param>
         ///<param name="resolved">True to get the resolved value of the property, false to get the actual text</param>
         /// <returns></returns>
-        public Tuple<CustomInfoGetResult, string> GetCustomPropertyValue(string name, string configuration = null, bool resolved = false)
+        public Tuple<CustomPropertyGetResult, string> GetCustomPropertyValue(string name, string configuration = null, bool resolved = false)
         {
             // Get the custom property editor
             using (var editor = Extension.CustomPropertyEditor(configuration))
@@ -698,7 +698,7 @@ namespace AngelSix.SolidDna
         /// If a configuration is specified then the configuration-specific property is set
         /// </summary>
         /// <param name="name">The name of the custom property</param>
-        public CustomInfoDeleteResult DeleteCustomPropertyValue(string name, string configuration = null)
+        public CustomPropertyDeleteResult DeleteCustomPropertyValue(string name, string configuration = null)
         {
             // Get the custom property editor
             using (var editor = Extension.CustomPropertyEditor(configuration))
