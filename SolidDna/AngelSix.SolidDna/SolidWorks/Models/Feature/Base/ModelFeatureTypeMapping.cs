@@ -46,10 +46,10 @@ namespace AngelSix.SolidDna
 
                 case "MateConcentric":
                     return VersionYear < 2019 ? ModelFeatureType.Mate : ModelFeatureType.ConcentricMateData;
-
+                
                 case "MateDistanceDim":
                     return VersionYear < 2018 ? ModelFeatureType.Mate : ModelFeatureType.DistanceMateData;
-
+                
                 case "MateGearDim":
                     return ModelFeatureType.GearMateData;
 
@@ -58,7 +58,7 @@ namespace AngelSix.SolidDna
 
                 case "MateHinge":
                     return ModelFeatureType.HingeMateData;
-
+                
                 case "MateInPlace":
                     return ModelFeatureType.Mate;
 
@@ -94,7 +94,7 @@ namespace AngelSix.SolidDna
 
                 case "MateTangent":
                     return VersionYear < 2019 ? ModelFeatureType.Mate : ModelFeatureType.TangentMateData;
-
+                
                 case "MateUniversalJoint":
                     return ModelFeatureType.UniversalJointMateData;
 
@@ -398,7 +398,7 @@ namespace AngelSix.SolidDna
 
                 case "MBimport":
                     return ModelFeatureType.Import3DInterconnectData;
-
+                
                 #endregion
 
                 #region Miscellaneous

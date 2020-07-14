@@ -141,6 +141,7 @@ namespace AngelSix.SolidDna
         /// <param name="addDropdownBoxForParts">If true, adds a command box to the toolbar for parts that has a dropdown of all commands that are part of this group. The tooltip of the command group is used as the name.</param>
         /// <param name="addDropdownBoxForAssemblies">If true, adds a command box to the toolbar for assemblies that has a dropdown of all commands that are part of this group. The tooltip of the command group is used as the name.</param>
         /// <param name="addDropdownBoxForDrawings">If true, adds a command box to the toolbar for drawings that has a dropdown of all commands that are part of this group. The tooltip of the command group is used as the name.</param>
+        /// <param name="documentTypes">The document types where this menu/toolbar is visible</param>
         public CommandManagerGroup(
             ICommandGroup commandGroup, 
             List<CommandManagerItem> items, 
@@ -153,7 +154,8 @@ namespace AngelSix.SolidDna
             bool hasToolbar,
             bool addDropdownBoxForParts = false,
             bool addDropdownBoxForAssemblies = false,
-            bool addDropdownBoxForDrawings = false) : base(commandGroup)
+            bool addDropdownBoxForDrawings = false, 
+            ModelTemplateType documentTypes = ModelTemplateType.Part | ModelTemplateType.Assembly | ModelTemplateType.Drawing) : base(commandGroup)
         {
             // Store user Id, used to remove the command group
             UserId = userId;
@@ -175,8 +177,8 @@ namespace AngelSix.SolidDna
 
             // Set defaults
 
-            // Show for all types
-            MenuVisibleInDocumentTypes = ModelTemplateType.Assembly | ModelTemplateType.Part | ModelTemplateType.Drawing;
+            // Show for certain types of documents, or when no document is active.
+            MenuVisibleInDocumentTypes = documentTypes;
 
             // Have a menu
             HasMenu = hasMenu;
@@ -476,8 +478,53 @@ namespace AngelSix.SolidDna
 
             // If there are items to add...
             if (ids?.Count > 0)
+            {
                 // Add all the items
                 tab.Box.UnsafeObject.AddCommands(ids.ToArray(), styles.ToArray());
+
+                // Add a separator before each item that wants one.
+                AddSeparators(items, tab);
+            }
+        }
+
+        /// <summary>
+        /// Add a separator before each <see cref="CommandManagerItem"/> that needs one.
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="tab"></param>
+        private static void AddSeparators(List<CommandManagerItem> items, CommandManagerTab tab)
+        {
+            // Get the current tab box
+            var tabBox = (CommandTabBox) tab.Box.UnsafeObject;
+
+            // Add a separator before each item that wants one
+            var itemsThatNeedSeparator = items.Where(f => f.AddSeparatorBeforeThisItem).ToList();
+            foreach (var item in itemsThatNeedSeparator)
+            {
+                // Add the separator and split the current tab box in two.
+                // Returns the newly created tab box that contains the current items and all items on the right of it.
+                var newTabBox = tab.UnsafeObject.AddSeparator(tabBox, item.CommandId);
+
+                // Stop if the don't receive a new tab box.
+                if (newTabBox == null)
+                    break;
+                
+                // Use the new tab box to create the next separator.
+                tabBox = newTabBox;
+            }
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a user-friendly string with group properties.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"{Title}: {Items?.Count ?? 0} items, {Flyouts?.Count ?? 0} flyouts. Has menu: {HasMenu}. Has toolbar: {HasToolbar}";
         }
 
         #endregion

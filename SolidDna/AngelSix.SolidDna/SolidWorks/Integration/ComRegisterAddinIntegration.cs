@@ -1,4 +1,6 @@
 ﻿using Dna;
+using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace AngelSix.SolidDna
@@ -16,13 +18,25 @@ namespace AngelSix.SolidDna
 
         public override void ApplicationStartup()
         {
+            try
+            {
+                // As for COM Registration this won't get ConnectedToSW called
+                // and thereby no call to setup IoC, we do this manually here
+                // Setup application (allowing for AppDomain boundary setup)
+                AppDomainBoundary.Setup(this.AssemblyPath(), this.AssemblyFilePath(), typeof(ComRegisterAddInIntegration).Assembly.AssemblyFilePath(), "");
+            }
+            catch (Exception ex)
+            {
+                Debugger.Break();
 
+                // Fall-back just write a static log directly
+                File.AppendAllText(Path.ChangeExtension(this.AssemblyFilePath(), "fatal.log.txt"), $"\r\nUnexpected error: {ex}");
+            }
         }
 
-        public override void ConfigureServices(FrameworkConstruction construction)
+        public override void ApplicationStartup()
         {
-            // Add file logger (will be in /bin/Debug/SolidDNA.ScriptRunner.com-register-log.txt)
-            construction.AddFileLogger(Path.ChangeExtension(this.AssemblyFilePath(), "com-register-log.txt"));
+
         }
 
         public override void PreConnectToSolidWorks()
@@ -33,6 +47,16 @@ namespace AngelSix.SolidDna
         public override void PreLoadPlugIns()
         {
 
+        }
+
+        [ConfigureService]
+        public override void ConfigureServices(FrameworkConstruction construction)
+        {
+            base.ConfigureServices(construction);
+
+            // Add file logger to output log txt when registering for COM, with same name as dll plus "com-register-log.txt"
+            var logPath = Path.ChangeExtension(this.AssemblyFilePath(), "com-register-log.txt");
+            construction.AddFileLogger(logPath);
         }
     }
 }

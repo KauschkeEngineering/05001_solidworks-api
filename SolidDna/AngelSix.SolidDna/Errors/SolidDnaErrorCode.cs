@@ -142,7 +142,7 @@
         /// There was an error closing a model
         /// </summary>
         SolidWorksModelCloseError = 11011,
-
+        
         /// <summary>
         /// There was an error getting the custom property editor for a feature.
         /// </summary>

@@ -1,11 +1,12 @@
 ﻿using SolidWorks.Interop.sldworks;
+using System.Drawing;
 
 namespace AngelSix.SolidDna
 {
     /// <summary>
     /// A sheet of a drawing
     /// </summary>
-    public class DrawingSheet : SolidDnaObject<Sheet>
+    public class DrawingSheet: SolidDnaObject<Sheet>
     {
         #region Private Members
 

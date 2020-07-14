@@ -282,7 +282,7 @@ namespace AngelSix.SolidDna
         /// Checks if this feature's specific type is Cam Follower Mate data
         /// </summary>
         public bool IsCamFollowerMateData => FeatureType == ModelFeatureType.CamFollowerMateData;
-
+        
         /// <summary>
         /// Checks if this feature's specific type is Cavity data
         /// </summary>
