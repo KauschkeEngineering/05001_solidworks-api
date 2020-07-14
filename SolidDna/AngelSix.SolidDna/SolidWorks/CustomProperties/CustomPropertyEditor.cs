@@ -11,71 +11,7 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class CustomPropertyEditor : SolidDnaObject<CustomPropertyManager>
     {
-        public enum CustomInfoTypes
-        {
-            Unknown = swCustomInfoType_e.swCustomInfoUnknown,
-            Number = swCustomInfoType_e.swCustomInfoNumber,
-            Double = swCustomInfoType_e.swCustomInfoDouble,
-            YesOrNo = swCustomInfoType_e.swCustomInfoYesOrNo,
-            Text = swCustomInfoType_e.swCustomInfoText,
-            Date = swCustomInfoType_e.swCustomInfoDate
-        }
 
-        public enum CustomInfoGetResult
-        {
-            // Cached value was returned
-            CachedValue = swCustomInfoGetResult_e.swCustomInfoGetResult_CachedValue,
-            // Custom property does not exist
-            NotPresent = swCustomInfoGetResult_e.swCustomInfoGetResult_NotPresent,
-            // Resolved value was returned
-            ResolvedValue = swCustomInfoGetResult_e.swCustomInfoGetResult_ResolvedValue
-        }
-
-        public enum CustomInfoSetResult
-        {
-            // Success
-            OK = swCustomInfoSetResult_e.swCustomInfoSetResult_OK,
-            // Custom property does not exist
-            NotPresent = swCustomInfoSetResult_e.swCustomInfoSetResult_NotPresent,
-            // Specified value has an incorrect typeSpecified value has an incorrect type
-            TypeMismatch = swCustomInfoSetResult_e.swCustomInfoSetResult_TypeMismatch,
-            // ?? not described in SOLIDWORKS API see: https://help.solidworks.com/2020/English/api/swconst/SOLIDWORKS.Interop.swconst~SOLIDWORKS.Interop.swconst.swCustomInfoSetResult_e.html?verRedirect=1
-            // but this is returned if the property is linked for e.g. to parent.
-            LinkedProp = swCustomInfoSetResult_e.swCustomInfoSetResult_LinkedProp
-        }
-
-        public enum CustomInfoAddResult
-        {
-            // Success
-            AddedOrChanged = swCustomInfoAddResult_e.swCustomInfoAddResult_AddedOrChanged,
-            // Failed to add the custom property
-            GenericFail = swCustomInfoAddResult_e.swCustomInfoAddResult_GenericFail,
-            // Existing custom property with the same name has a different type
-            MismatchAgainstExistingType = swCustomInfoAddResult_e.swCustomInfoAddResult_MismatchAgainstExistingType,
-            //Specified value of the custom property does not match the specified type
-            MismatchAgainstSpecifiedType = swCustomInfoAddResult_e.swCustomInfoAddResult_MismatchAgainstSpecifiedType,
-        }
-
-        public enum CustomPropertyAddOption
-        {
-            // Add the custom property only if it is new
-            OnlyIfNew = swCustomPropertyAddOption_e.swCustomPropertyOnlyIfNew,
-            // Delete an existing custom property having the same name and add the new custom property
-            DeleteAndAdd = swCustomPropertyAddOption_e.swCustomPropertyDeleteAndAdd,
-            // Replace the value of an existing custom property having the same name
-            ReplaceValue = swCustomPropertyAddOption_e.swCustomPropertyReplaceValue
-        }
-
-        public enum CustomInfoDeleteResult
-        {
-            // Success
-            OK = swCustomInfoDeleteResult_e.swCustomInfoDeleteResult_OK,
-            // Custom property does not exist
-            NotPresent = swCustomInfoDeleteResult_e.swCustomInfoDeleteResult_NotPresent,
-            // ?? not described in SOLIDWORKS API see: http://help.solidworks.com/2020/english/api/swconst/SOLIDWORKS.Interop.swconst~SOLIDWORKS.Interop.swconst.swCustomInfoDeleteResult_e.html?verRedirect=1
-            // but this is returned if the property is linked for e.g. to parent.
-            LinkedProp = swCustomInfoDeleteResult_e.swCustomInfoDeleteResult_LinkedProp
-        }
 
         #region Constructor
 
@@ -106,7 +42,7 @@ namespace AngelSix.SolidDna
         /// <param name="name">The name of the custom property</param>
         /// <param name="resolve">True to resolve the custom property value</param>
         /// <returns></returns>
-        public Tuple<CustomInfoGetResult, string> GetCustomPropertyValue(string name, bool resolve = false)
+        public Tuple<CustomPropertyGetResult, string> GetCustomPropertyValue(string name, bool resolve = false)
         {
             // TODO: Add error checking and exception catching
 
@@ -114,7 +50,7 @@ namespace AngelSix.SolidDna
             var result = BaseObject.Get5(name, false, out var val, out var resolvedVal, out var wasResolved);
 
             // Return desired result
-            return resolve ? new Tuple<CustomInfoGetResult, string>((CustomInfoGetResult)result, resolvedVal) : new Tuple<CustomInfoGetResult, string>((CustomInfoGetResult)result, val);
+            return resolve ? new Tuple<CustomPropertyGetResult, string>((CustomPropertyGetResult)result, resolvedVal) : new Tuple<CustomPropertyGetResult, string>((CustomPropertyGetResult)result, val);
         }
 
         /// <summary>
@@ -124,7 +60,7 @@ namespace AngelSix.SolidDna
         /// <param name="value">The value of the custom property</param>
         /// <param name="type">The type of the custom property</param>
         /// <returns></returns>
-        public CustomInfoSetResult SetCustomPropertyValue(string name, string value)
+        public CustomPropertySetResult SetCustomPropertyValue(string name, string value)
         {
             // TODO: Add error checking and exception catching
 
@@ -134,7 +70,7 @@ namespace AngelSix.SolidDna
             //       To mimic the Set behaviour of the SolidWorks API
             //       Simply do CustomPropertyExists() to check first if it exists
             //
-            return (CustomInfoSetResult)BaseObject.Set2(name, value);
+            return (CustomPropertySetResult)BaseObject.Set2(name, value);
         }
 
         /// <summary>
@@ -145,7 +81,7 @@ namespace AngelSix.SolidDna
         /// <param name="option">The option how to handle existing custom property</param>
         /// <param name="value">The value of the custom property</param>
         /// <returns></returns>
-        public CustomInfoAddResult AddCustomPropertyValue(string name, CustomInfoTypes type, string value, CustomPropertyAddOption option)
+        public CustomPropertyAddResult AddCustomPropertyValue(string name, CustomPropertyTypes type, string value, CustomPropertyAddOption option)
         {
             // TODO: Add error checking and exception catching
 
@@ -156,18 +92,18 @@ namespace AngelSix.SolidDna
             //       Simply do CustomPropertyExists() to check first if it exists
             //
 
-            return (CustomInfoAddResult)BaseObject.Add3(name, (int)type, value, (int)option);
+            return (CustomPropertyAddResult)BaseObject.Add3(name, (int)type, value, (int)option);
         }
 
         /// <summary>
         /// Deletes a custom property by name
         /// </summary>
         /// <param name="name">The name of the custom property</param>
-        public CustomInfoDeleteResult DeleteCustomProperty(string name)
+        public CustomPropertyDeleteResult DeleteCustomProperty(string name)
         {
             // TODO: Add error checking and exception catching
 
-            return (CustomInfoDeleteResult)BaseObject.Delete2(name);
+            return (CustomPropertyDeleteResult)BaseObject.Delete2(name);
         }
 
         /// <summary>
@@ -217,11 +153,11 @@ namespace AngelSix.SolidDna
             return new List<string>();
         }
 
-        public CustomInfoTypes GetTypeOfProperty(string name)
+        public CustomPropertyTypes GetTypeOfProperty(string name)
         {
             if (BaseObject != null)
-                return (CustomInfoTypes)BaseObject.GetType2(name);
-            return CustomInfoTypes.Unknown;
+                return (CustomPropertyTypes)BaseObject.GetType2(name);
+            return CustomPropertyTypes.Unknown;
         }
 
     }
