@@ -1,10 +1,10 @@
 ﻿using System;
-using SolidWorks.Interop.sldworks;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Xml.Linq;
+using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swdocumentmgr;
 
@@ -15,14 +15,6 @@ namespace AngelSix.SolidDna
     /// </summary>
     public partial class SolidWorksApplication : SharedSolidDnaObject<SldWorks>
     {
-        public enum RebuildOnActivation
-        {
-            UserDecision = swRebuildOnActivation_e.swUserDecision,
-            DontRebuildActiveDoc = swRebuildOnActivation_e.swDontRebuildActiveDoc,
-            RebuildActiveDoc = swRebuildOnActivation_e.swRebuildActiveDoc
-        }
-
-
         private const string API_LICENCE_KEY = "KauschkeEngineeringServicesGmbH:swdocmgr_general-11785-02051-00064-01025-08567-34307-00007-16944-03729-52630-20621-27155-52442-46742-57351-01653-28064-37004-12470-18657-42155-23021-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-7,swdocmgr_previews-11785-02051-00064-01025-08567-34307-00007-23424-25180-19561-08976-33418-56614-15908-28672-33039-34039-15128-63516-16802-33026-22959-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-4,swdocmgr_dimxpert-11785-02051-00064-01025-08567-34307-00007-02224-60566-22735-30039-32017-34229-26945-40960-13408-24595-25589-46377-44335-06006-23917-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-4,swdocmgr_geometry-11785-02051-00064-01025-08567-34307-00007-25440-44169-22552-63994-59551-37072-09667-14340-27239-01502-21198-57986-04466-22801-22651-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-5,swdocmgr_xml-11785-02051-00064-01025-08567-34307-00007-65328-31737-49269-00552-43417-32429-25145-30724-20516-24804-09579-38046-62867-26541-24480-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-6,swdocmgr_tessellation-11785-02051-00064-01025-08567-34307-00007-48088-40139-18107-01106-37523-23509-29212-14337-40415-34512-32340-56451-08411-09207-22831-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-2";
         //Old 2015 - private const string API_LICENCE_KEY = "KauschkeEngineeringServicesGmbH:swdocmgr_general-11785-02051-00064-17409-08473-34307-00007-19656-13610-17716-24516-52581-13763-62678-28678-03781-27226-07511-14366-10812-12747-23344-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-1,swdocmgr_previews-11785-02051-00064-17409-08473-34307-00007-51024-52025-35553-51281-51480-35643-63443-14342-31683-18932-27645-24746-19372-11348-23297-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-1,swdocmgr_xml-11785-02051-00064-17409-08473-34307-00007-13784-50962-42612-58001-63569-50093-44301-40960-12153-36851-02018-22860-03363-63670-23674-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-5";
 
@@ -113,6 +105,11 @@ namespace AngelSix.SolidDna
         /// </summary>
         public event Action<string, Model> ActiveFileSaved = (path, model) => { };
 
+        /// <summary>
+        /// Called when SolidWorks is idle
+        /// </summary>
+        public event Action Idle = () => { };
+
         #endregion
 
         #region Constructor
@@ -124,11 +121,10 @@ namespace AngelSix.SolidDna
         {
             // Set preferences
             Preferences = new SolidWorksPreferences();
-            var loadExternal = BaseObject.GetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swLoadExternalReferences);
-            //BaseObject.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swLoadExternalReferences, (int)swLoadExternalReferences_e.swLoadExternalReferences_None);
 
             // Store cookie Id
             mSwCookie = cookie;
+
             //
             //   NOTE: As we are in our own AppDomain, the callback is registered in the main SolidWorks AppDomain
             //         We then pass that into our domain
@@ -141,7 +137,7 @@ namespace AngelSix.SolidDna
             BaseObject.FileOpenPreNotify += FileOpenPreNotify;
             BaseObject.FileOpenPostNotify += FileOpenPostNotify;
             BaseObject.FileNewNotify2 += FileNewPostNotify;
-            BaseObject.OnIdleNotify += OnIdleIsLoadedNotify;
+            BaseObject.OnIdleNotify += OnIdleNotify;
 
             // If we have a cookie...
             if (cookie > 0)
@@ -153,11 +149,6 @@ namespace AngelSix.SolidDna
         }
 
         #endregion
-
-        private int OnIdleIsLoadedNotify()
-        {
-            return 0;
-        }
 
         #region Public Callback Events
 
@@ -201,6 +192,26 @@ namespace AngelSix.SolidDna
 
         #region SolidWorks Event Methods
 
+        /// <summary>
+        ///  Called when SolidWorks is idle
+        /// </summary>
+        /// <returns></returns>
+        private int OnIdleNotify()
+        {
+            // Wrap any error
+            SolidDnaErrors.Wrap(() =>
+            {
+                // Inform listeners
+                Idle();
+            },
+                SolidDnaErrorTypeCode.SolidWorksApplication,
+                SolidDnaErrorCode.SolidWorksApplicationError,
+                Localization.GetString("SolidWorksApplicationOnIdleNotificationError"));
+
+            // NOTE: 0 is OK, anything else is an error
+            return 0;
+        }
+
         #region File New
 
         /// <summary>
@@ -215,6 +226,21 @@ namespace AngelSix.SolidDna
         {
             // Inform listeners
             FileCreated(mActiveModel);
+
+            // IMPORTANT: This is needed after a new file is created as the model COM reference
+            //            is created on ActiveModelChanged, and then the file is created after
+            // 
+            //            This gives a COM reference that fires the FileSaveAsPreNotify event
+            //            but then gets disposed and we no longer have any hooks to the active
+            //            file so no further events of file save or anything to do with the 
+            //            active model fire.
+            //
+            //            Reloading them at this moment fixes that issue. Then the next issue
+            //            is that after the model FileSavePostNotify is fired, it will dispose
+            //            of its COM reference again if this is the first time the file is 
+            //            saved. To fix that we wait for idle and reload the model information
+            //            again. This fix is inside Model.cs FileSavePostNotify
+            ReloadActiveModelInformation();
 
             // NOTE: 0 is OK, anything else is an error
             return 0;
@@ -241,7 +267,6 @@ namespace AngelSix.SolidDna
                     mFileLoading = null;
 
                     // And update all properties and models
-                    // TODO: Check how to reload properly to get sync into both directions
                     ReloadActiveModelInformation();
 
                     // Inform listeners
@@ -304,9 +329,16 @@ namespace AngelSix.SolidDna
                     // Check the active document
                     using (var activeDoc = new Model(BaseObject.IActiveDoc2))
                     {
-                        // If this is the same file that is currently being loaded, ignore this event
-                        if (string.Equals(mFileLoading, activeDoc.FilePath, StringComparison.OrdinalIgnoreCase))
-                            return;
+                        // View Only mode (Large Assembly Review and Quick View) does not fire the FileOpenPostNotify event, so we catch these models here.
+                        var loadingInViewOnlyMode = activeDoc.UnsafeObject.IsOpenedViewOnly();
+                        if (loadingInViewOnlyMode)
+                            FileOpenPostNotify(activeDoc.FilePath);
+                        else
+                        {
+                            // If this is the same file that is currently being loaded, ignore this event
+                            if (string.Equals(mFileLoading, activeDoc.FilePath, StringComparison.OrdinalIgnoreCase))
+                                return;
+                        }
                     }
                 }
 
@@ -336,10 +368,7 @@ namespace AngelSix.SolidDna
             CleanActiveModelData();
 
             // Now get the new data
-            if (BaseObject.IActiveDoc2 == null)
-                mActiveModel = null;
-            else
-                mActiveModel = new Model(BaseObject.IActiveDoc2);
+            mActiveModel = BaseObject.IActiveDoc2 == null || BaseObject.GetDocumentCount() == 0 ? null : new Model(BaseObject.IActiveDoc2);
 
             // Listen out for events
             if (mActiveModel != null)
@@ -405,7 +434,7 @@ namespace AngelSix.SolidDna
                     if (Disposing)
                         // If we are disposing SolidWorks, there is no need to reload active model info.
                         return;
-                    // TODO: Check how to reload properly to get sync into both directions
+
                     // Now if we have none open, reload information
                     // ActiveDoc is quickly set to null after the last document is closed
                     // GetDocumentCount takes longer to go to zero for big assemblies, but it might be a more reliable indicator.
@@ -426,6 +455,79 @@ namespace AngelSix.SolidDna
         }
 
         #endregion
+
+        #endregion
+
+        #region Open/Close Models
+
+        /// <summary>
+        /// Loops all open documents returning a safe <see cref="Model"/> for each document,
+        /// disposing of the COM reference after its use
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Model> OpenDocuments()
+        {
+            // Loop each child
+            foreach (ModelDoc2 modelDoc in (object[])BaseObject.GetDocuments())
+            {
+                // Create safe model
+                using (var model = new Model(modelDoc))
+                    // Return it
+                    yield return model;
+            }
+        }
+
+        /// <summary>
+        /// Opens a file
+        /// </summary>
+        /// <param name="filePath">The path to the file</param>
+        /// <param name="options">The options to use when opening the file (flags, so | multiple options together)</param>
+        public Model OpenFile(string filePath, OpenDocumentOptions options = OpenDocumentOptions.None, string configuration = null)
+        {
+            // Wrap any error
+            return SolidDnaErrors.Wrap(() =>
+            {
+                // Get file type
+                var fileType =
+                    filePath.ToLower().EndsWith(".sldprt") ? DocumentType.Part :
+                    filePath.ToLower().EndsWith(".sldasm") ? DocumentType.Assembly :
+                    filePath.ToLower().EndsWith(".slddrw") ? DocumentType.Drawing : throw new ArgumentException("Unknown file type");
+
+                // Set errors and warnings
+                var errors = 0;
+                var warnings = 0;
+
+                // Attempt to open the document
+                var modelCom = BaseObject.OpenDoc6(filePath, (int)fileType, (int)options, configuration, ref errors, ref warnings);
+
+                // TODO: Read errors into enums for better reporting
+                // For now just check if model is not null
+                if (modelCom == null)
+                    throw new ArgumentException($"Failed to open file. Errors {errors}, Warnings {warnings}");
+
+                // Return new model
+                return new Model(modelCom);
+            },
+                SolidDnaErrorTypeCode.SolidWorksApplication,
+                SolidDnaErrorCode.SolidWorksModelOpenError,
+                Localization.GetString("SolidWorksModelOpenFileError"));
+        }
+
+        /// <summary>
+        /// Closes a file
+        /// </summary>
+        /// <param name="filePath">The path to the file</param>
+        public void CloseFile(string filePath)
+        {
+            // Wrap any error
+            SolidDnaErrors.Wrap(() =>
+            {
+                BaseObject.CloseDoc(filePath);
+            },
+                SolidDnaErrorTypeCode.SolidWorksApplication,
+                SolidDnaErrorCode.SolidWorksModelCloseError,
+                Localization.GetString("SolidWorksModelCloseFileError"));
+        }
 
         #endregion
 
@@ -583,10 +685,42 @@ namespace AngelSix.SolidDna
         /// </summary>
         /// <param name="preference">The preference to get</param>
         /// <returns></returns>
-        public double GetUserPreferencesDouble(swUserPreferenceDoubleValue_e preference)
-        {
-            return BaseObject.GetUserPreferenceDoubleValue((int)preference);
-        }
+        public double GetUserPreferencesDouble(swUserPreferenceDoubleValue_e preference) => BaseObject.GetUserPreferenceDoubleValue((int)preference);
+
+        /// <summary>
+        /// Sets the specified user preference value
+        /// </summary>
+        /// <param name="preference">The preference to set</param>
+        /// <returns></returns>
+        public bool SetUserPreferencesDouble(swUserPreferenceDoubleValue_e preference, double value) => BaseObject.SetUserPreferenceDoubleValue((int)preference, value);
+
+        /// <summary>
+        /// Gets the specified user preference value
+        /// </summary>
+        /// <param name="preference">The preference to get</param>
+        /// <returns></returns>
+        public int GetUserPreferencesInteger(swUserPreferenceIntegerValue_e preference) => BaseObject.GetUserPreferenceIntegerValue((int)preference);
+
+        /// <summary>
+        /// Sets the specified user preference value
+        /// </summary>
+        /// <param name="preference">The preference to set</param>
+        /// <returns></returns>
+        public bool SetUserPreferencesInteger(swUserPreferenceIntegerValue_e preference, int value) => BaseObject.SetUserPreferenceIntegerValue((int)preference, value);
+
+        /// <summary>
+        /// Gets the specified user preference value
+        /// </summary>
+        /// <param name="preference">The preference to get</param>
+        /// <returns></returns>
+        public bool GetUserPreferencesToggle(swUserPreferenceToggle_e preference) => BaseObject.GetUserPreferenceToggle((int)preference);
+
+        /// <summary>
+        /// Sets the specified user preference value
+        /// </summary>
+        /// <param name="preference">The preference to set</param>
+        /// <returns></returns>
+        public void SetUserPreferencesToggle(swUserPreferenceToggle_e preference, bool value) => BaseObject.SetUserPreferenceToggle((int)preference, value);
 
         #endregion
 
@@ -595,7 +729,11 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Attempts to create 
         /// </summary>
-        /// <param name="iconPath">An absolute path to an icon to use for the taskpane (ideally 37x37px)</param>
+        /// <param name="iconPath">
+        ///     An absolute path to an icon to use for the taskpane.
+        ///     The bitmap should be 16 colors and 16 x 18 (width x height) pixels. 
+        ///     Any portions of the bitmap that are white (RGB 255,255,255) will be transparent.
+        /// </param>
         /// <param name="toolTip">The title text to show at the top of the taskpane</param>
         public async Task<Taskpane> CreateTaskpaneAsync(string iconPath, string toolTip)
         {
@@ -725,7 +863,7 @@ namespace AngelSix.SolidDna
 
                     foreach (var sheet in sheets)
                     {
-                        drawingSheets.Add(new DrawingSheet((SwDMSheet2)sheet));
+                        drawingSheets.Add(new DrawingSheet((Sheet)sheet, null));
                     }
                     return drawingSheets;
                 }
@@ -770,7 +908,7 @@ namespace AngelSix.SolidDna
                 if (ActiveModel.IsDrawing == true)
                 {
                     // TODO: Add event handlers for background processing
-                    ActiveModel.Drawing.SetBackgroundProcessingOption(DrawingDocument.BackgroundProcessOptions.BackgroundProcessingDeferToApplication);
+                    ActiveModel.Drawing.SetBackgroundProcessingOption(BackgroundProcessOptions.BackgroundProcessingDeferToApplication);
                 }
             }
             return solidWorksModelData;
@@ -784,7 +922,7 @@ namespace AngelSix.SolidDna
         //5. Call ISldWorks::IsBackgroundProcessingCompleted repeatedly, which polls the status of the open operation, to know when background processing ends.
         //6. Use ISldWorks Event BackgroundProcessingEndNotify to handle the background processing end event.
         //7. When the open operation is finished, set ISldWorks::EnableBackgroundProcessing to false.
-        private Tuple<int, Model> OpenDocumenInvisibleInWithSpecification(string fullDocumentFilePath, bool readOnly, bool openSilent, bool useLightWeightDefault, bool loadLightWeight, bool ignoreHiddenComponents, bool loadExternalReferencesInMemory, bool selective)
+        private Tuple<FileLoadErrors, Model> OpenDocumenInvisibleInWithSpecification(string fullDocumentFilePath, bool readOnly, bool openSilent, bool useLightWeightDefault, bool loadLightWeight, bool ignoreHiddenComponents, bool loadExternalReferencesInMemory, bool selective)
         {
             var swDocSpecification = default(DocumentSpecification);
             swDocSpecification = (DocumentSpecification)BaseObject.GetOpenDocSpec(fullDocumentFilePath);
@@ -1015,7 +1153,7 @@ namespace AngelSix.SolidDna
             if (BaseObject != null)
             {
                 var error = 0;
-                BaseObject.ActivateDoc3(documentName, false, (int)RebuildOnActivation.RebuildActiveDoc, ref error);
+                BaseObject.ActivateDoc3(documentName, false, (int)RebuildOnActivationOptions.RebuildActiveDoc, ref error);
             }
         }
 
