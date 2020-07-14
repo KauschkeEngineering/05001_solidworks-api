@@ -4,13 +4,14 @@ using System;
 namespace AngelSix.SolidDna
 {
     /// <summary>
-    /// Exposes all Part Document calls from a <see cref="Model"/>
+    /// Exposes all Assembly Document calls from a <see cref="Model"/>
     /// </summary>
-    public class PartDocument
+    public class AssemblyDocument
     {
+
         #region Constants
 
-        public const string FILE_EXTENSION = ".sldprt";
+        public const string FILE_EXTENSION = ".sldasm";
 
         #endregion
 
@@ -19,7 +20,7 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// The base model document. Note we do not dispose of this (the parent Model will)
         /// </summary>
-        protected PartDoc mBaseObject;
+        protected AssemblyDoc mBaseObject;
 
         #endregion
 
@@ -29,7 +30,9 @@ namespace AngelSix.SolidDna
         /// The raw underlying COM object
         /// WARNING: Use with caution. You must handle all disposal from this point on
         /// </summary>
-        public PartDoc UnsafeObject => mBaseObject;
+        public AssemblyDoc UnsafeObject => mBaseObject;
+
+        public int LightWeightComponentCount => mBaseObject.GetLightWeightComponentCount();
 
         #endregion
 
@@ -38,7 +41,7 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Default constructor
         /// </summary>
-        public PartDocument(PartDoc model)
+        public AssemblyDocument(AssemblyDoc model)
         {
             mBaseObject = model;
         }
@@ -65,8 +68,18 @@ namespace AngelSix.SolidDna
                 }
             },
                 SolidDnaErrorTypeCode.SolidWorksModel,
-                SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError,
-                Localization.GetString(nameof(SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError)));
+                SolidDnaErrorCode.SolidWorksModelAssemblyGetFeatureByNameError,
+                Localization.GetString(nameof(SolidDnaErrorCode.SolidWorksModelAssemblyGetFeatureByNameError)));
+        }
+
+        public ComponentResolveStates ResolveAllLightWeightComponents()
+        {
+            return (ComponentResolveStates)mBaseObject.ResolveAllLightWeightComponents(false);
+        }
+
+        public bool ResolveAllLightWeightChildComponents()
+        {
+            return mBaseObject.ResolveAllLightweight();
         }
 
         #endregion

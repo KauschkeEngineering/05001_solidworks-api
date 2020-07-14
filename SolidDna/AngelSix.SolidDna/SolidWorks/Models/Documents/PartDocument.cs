@@ -1,26 +1,17 @@
 ﻿using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swconst;
 using System;
-using System.Collections.Generic;
 
 namespace AngelSix.SolidDna
 {
     /// <summary>
-    /// Exposes all Assembly Document calls from a <see cref="Model"/>
+    /// Exposes all Part Document calls from a <see cref="Model"/>
     /// </summary>
-    public class AssemblyDocument
+    public class PartDocument
     {
-        public enum ComponentResolveStatus
-        {
-            ResolveAbortedByUser = swComponentResolveStatus_e.swResolveAbortedByUser,
-            ResolveError = swComponentResolveStatus_e.swResolveError,
-            ResolveNotPerformed = swComponentResolveStatus_e.swResolveNotPerformed,
-            ResolveOk = swComponentResolveStatus_e.swResolveOk
-        }
 
         #region Constants
 
-        public const string FILE_EXTENSION = ".sldasm";
+        public const string FILE_EXTENSION = ".sldprt";
 
         #endregion
 
@@ -29,7 +20,7 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// The base model document. Note we do not dispose of this (the parent Model will)
         /// </summary>
-        protected AssemblyDoc mBaseObject;
+        protected PartDoc mBaseObject;
 
         #endregion
 
@@ -39,19 +30,16 @@ namespace AngelSix.SolidDna
         /// The raw underlying COM object
         /// WARNING: Use with caution. You must handle all disposal from this point on
         /// </summary>
-        public AssemblyDoc UnsafeObject => mBaseObject;
-
-        public int LightWeightComponentCount => mBaseObject.GetLightWeightComponentCount();
+        public PartDoc UnsafeObject => mBaseObject;
 
         #endregion
-
 
         #region Constructor
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        public AssemblyDocument(AssemblyDoc model)
+        public PartDocument(PartDoc model)
         {
             mBaseObject = model;
         }
@@ -78,18 +66,8 @@ namespace AngelSix.SolidDna
                 }
             },
                 SolidDnaErrorTypeCode.SolidWorksModel,
-                SolidDnaErrorCode.SolidWorksModelAssemblyGetFeatureByNameError,
-                Localization.GetString(nameof(SolidDnaErrorCode.SolidWorksModelAssemblyGetFeatureByNameError)));
-        }
-
-        public ComponentResolveStatus ResolveAllLightWeightComponents()
-        {
-            return (ComponentResolveStatus)mBaseObject.ResolveAllLightWeightComponents(false);
-        }
-
-        public bool ResolveAllLightWeightChildComponents()
-        {
-            return mBaseObject.ResolveAllLightweight();
+                SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError,
+                Localization.GetString(nameof(SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError)));
         }
 
         #endregion
