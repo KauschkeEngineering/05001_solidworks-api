@@ -7,7 +7,12 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class ModelConfiguration : SolidDnaObject<Configuration>
     {
+
+        #region Properties
+
         public string Name => BaseObject.Name;
+
+        #endregion
 
         #region Constructor
 
