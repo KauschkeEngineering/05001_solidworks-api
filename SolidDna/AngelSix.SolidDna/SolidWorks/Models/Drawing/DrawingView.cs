@@ -1,4 +1,5 @@
 ﻿using SolidWorks.Interop.sldworks;
+using System.Drawing;
 
 namespace AngelSix.SolidDna
 {
@@ -7,7 +8,6 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class DrawingView : SolidDnaObject<View>
     {
-
         #region Public Properties
 
         /// <summary>

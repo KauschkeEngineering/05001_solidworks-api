@@ -10,13 +10,12 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class Component : SolidDnaObject<Component2>
     {
-
         #region Public Properties
 
         /// <summary>
         /// Get the Model from the component
         /// </summary>
-        public Model AsModel => new Model(BaseObject.GetModelDoc2() as ModelDoc2);
+        public Model AsModel => new Model (BaseObject.GetModelDoc2() as ModelDoc2);
 
         /// <summary>
         /// Check if the Component is Root

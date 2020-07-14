@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static AngelSix.SolidDna.CustomPropertyEditor;
+using System.Runtime.InteropServices;
 
 namespace AngelSix.SolidDna
 {
@@ -51,29 +51,14 @@ namespace AngelSix.SolidDna
         /// The absolute file path of this model if it has been saved
         /// </summary>
         public string FilePath { get; protected set; }
-
+        
         public string Name { get; protected set; }
-        //{
-        //    get
-        //    {
-        //       if (FilePath.Equals("") == false)
-        //        {
-        //            return FilePath.Split('\\')[FilePath.Split('\\').Length - 1];
-        //        }
-        //        return "";
-        //    }
-        //}
-
+        
         /// <summary>
         /// Indicates if this file has been saved (so exists on disk).
         /// If not, it's a new model currently only in-memory and will not have a file path
         /// </summary>
         public bool HasBeenSaved => !string.IsNullOrEmpty(FilePath);
-
-        /// <summary>
-        /// Indicates if this file needs saving (has file changes).
-        /// </summary>
-        public bool NeedsSaving => BaseObject.GetSaveFlag();
 
         /// <summary>
         /// The type of document such as a part, assembly or drawing
@@ -572,10 +557,7 @@ namespace AngelSix.SolidDna
             var wasNewFile = !HasBeenSaved;
 
             // Update filepath
-            if (BaseObject != null)
-                FilePath = BaseObject.GetPathName();
-            else
-                FilePath = fileName;
+            FilePath = BaseObject.GetPathName();
 
             // Inform listeners
             ModelSaved();
@@ -757,6 +739,40 @@ namespace AngelSix.SolidDna
         /// <param name="name">The name of the property</param>
         /// <param name="value">The value of the property</param>
         /// <param name="configuration">The configuration to set the properties from, otherwise set custom property</param>
+        public void SetCustomProperty(string name, string value, string configuration = null)
+        {
+            // Get the custom property editor
+            using (var editor = Extension.CustomPropertyEditor(configuration))
+            {
+                // Set the property
+                editor.SetCustomProperty(name, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets a custom property by the given name
+        /// </summary>
+        /// <param name="name">The name of the custom property</param>
+        /// <param name="configuration">The configuration to get the properties from, otherwise get custom property</param>
+        ///<param name="resolved">True to get the resolved value of the property, false to get the actual text</param>
+        /// <returns></returns>
+        public string GetCustomProperty(string name, string configuration = null, bool resolved = false)
+        {
+            // Get the custom property editor
+            using (var editor = Extension.CustomPropertyEditor(configuration))
+            {
+                // Get the property
+                return editor.GetCustomProperty(name, resolve: resolved);
+            }
+        }
+
+        /// <summary>
+        /// Sets a custom property to the given value.
+        /// If a configuration is specified then the configuration-specific property is set
+        /// </summary>
+        /// <param name="name">The name of the property</param>
+        /// <param name="value">The value of the property</param>
+        /// <param name="configuration">The configuration to set the properties from, otherwise set custom property</param>
         public CustomPropertySetResult SetCustomPropertyValue(string name, string value, string configuration = null)
         {
             // Get the custom property editor
@@ -836,41 +852,6 @@ namespace AngelSix.SolidDna
             }
         }
 
-        /// <summary>
-        /// Gets all of the custom properties in this model including any configuration specific properties
-        /// </summary>
-        /// <param name="action">The custom properties list to be worked on inside the action. NOTE: Do not store references to them outside of this action</param>
-        /// <returns>Custom property and the configuration name it belongs to (or null if none)</returns>
-        public IEnumerable<(string configuration, CustomProperty property)> AllCustomProperties()
-        {
-            // Custom properties
-            using (var editor = Extension.CustomPropertyEditor(null))
-            {
-                // Get the properties
-                var properties = editor.GetCustomProperties();
-
-                // Loop each property
-                foreach (var property in properties)
-                    // Return result
-                    yield return (null, property);
-            }
-
-            // Configuration specific properties
-            foreach (var configuration in ConfigurationNames)
-            {
-                // Get the custom property editor
-                using (var editor = Extension.CustomPropertyEditor(configuration))
-                {
-                    // Get the properties
-                    var properties = editor.GetCustomProperties();
-
-                    // Loop each property
-                    foreach (var property in properties)
-                        // Return result
-                        yield return (configuration, property);
-                }
-            }
-        }
         public Type GetCustomPropertyType(string name, string configuration = null)
         {
             // Get the custom property editor
@@ -905,7 +886,43 @@ namespace AngelSix.SolidDna
             using (var editor = Extension.CustomPropertyEditor(configuration))
             {
                 // Add the property
-                return editor.DeleteCustomProperty(name);
+                return editor.DeleteCustomPropertyWithResult(name);
+            }
+        }
+
+        /// <summary>
+        /// Gets all of the custom properties in this model including any configuration specific properties
+        /// </summary>
+        /// <param name="action">The custom properties list to be worked on inside the action. NOTE: Do not store references to them outside of this action</param>
+        /// <returns>Custom property and the configuration name it belongs to (or null if none)</returns>
+        public IEnumerable<(string configuration, CustomProperty property)> AllCustomProperties()
+        {
+            // Custom properties
+            using (var editor = Extension.CustomPropertyEditor(null))
+            {
+                // Get the properties
+                var properties = editor.GetCustomProperties();
+
+                // Loop each property
+                foreach (var property in properties)
+                    // Return result
+                    yield return (null, property);
+            }
+
+            // Configuration specific properties
+            foreach (var configuration in ConfigurationNames)
+            {
+                // Get the custom property editor
+                using (var editor = Extension.CustomPropertyEditor(configuration))
+                {
+                    // Get the properties
+                    var properties = editor.GetCustomProperties();
+
+                    // Loop each property
+                    foreach (var property in properties)
+                        // Return result
+                        yield return (configuration, property);
+                }
             }
         }
 
@@ -1049,7 +1066,7 @@ namespace AngelSix.SolidDna
         /// <param name="featureAction">The callback action that is called for each feature in the model</param>
         /// <param name="startFeature">The feature to start at</param>
         /// <param name="featureDepth">The current depth of the sub-features based on the original calling feature</param>
-        private void RecurseFeatures(Action<ModelFeature, int> featureAction, Feature startFeature = null, int featureDepth = 0)
+        private static void RecurseFeatures(Action<ModelFeature, int> featureAction, Feature startFeature = null, int featureDepth = 0)
         {
             // Get the current feature
             var currentFeature = startFeature;
@@ -1284,7 +1301,6 @@ namespace AngelSix.SolidDna
                 SolidDnaErrorCode.SolidWorksModelSaveError,
                 Localization.GetString("SolidWorksModelSaveError"));
         }
-
         /// <summary>
         /// Saves a file to the specified path, with the specified options
         /// </summary>

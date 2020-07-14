@@ -76,7 +76,7 @@ namespace AngelSix.SolidDna
             Framework.Construction.Build();
         }
 
-        #endregion 
+        #endregion
     }
 
     /// <summary>

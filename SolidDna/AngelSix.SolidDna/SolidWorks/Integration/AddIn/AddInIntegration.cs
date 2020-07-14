@@ -4,6 +4,11 @@ using Microsoft.Win32;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swpublished;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using static Dna.FrameworkDI;
 
@@ -28,8 +33,13 @@ namespace AngelSix.SolidDna
     public abstract class AddInIntegration : ISwAddin
     {
         private static Process _solidWorksProcess = null;
-
+		
         #region Protected Members
+
+        /// <summary>
+        /// A list of assemblies to use when resolving any missing references
+        /// </summary>
+        protected List<AssemblyName> mReferencedAssemblies = new List<AssemblyName>();
 
         /// <summary>
         /// Flag if we have loaded into memory (as ConnectedToSolidWorks can happen multiple times if unloaded/reloaded)
@@ -56,12 +66,18 @@ namespace AngelSix.SolidDna
         public static SolidWorksApplication SolidWorks { get; set; }
 
         /// <summary>
+        /// Gets the list of all known reference assemblies in this solution
+															 
+        /// </summary>
+        public AssemblyName[] ReferencedAssemblies => mReferencedAssemblies.ToArray();
+
+        /// <summary>
         /// If true, loads the plug-ins in their own app-domain
         /// NOTE: Must be set before connecting to SolidWorks
         /// </summary>
         public bool DetachedAppDomain { get; set; }
 
-        public static Process SolidWorksProcess => _solidWorksProcess;
+        public static Process SolidWorksProcess => _solidWorksProcess;										   
 
         #endregion
 
@@ -90,13 +106,16 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Default constructor
         /// </summary>
-
         /// <param name="standAlone">
         ///     If true, sets the SolidWorks Application to the active instance
         ///     (if available) so the environment can be used from a stand alone application.
         /// </param>
-        public AddInIntegration(SWProgIdVersion progIdVersion, bool standAlone = false)
+        public AddInIntegration(bool standAlone = false)
         {
+            try
+            {
+                // Help resolve any assembly references
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
                 // Get the path to this actual add-in dll
                 var assemblyFilePath = this.AssemblyFilePath();
@@ -129,7 +148,7 @@ namespace AngelSix.SolidDna
                 // If we are in stand-alone mode...
                 if (standAlone)
                     // Connect to active SolidWorks
-                    ConnectToActiveSolidWork(progIdVersion);
+                    ConnectToActiveSolidWork();
             }
             catch (Exception ex)
             {
@@ -364,10 +383,10 @@ namespace AngelSix.SolidDna
         /// </summary>
         /// <param name="t"></param>
         [ComRegisterFunction()]
-        protected static void ComRegister(Type t, SWProgIdVersion progIdVersion)
+        protected static void ComRegister(Type t)
         {
             // Create new instance of ComRegister add-in to setup DI
-            new ComRegisterAddInIntegration(progIdVersion);
+            new ComRegisterAddInIntegration();
 
             try
             {
@@ -442,6 +461,37 @@ namespace AngelSix.SolidDna
         /// Attempts to set the SolidWorks property to the active SolidWorks instance
         /// </summary>
         /// <returns></returns>
+        public bool ConnectToActiveSolidWork()
+        {
+            try
+            {
+                // Clean up old one
+                TearDown();
+
+                // Try and get the active SolidWorks instance
+                SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject("SldWorks.Application"), 0);
+
+                // Log it
+                Logger?.LogDebugSource($"Acquired active instance SolidWorks in Stand-Alone mode");
+
+                // Return if successful
+                return SolidWorks != null;
+            }
+            // If we failed to get active instance...
+            catch (COMException)
+            {
+                // Log it
+                Logger?.LogDebugSource($"Failed to get active instance of SolidWorks in Stand-Alone mode");
+
+                // Return failure
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to set the SolidWorks property to the active SolidWorks instance
+        /// </summary>
+        /// <returns></returns>
         public bool ConnectToActiveSolidWork(SWProgIdVersion progIdVersion)
         {
             try
@@ -453,7 +503,7 @@ namespace AngelSix.SolidDna
                 SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject(string.Format("SldWorks.Application.{0}", (int)progIdVersion)), 0);
 
                 // Log it
-                Logger?.LogDebugSource($"Acquired active instance SolidWorks in Stand-Alone mode");
+                Logger.LogDebugSource($"Aquired active instance SolidWorks in Stand-Alone mode");
 
                 // Return if successful
                 return SolidWorks != null;
@@ -462,7 +512,7 @@ namespace AngelSix.SolidDna
             catch (COMException ex)
             {
                 // Log it
-                Logger?.LogDebugSource($"Failed to get active instance of SolidWorks in Stand-Alone mode");
+                Logger.LogDebugSource($"Failed to get active instance of SolidWorks in Stand-Alone mode");
 
                 // Return failure
                 return false;
@@ -474,10 +524,24 @@ namespace AngelSix.SolidDna
         /// Remember to call <see cref="TearDown"/> once done.
         /// </summary>
         /// <returns></returns>
+        public static bool ConnectToActiveSolidWorks()
+        {
+            // Create new blank add-in
+            var addin = new BlankAddInIntegration();
+
+            // Return if we successfully got an instance
+            return addin.ConnectToActiveSolidWork();
+        }
+
+        /// <summary>
+        /// Attempts to set the SolidWorks property to the active SolidWorks instance.
+        /// Remember to call <see cref="TearDown"/> once done.
+        /// </summary>
+        /// <returns></returns>
         public static bool ConnectToActiveSolidWorks(SWProgIdVersion progIdVersion)
         {
             // Create new blank add-in
-            var addin = new BlankAddInIntegration(progIdVersion);
+            var addin = new BlankAddInIntegration();
 
             // Return if we successfully got an instance
             return addin.ConnectToActiveSolidWork(progIdVersion);
@@ -510,9 +574,9 @@ namespace AngelSix.SolidDna
             return true;
         }
 
-        public static bool StartSolidWorks(string solidWorksExePath, SWProgIdVersion progIdVersion)
+        public static bool StartSolidWorks(string solidWorksExePath)
         {
-            var addin = new BlankAddInIntegration(progIdVersion);
+            var addin = new BlankAddInIntegration();
             return addin.StartSolidWork(solidWorksExePath);
         }
 
@@ -668,6 +732,75 @@ namespace AngelSix.SolidDna
         }
         #endregion
 
+        #region Assembly Resolve Methods
+
+        /// <summary>
+        /// Adds any reference assemblies to the assemblies that get resolved when loading assemblies
+        /// based on the reference type. To add all references from a project, pass in any type that is
+        /// contained in the project as the reference type
+        /// </summary>
+        /// <typeparam name="ReferenceType">The type contained in the assembly where the references are</typeparam>
+        public void AddReferenceAssemblies<ReferenceType>()
+        {
+            // Find all reference assemblies from the type
+            var referencedAssemblies = typeof(ReferenceType).Assembly.GetReferencedAssemblies();
+
+            // If there are any references
+            if (referencedAssemblies?.Length > 0)
+                // Add them
+                mReferencedAssemblies.AddRange(referencedAssemblies);
+        }
+
+        /// <summary>
+        /// Attempts to resolve missing assemblies based on a list of known references
+        /// primarily from SolidDna and the Add-in project itself
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            // Try and find a reference assembly that matches...
+            var resolvedAssembly = mReferencedAssemblies.FirstOrDefault(f => string.Equals(f.FullName, args.Name, StringComparison.InvariantCultureIgnoreCase));
+
+            // If we didn't find any assembly
+            if (resolvedAssembly == null)
+                // Return null
+                return null;
+
+            // If we found a match...
+            try
+            {
+                // Try and load the assembly
+                var assembly = Assembly.Load(resolvedAssembly.Name);
+
+                // If it loaded...
+                if (assembly != null)
+                    // Return it
+                    return assembly;
+
+                // Otherwise, throw file not found
+                throw new FileNotFoundException();
+            }
+            catch
+            {
+                //
+                // Try to load by filename - split out the filename of the full assembly name
+                // and append the base path of the original assembly (i.e. look in the same directory)
+                //
+                // NOTE: this doesn't account for special search paths but then that never
+                //       worked before either
+                //
+                var parts = resolvedAssembly.Name.Split(',');
+                var filePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + parts[0].Trim() + ".dll";
+
+                // Try and load assembly and let it throw FileNotFound if not there 
+                // as it's an expected failure if not found
+                return Assembly.LoadFrom(filePath);
+            }
+        }
+
+        #endregion
         #region Tear Down
 
         /// <summary>

@@ -10,7 +10,7 @@
         /// <summary>
         /// Default constructor
         /// </summary>
-        public BlankAddInIntegration(SWProgIdVersion progIdVersion) : base(progIdVersion)
+        public BlankAddInIntegration() : base()
         {
 
         }

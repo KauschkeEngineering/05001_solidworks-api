@@ -7,6 +7,7 @@ namespace AngelSix.SolidDna
     /*
      *  NOTE: Outstanding question to SolidWorks...
      * 
+
         From the feature, I then need to get the specific feature. This is where the fun begins.
  
         I call feature. GetTypeName2 to get the type. Then from this list http://help.solidworks.com/2020/english/api/sldworksapi/SOLIDWORKS.Interop.sldworks~SOLIDWORKS.Interop.sldworks.IFeature~GetTypeName2.html I figure out what type of feature I should expect from GetSpecificFeature2.
@@ -923,7 +924,7 @@ namespace AngelSix.SolidDna
         /// </summary>
         public bool IsWrapSketchData => FeatureType == ModelFeatureType.WrapSketchData;
 
-        public bool IsInitialized { get; private set; }
+        public bool IsInitialized { get; }
 
         #endregion
 
@@ -1009,7 +1010,7 @@ namespace AngelSix.SolidDna
             using (var editor = GetCustomPropertyEditor())
             {
                 // Set the property
-                editor.SetCustomPropertyValue(name, value);
+                editor.SetCustomProperty(name, value);
             }
         }
 
@@ -1020,7 +1021,24 @@ namespace AngelSix.SolidDna
         /// <param name="name">The name of the custom property</param>
         ///<param name="resolved">True to get the resolved value of the property, false to get the actual text</param>
         /// <returns></returns>
-        public Tuple<CustomPropertyGetResult, string> GetCustomProperty(string name, bool resolved = false)
+        public string GetCustomProperty(string name, bool resolved = false)
+        {
+            // Get the custom property editor
+            using (var editor = GetCustomPropertyEditor())
+            {
+                // Get the property
+                return editor.GetCustomProperty(name, resolve: resolved);
+            }
+        }
+
+        /// <summary>
+        /// Gets a custom property by the given name. 
+        /// Only works for Cut List Folders and the Weldment feature.
+        /// </summary>
+        /// <param name="name">The name of the custom property</param>
+        ///<param name="resolved">True to get the resolved value of the property, false to get the actual text</param>
+        /// <returns></returns>
+        public Tuple<CustomPropertyGetResult, string> GetCustomPropertyWithResult(string name, bool resolved = false)
         {
             // Get the custom property editor
             using (var editor = GetCustomPropertyEditor())

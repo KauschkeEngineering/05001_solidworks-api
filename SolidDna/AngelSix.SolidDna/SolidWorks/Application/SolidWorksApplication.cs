@@ -1,11 +1,11 @@
-﻿using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swconst;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using System.IO;
 using System.Xml.Linq;
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swdocumentmgr;
 
 namespace AngelSix.SolidDna
@@ -886,7 +886,7 @@ namespace AngelSix.SolidDna
             BaseObject.CloseDoc(documentName);
         }
 
-        public Tuple<int, Model> OpenDocumentInvisible(string fullDocumentFilePath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true, bool loadExternalReferencesInMemory = true, bool useNewWindow = false)
+        public Tuple<FileLoadErrors, Model> OpenDocumentInvisible(string fullDocumentFilePath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true, bool loadExternalReferencesInMemory = true, bool useNewWindow = false)
         {
             var solidWorksModelData = OpenDocumenInvisibleInWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, loadExternalReferencesInMemory, false); ;
             if (ActiveModel != null)
@@ -955,7 +955,7 @@ namespace AngelSix.SolidDna
             BaseObject.DocumentVisible(true, (int)swDocSpecification.DocumentType);
             // Use KeepInvisible when SOLIDWORKS is invisible and it shall activate a component and SOLIDWORKS has to be prevented from becoming visible
             // be sure to set this property back to false after the operation for which it was to true completes
-            var modelData = new Tuple<int, Model>(swDocSpecification.Error, new Model((ModelDoc2)BaseObject.OpenDoc7(swDocSpecification)));
+            var modelData = new Tuple<FileLoadErrors, Model>((FileLoadErrors)swDocSpecification.Error, new Model((ModelDoc2)BaseObject.OpenDoc7(swDocSpecification)));
             BaseObject.DocumentVisible(false, (int)swDocSpecification.DocumentType);
 
             // set EnableBackgroundProcessing = false when the open operation is finished

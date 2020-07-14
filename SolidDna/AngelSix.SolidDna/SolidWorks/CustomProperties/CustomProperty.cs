@@ -57,15 +57,15 @@ namespace AngelSix.SolidDna
         /// </summary>
         public string Value
         {
-            get => mEditor.GetCustomPropertyValue(Name).Item2;
-            set => mEditor.SetCustomPropertyValue(Name, value);
+            get => mEditor.GetCustomProperty(Name);
+            set => mEditor.SetCustomProperty(Name, value);
         }
 
         /// <summary>
         /// The resolved value of the custom property
         /// If this custom property contains the model mass, the resolved value is the actual mass.
         /// </summary>
-        public string ResolvedValue => mEditor.GetCustomPropertyValue(Name, true).Item2;
+        public string ResolvedValue => mEditor.GetCustomProperty(Name, resolve: true);
 
         #endregion
 
@@ -90,9 +90,9 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Deletes this custom property
         /// </summary>
-        public CustomPropertyDeleteResult Delete()
+        public void Delete()
         {
-            return mEditor.DeleteCustomProperty(Name);
+            mEditor.DeleteCustomProperty(Name);
         }
 
         /// <summary>
