@@ -16,17 +16,17 @@ namespace AngelSix.SolidDna
                 {
                     switch (mEditor.GetTypeOfProperty(Name))
                     {
-                        case CustomInfoTypes.Unknown:
+                        case CustomPropertyTypes.Unknown:
                             return typeof(object);
-                        case CustomInfoTypes.Number:
+                        case CustomPropertyTypes.Number:
                             return typeof(long);
-                        case CustomInfoTypes.Double:
+                        case CustomPropertyTypes.Double:
                             return typeof(double);
-                        case CustomInfoTypes.YesOrNo:
+                        case CustomPropertyTypes.YesOrNo:
                             return typeof(bool);
-                        case CustomInfoTypes.Text:
+                        case CustomPropertyTypes.Text:
                             return typeof(string);
-                        case CustomInfoTypes.Date:
+                        case CustomPropertyTypes.Date:
                             return typeof(DateTime);
                         default:
                             return null;
@@ -88,7 +88,7 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Deletes this custom property
         /// </summary>
-        public CustomInfoDeleteResult Delete()
+        public CustomPropertyDeleteResult Delete()
         {
             return mEditor.DeleteCustomProperty(Name);
         }
