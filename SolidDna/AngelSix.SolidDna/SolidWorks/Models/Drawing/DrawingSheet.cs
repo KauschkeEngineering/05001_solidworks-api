@@ -1,17 +1,27 @@
-﻿using SolidWorks.Interop.swdocumentmgr;
+﻿using SolidWorks.Interop.sldworks;
 
 namespace AngelSix.SolidDna
 {
-    public class DrawingSheet : SolidDnaObject<SwDMSheet2>
+    /// <summary>
+    /// A sheet of a drawing
+    /// </summary>
+    public class DrawingSheet : SolidDnaObject<Sheet>
     {
-        #region Protected Members
+        #region Private Members
 
+        /// <summary>
+        /// The parent drawing document of this sheet
+        /// </summary>
+        private readonly DrawingDocument mDrawingDoc;
 
         #endregion
 
         #region Public Properties
 
-        public string Name => BaseObject.Name;
+        /// <summary>
+        /// The sheet name
+        /// </summary>
+        public string SheetName => BaseObject.GetName();
 
         #endregion
 
@@ -20,18 +30,18 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Default constructor
         /// </summary>
-        public DrawingSheet(SwDMSheet2 model) : base(model)
+        /// <param name="comObject">The underlying COM object</param>
+        /// <param name="drawing">The parent drawing document</param>
+        public DrawingSheet(Sheet comObject, DrawingDocument drawing) : base(comObject)
         {
+            mDrawingDoc = drawing;
         }
 
         #endregion
 
-        #region Sheet Methods
-
-        #endregion
-
-        #region View Methods
-
-        #endregion
+        /// <summary>
+        /// Activates this sheet
+        /// </summary>
+        public bool Activate() => mDrawingDoc.ActivateSheet(SheetName);
     }
 }

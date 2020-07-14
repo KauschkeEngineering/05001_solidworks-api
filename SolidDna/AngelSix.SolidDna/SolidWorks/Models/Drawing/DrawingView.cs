@@ -1,10 +1,13 @@
 ﻿using SolidWorks.Interop.sldworks;
-using System.Drawing;
 
 namespace AngelSix.SolidDna
 {
+    /// <summary>
+    /// A view of a drawing
+    /// </summary>
     public class DrawingView : SolidDnaObject<View>
     {
+
         #region Public Properties
 
         /// <summary>
@@ -52,6 +55,10 @@ namespace AngelSix.SolidDna
         public DrawingView(View comObject) : base(comObject)
         {
         }
+
+        #endregion
+
+        #region Public Methods
 
         public DrawingView GetNextDrawingView()
         {
