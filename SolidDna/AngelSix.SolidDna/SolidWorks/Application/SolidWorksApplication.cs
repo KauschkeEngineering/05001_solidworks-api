@@ -15,9 +15,6 @@ namespace AngelSix.SolidDna
     /// </summary>
     public partial class SolidWorksApplication : SharedSolidDnaObject<SldWorks>
     {
-        private const string API_LICENCE_KEY = "KauschkeEngineeringServicesGmbH:swdocmgr_general-11785-02051-00064-01025-08567-34307-00007-16944-03729-52630-20621-27155-52442-46742-57351-01653-28064-37004-12470-18657-42155-23021-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-7,swdocmgr_previews-11785-02051-00064-01025-08567-34307-00007-23424-25180-19561-08976-33418-56614-15908-28672-33039-34039-15128-63516-16802-33026-22959-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-4,swdocmgr_dimxpert-11785-02051-00064-01025-08567-34307-00007-02224-60566-22735-30039-32017-34229-26945-40960-13408-24595-25589-46377-44335-06006-23917-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-4,swdocmgr_geometry-11785-02051-00064-01025-08567-34307-00007-25440-44169-22552-63994-59551-37072-09667-14340-27239-01502-21198-57986-04466-22801-22651-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-5,swdocmgr_xml-11785-02051-00064-01025-08567-34307-00007-65328-31737-49269-00552-43417-32429-25145-30724-20516-24804-09579-38046-62867-26541-24480-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-6,swdocmgr_tessellation-11785-02051-00064-01025-08567-34307-00007-48088-40139-18107-01106-37523-23509-29212-14337-40415-34512-32340-56451-08411-09207-22831-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-24632-23148-57538-23268-24676-24676-2";
-        //Old 2015 - private const string API_LICENCE_KEY = "KauschkeEngineeringServicesGmbH:swdocmgr_general-11785-02051-00064-17409-08473-34307-00007-19656-13610-17716-24516-52581-13763-62678-28678-03781-27226-07511-14366-10812-12747-23344-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-1,swdocmgr_previews-11785-02051-00064-17409-08473-34307-00007-51024-52025-35553-51281-51480-35643-63443-14342-31683-18932-27645-24746-19372-11348-23297-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-1,swdocmgr_xml-11785-02051-00064-17409-08473-34307-00007-13784-50962-42612-58001-63569-50093-44301-40960-12153-36851-02018-22860-03363-63670-23674-34092-52693-41357-38317-47381-42397-38329-51605-47525-19869-51605-42457-38285-07629-35253-00289-25656-23152-57052-23276-24676-27746-5";
-
         #region Protected Members
 
         /// <summary>
@@ -823,7 +820,7 @@ namespace AngelSix.SolidDna
         public object GetPreviewBitmap(string filePath, bool isDrawingSheet = false, string drawingSheetName = "")
         {
             var swClassFact = new SwDMClassFactory();
-            var swDocMgr = (SwDMApplication)swClassFact.GetApplication(API_LICENCE_KEY);
+            var swDocMgr = (SwDMApplication)swClassFact.GetApplication(Credential.API_LICENCE_KEY);
             if (swDocMgr != null)
             {
                 var ver = (Model.MajorSolidWorksVersions)swDocMgr.GetLatestSupportedFileVersion();
@@ -849,27 +846,27 @@ namespace AngelSix.SolidDna
             return null;
         }
 
-        public List<DrawingSheet> GetDrawingSheets(string drawingFilePath)
-        {
-            var drawingSheets = new List<DrawingSheet>();
-            var swClassFact = new SwDMClassFactory();
-            var swDocMgr = (SwDMApplication)swClassFact.GetApplication(API_LICENCE_KEY);
-            if (swDocMgr != null)
-            {
-                var swDoc = (SwDMDocument12)swDocMgr.GetDocument(drawingFilePath, SwDmDocumentType.swDmDocumentDrawing, true, out var nRetVal);
-                if (swDoc != null)
-                {
-                    var sheets = (object[])swDoc.GetSheets();
+        //public List<DrawingSheet> GetDrawingSheets(string drawingFilePath)
+        //{
+        //    var drawingSheets = new List<DrawingSheet>();
+        //    var swClassFact = new SwDMClassFactory();
+        //    var swDocMgr = (SwDMApplication)swClassFact.GetApplication(API_LICENCE_KEY);
+        //    if (swDocMgr != null)
+        //    {
+        //        var swDoc = (SwDMDocument12)swDocMgr.GetDocument(drawingFilePath, SwDmDocumentType.swDmDocumentDrawing, true, out var nRetVal);
+        //        if (swDoc != null)
+        //        {
+        //            var sheets = (object[])swDoc.GetSheets();
 
-                    foreach (var sheet in sheets)
-                    {
-                        drawingSheets.Add(new DrawingSheet((Sheet)sheet, null));
-                    }
-                    return drawingSheets;
-                }
-            }
-            return drawingSheets;
-        }
+        //            foreach (var sheet in sheets)
+        //            {
+        //                drawingSheets.Add(new DrawingSheet((Sheet)sheet, null));
+        //            }
+        //            return drawingSheets;
+        //        }
+        //    }
+        //    return drawingSheets;
+        //}
 
         public object GetDPreviewBitmap(string drawingFilePath)
         {
@@ -982,7 +979,7 @@ namespace AngelSix.SolidDna
         {
 
             var swClassFact = new SwDMClassFactory();
-            var swDocMgr = swClassFact.GetApplication(API_LICENCE_KEY);
+            var swDocMgr = swClassFact.GetApplication(Credential.API_LICENCE_KEY);
             var swSearchOpt = swDocMgr.GetSearchOptionObject();
             swSearchOpt.ClearAllSearchPaths();
             swSearchOpt.AddSearchPath(searchPath);
@@ -1029,7 +1026,7 @@ namespace AngelSix.SolidDna
             }
 
             swClassFact = new SwDMClassFactory();
-            swDocMgr = (SwDMApplication)swClassFact.GetApplication(API_LICENCE_KEY);
+            swDocMgr = (SwDMApplication)swClassFact.GetApplication(Credential.API_LICENCE_KEY);
             swSearchOpt = swDocMgr.GetSearchOptionObject();
             var nRetVal = SwDmDocumentOpenError.swDmDocumentOpenErrorNone;
             swDoc = (SwDMDocumentClass)swDocMgr.GetDocument(documentFileName, (SwDmDocumentType)nDocType, true, out nRetVal);
