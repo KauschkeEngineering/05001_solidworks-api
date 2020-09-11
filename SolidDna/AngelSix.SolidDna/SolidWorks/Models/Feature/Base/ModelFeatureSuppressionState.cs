@@ -1,4 +1,6 @@
-﻿namespace AngelSix.SolidDna
+﻿using SolidWorks.Interop.swconst;
+
+namespace AngelSix.SolidDna
 {
     /// <summary>
     /// Represents the suppression state action of a <see cref="ModelFeature"/>
@@ -11,17 +13,17 @@
         /// <summary>
         /// Suppress the feature
         /// </summary>
-        SuppressFeature = 0,
+        SuppressFeature = swFeatureSuppressionAction_e.swSuppressFeature,
 
         /// <summary>
         /// Unsuppress the feature
         /// </summary>
-        UnSuppressFeature = 1,
+        UnSuppressFeature = swFeatureSuppressionAction_e.swUnSuppressFeature,
 
         /// <summary>
         /// Unsuppress the children of the feature
         /// </summary>
-        UnSuppressDependent = 2,
+        UnSuppressDependent = swFeatureSuppressionAction_e.swUnSuppressDependent,
 
     }
 }
