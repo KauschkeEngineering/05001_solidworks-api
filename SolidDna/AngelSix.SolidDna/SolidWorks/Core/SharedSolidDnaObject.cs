@@ -37,6 +37,9 @@ namespace AngelSix.SolidDna
             // Do any specific disposal
             SolidDnaObjectDisposal.Dispose<T>(BaseObject);
 
+            // There is no need to release managed Suchergebnisse C++/ CLI com objects
+            // The GC is responsible for releaseing the memory if the reference count of the rcw is zero.
+            // TODO: Add some links explaining the above topic
             // COM release object
             //Marshal.ReleaseComObject(BaseObject);
 
