@@ -1,5 +1,11 @@
-﻿namespace AngelSix.SolidDna
+﻿using SolidWorks.Interop.swconst;
+
+namespace AngelSix.SolidDna
 {
+    /// <summary>
+    /// Drawing view types.
+    /// <see cref="swDrawingViewTypes_e"/>
+    /// </summary>
     public enum DrawingViewType
     {
         /// <summary>
@@ -10,51 +16,51 @@
         /// <summary>
         /// Drawing sheet
         /// </summary>
-        DrawingSheet = 1,
+        DrawingSheet = swDrawingViewTypes_e.swDrawingSheet,
 
         /// <summary>
         /// Section view
         /// </summary>
-        SectionView = 2,
+        SectionView = swDrawingViewTypes_e.swDrawingSectionView,
 
         /// <summary>
         /// Detail view
         /// </summary>
-        DetailView = 3,
+        DetailView = swDrawingViewTypes_e.swDrawingDetailView,
 
         /// <summary>
         /// Projected (unfolded) view
         /// </summary>
-        ProjectedView = 4,
+        ProjectedView = swDrawingViewTypes_e.swDrawingProjectedView,
 
         /// <summary>
         /// Auxiliary view
         /// </summary>
-        AuxiliaryView = 5,
+        AuxiliaryView = swDrawingViewTypes_e.swDrawingAuxiliaryView,
 
         /// <summary>
         /// Standard view
         /// </summary>
-        StandardView = 6,
+        StandardView = swDrawingViewTypes_e.swDrawingStandardView,
 
         /// <summary>
         /// Named view
         /// </summary>
-        NamedView = 7,
+        NamedView = swDrawingViewTypes_e.swDrawingNamedView,
 
         /// <summary>
         /// Relative view to the model
         /// </summary>
-        RelativeView = 8,
+        RelativeView = swDrawingViewTypes_e.swDrawingRelativeView,
 
         /// <summary>
         /// Detached view
         /// </summary>
-        DetachedView = 9,
+        DetachedView = swDrawingViewTypes_e.swDrawingDetachedView,
 
         /// <summary>
         /// Alternate position view
         /// </summary>
-        AlternatePositionView = 10
+        AlternatePositionView = swDrawingViewTypes_e.swDrawingAlternatePositionView
     }
 }
