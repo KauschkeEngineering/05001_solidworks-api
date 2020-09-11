@@ -9,43 +9,36 @@ namespace AngelSix.SolidDna
     public enum DocumentType
     {
         /// <summary>
-        /// No document type
+        /// Unknown
         /// </summary>
-        None = 0,
-
+        None = swDocumentTypes_e.swDocNONE,
         /// <summary>
-        /// A SolidWorks Part
+        /// SolidWorks Part
         /// </summary>
-        Part = 1,
-
+        Part = swDocumentTypes_e.swDocPART,
         /// <summary>
-        /// A SolidWorks assembly
+        /// SolidWorks Assembly
         /// </summary>
-        Assembly = 2,
-
+        Assembly = swDocumentTypes_e.swDocASSEMBLY,
         /// <summary>
-        /// A SolidWorks drawing
+        /// SolidWorks Drawing
         /// </summary>
-        Drawing = 3,
-
+        Drawing = swDocumentTypes_e.swDocDRAWING,
         /// <summary>
-        /// Unknown type with no documentation
+        /// SolidWorks Document Manager File
         /// </summary>
-        SDM = 4,
-
+        DocumentManager = swDocumentTypes_e.swDocSDM,
         /// <summary>
-        /// A layout file
+        /// External File
         /// </summary>
-        Layout = 5,
-
+        ExternalFile = swDocumentTypes_e.swDocLAYOUT,
         /// <summary>
-        /// An imported part
+        /// Imported Part
         /// </summary>
-        ImportedPart = 6,
-
+        ImportedPart = swDocumentTypes_e.swDocIMPORTED_PART,
         /// <summary>
-        /// An imported assembly
+        /// Imported Assembly
         /// </summary>
-        ImportedAssembly = 7
+        ImportedAssembly = swDocumentTypes_e.swDocIMPORTED_ASSEMBLY,
     }
 }
