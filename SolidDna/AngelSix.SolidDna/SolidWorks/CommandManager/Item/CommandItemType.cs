@@ -12,11 +12,11 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// The item is a menu item
         /// </summary>
-        MenuItem = 1,
+        MenuItem = swCommandItemType_e.swMenuItem,
 
         /// <summary>
         /// The item is a toolbar item
         /// </summary>
-        ToolbarItem = 2,
+        ToolbarItem = swCommandItemType_e.swToolbarItem,
     }
 }
