@@ -3,6 +3,7 @@
 namespace AngelSix.SolidDna
 {
     /// <summary>
+    /// Status of each document intended for Pack and Go.
     /// The options from a <see cref="Model.PackAndGo(string)"/> call,
     /// from <see cref="swPackAndGoSaveStatus_e"/>
     /// </summary>
@@ -11,26 +12,26 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Successfully saved
         /// </summary>
-        Success = 0,
+        Success = swPackAndGoSaveStatus_e.swPackAndGoSaveStatus_Succeed,
 
         /// <summary>
         /// User input was not correct
         /// </summary>
-        UserInputNotCorrect = 1,
+        UserInputNotCorrect = swPackAndGoSaveStatus_e.swPackAndGoSaveStatus_UserInputNotCorrect,
 
         /// <summary>
         /// File already exists
         /// </summary>
-        FileAlreadyExists = 2,
+        FileAlreadyExists = swPackAndGoSaveStatus_e.swPackAndGoSaveStatus_FileAlreadyExist,
 
         /// <summary>
         /// Saving an empty file
         /// </summary>
-        SavingEmptyFile = 3,
+        SavingEmptyFile = swPackAndGoSaveStatus_e.swPackAndGoSaveStatus_SaveToEmpty,
 
         /// <summary>
         /// Error when saving
         /// </summary>
-        SaveError = 4
+        SaveError = swPackAndGoSaveStatus_e.swPackAndGoSaveStatus_SaveError
     }
 }
