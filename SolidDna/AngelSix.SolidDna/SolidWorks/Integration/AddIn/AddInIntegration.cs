@@ -558,12 +558,11 @@ namespace AngelSix.SolidDna
                         FileName = solidWorksExePath,
                         Arguments = "/r", //no splash screen will be shown while loading SolidWorks application
                         CreateNoWindow = false,
+                        WindowStyle = ProcessWindowStyle.Hidden
                     };
-
                     _solidWorksProcess = Process.Start(processInfo);
                     // set the priorty to high for SOLIDWORKS to gain more CPU time
                     _solidWorksProcess.PriorityClass = ProcessPriorityClass.High;
-
                 }
                 catch (Exception)
                 {
