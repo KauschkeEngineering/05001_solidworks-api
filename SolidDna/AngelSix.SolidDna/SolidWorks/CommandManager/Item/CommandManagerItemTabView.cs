@@ -3,10 +3,11 @@
 namespace AngelSix.SolidDna
 {
     /// <summary>
+    /// CommandManager tab button text display.
     /// The view style of a <see cref="CommandManagerItem"/> for a Tab (the large icons above opened files).
     /// References <see cref="swCommandTabButtonTextDisplay_e"/>
     /// </summary>
-    public  enum CommandManagerItemTabView
+    public enum CommandManagerItemTabView
     {
         /// <summary>
         /// The item is not shown in the tab
@@ -16,16 +17,16 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// The item is shown with an icon only
         /// </summary>
-        IconOnly = 1,
+        IconOnly = swCommandTabButtonTextDisplay_e.swCommandTabButton_NoText,
 
         /// <summary>
         /// The item is shown with the icon, then the text below it
         /// </summary>
-        IconWithTextBelow = 2,
+        IconWithTextBelow = swCommandTabButtonTextDisplay_e.swCommandTabButton_TextBelow,
 
         /// <summary>
         /// The item is shown with the icon then the text to the right
         /// </summary>
-        IconWithTextAtRight = 4
+        IconWithTextAtRight = swCommandTabButtonTextDisplay_e.swCommandTabButton_TextHorizontal
     }
 }
