@@ -1,28 +1,31 @@
-﻿namespace AngelSix.SolidDna
+﻿using SolidWorks.Interop.swconst;
+
+namespace AngelSix.SolidDna
 {
     /// <summary>
-    /// BOM Balloon note text style
+    /// BOM balloon note text styles.
+    /// <see cref="swDetailingNoteTextContent_e"/>
     /// </summary>
     public enum NoteTextContent
     {
         /// <summary>
         /// Custom text
         /// </summary>
-        Custom = 1,
+        Custom = swDetailingNoteTextContent_e.swDetailingNoteTextCustom,
 
         /// <summary>
         /// Custom property
         /// </summary>
-        CustomProperty = 2,
+        CustomProperty = swDetailingNoteTextContent_e.swDetailingNoteTextCustomProperty,
 
         /// <summary>
         /// Item number
         /// </summary>
-        ItemNumber = 3,
+        ItemNumber = swDetailingNoteTextContent_e.swDetailingNoteTextItemNumber,
 
         /// <summary>
         /// Text quantity
         /// </summary>
-        TextQuantity = 4
+        TextQuantity = swDetailingNoteTextContent_e.swDetailingNoteTextQuantity
     }
 }
