@@ -4,34 +4,35 @@ using SolidWorks.Interop.swconst;
 namespace AngelSix.SolidDna
 {
     /// <summary>
+    /// Document types.
     /// The type of template for a model, from <see cref="swDocTemplateTypes_e"/>
     /// </summary>
     [Flags]
-    public enum ModelTemplateType
+    public enum DocumentTemplateTypes
     {
         /// <summary>
         /// Nothing is open
         /// </summary>
-        None = 1,
+        None = swDocTemplateTypes_e.swDocTemplateTypeNONE,
 
         /// <summary>
         /// A part is open
         /// </summary>
-        Part = 2,
+        Part = swDocTemplateTypes_e.swDocTemplateTypePART,
 
         /// <summary>
         /// An assembly is open
         /// </summary>
-        Assembly = 4,
+        Assembly = swDocTemplateTypes_e.swDocTemplateTypeASSEMBLY,
 
         /// <summary>
         /// A drawing is open
         /// </summary>
-        Drawing = 8,
+        Drawing = swDocTemplateTypes_e.swDocTemplateTypeDRAWING,
 
         /// <summary>
         /// An in-context part is open
         /// </summary>
-        InContext = 16
+        InContext = swDocTemplateTypes_e.swDocTemplateTypeInContext
     }
 }
