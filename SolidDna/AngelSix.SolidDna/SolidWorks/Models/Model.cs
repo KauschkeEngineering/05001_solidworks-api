@@ -63,22 +63,22 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// The type of document such as a part, assembly or drawing
         /// </summary>
-        public ModelType ModelType { get; protected set; }
+        public DocumentType ModelType { get; protected set; }
 
         /// <summary>
         /// True if this model is a part
         /// </summary>
-        public bool IsPart => ModelType == ModelType.Part;
+        public bool IsPart => ModelType == DocumentType.Part;
 
         /// <summary>
         /// True if this model is an assembly
         /// </summary>
-        public bool IsAssembly => ModelType == ModelType.Assembly;
+        public bool IsAssembly => ModelType == DocumentType.Assembly;
 
         /// <summary>
         /// True if this model is a drawing
         /// </summary>
-        public bool IsDrawing => ModelType == ModelType.Drawing;
+        public bool IsDrawing => ModelType == DocumentType.Drawing;
 
         /// <summary>
         /// Contains extended information about the model
@@ -113,6 +113,8 @@ namespace AngelSix.SolidDna
         public bool IsVisible => BaseObject.Visible;
 
         public ModelView ActiveModelView => new ModelView(BaseObject.IActiveView);
+
+        public bool IsDirty => BaseObject.GetSaveFlag();
 
         #endregion
 
@@ -225,7 +227,7 @@ namespace AngelSix.SolidDna
             Name = BaseObject.GetTitle();
 
             // Get the models type
-            ModelType = (ModelType)BaseObject.GetType();
+            ModelType = (DocumentType)BaseObject.GetType();
 
             // Get the extension
             Extension = new ModelExtension(BaseObject.Extension, this);
@@ -258,7 +260,7 @@ namespace AngelSix.SolidDna
             switch (ModelType)
             {
                 // Hook into the save and destroy events to keep data fresh
-                case ModelType.Assembly:
+                case DocumentType.Assembly:
                     AsAssembly().ActiveConfigChangePostNotify += ActiveConfigChangePostNotify;
                     AsAssembly().DestroyNotify += FileDestroyedNotify;
                     AsAssembly().FileSaveAsNotify2 += FileSaveAsPreNotify;
@@ -269,7 +271,7 @@ namespace AngelSix.SolidDna
                     AsAssembly().UserSelectionPostNotify += UserSelectionPostNotify;
                     AsAssembly().ClearSelectionsNotify += UserSelectionPostNotify;
                     break;
-                case ModelType.Part:
+                case DocumentType.Part:
                     AsPart().ActiveConfigChangePostNotify += ActiveConfigChangePostNotify;
                     AsPart().DestroyNotify += FileDestroyedNotify;
                     AsPart().FileSaveAsNotify2 += FileSaveAsPreNotify;
@@ -280,7 +282,7 @@ namespace AngelSix.SolidDna
                     AsPart().UserSelectionPostNotify += UserSelectionPostNotify;
                     AsPart().ClearSelectionsNotify += UserSelectionPostNotify;
                     break;
-                case ModelType.Drawing:
+                case DocumentType.Drawing:
                     AsDrawing().ActivateSheetPostNotify += SheetActivatePostNotify;
                     AsDrawing().ActivateSheetPreNotify += SheetActivatePreNotify;
                     AsDrawing().AddItemNotify += DrawingItemAddNotify;
@@ -379,9 +381,9 @@ namespace AngelSix.SolidDna
         {
             switch (ModelType)
             {
-                case ModelType.Part when AsPart() == null:
-                case ModelType.Assembly when AsAssembly() == null:
-                case ModelType.Drawing when AsDrawing() == null:
+                case DocumentType.Part when AsPart() == null:
+                case DocumentType.Assembly when AsAssembly() == null:
+                case DocumentType.Drawing when AsDrawing() == null:
                 {
                     // Happens in multiple cases:
                     // 1: When SolidWorks is being closed
@@ -395,7 +397,7 @@ namespace AngelSix.SolidDna
             switch (ModelType)
             {
                 // Hook into the save and destroy events to keep data fresh
-                case ModelType.Assembly:
+                case DocumentType.Assembly:
                     AsAssembly().ActiveConfigChangePostNotify -= ActiveConfigChangePostNotify;
                     AsAssembly().DestroyNotify -= FileDestroyedNotify;
                     AsAssembly().FileSaveAsNotify2 -= FileSaveAsPreNotify;
@@ -406,7 +408,7 @@ namespace AngelSix.SolidDna
                     AsAssembly().UserSelectionPostNotify -= UserSelectionPostNotify;
                     AsAssembly().ClearSelectionsNotify -= UserSelectionPostNotify;
                     break;
-                case ModelType.Part:
+                case DocumentType.Part:
                     AsPart().ActiveConfigChangePostNotify -= ActiveConfigChangePostNotify;
                     AsPart().DestroyNotify -= FileDestroyedNotify;
                     AsPart().FileSaveAsNotify2 -= FileSaveAsPreNotify;
@@ -417,7 +419,7 @@ namespace AngelSix.SolidDna
                     AsPart().UserSelectionPostNotify -= UserSelectionPostNotify;
                     AsPart().ClearSelectionsNotify -= UserSelectionPostNotify;
                     break;
-                case ModelType.Drawing:
+                case DocumentType.Drawing:
                     AsDrawing().ActivateSheetPostNotify -= SheetActivatePostNotify;
                     AsDrawing().ActivateSheetPreNotify -= SheetActivatePreNotify;
                     AsDrawing().AddItemNotify -= DrawingItemAddNotify;
