@@ -1,8 +1,11 @@
-﻿using System;
+﻿using SolidWorks.Interop.swconst;
+using System;
 
 namespace AngelSix.SolidDna
 {
     /// <summary>
+    /// File save errors.
+    /// <see cref="swFileSaveError_e"/>
     /// Any errors of a model save operation. 
     /// </summary>
     /// <remarks>
@@ -25,74 +28,74 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// There was an unknown error
         /// </summary>
-        GenericSaveError = 1,
+        GenericSaveError = swFileSaveError_e.swGenericSaveError,
 
         /// <summary>
         /// Failed to save as the destination file is read-only
         /// </summary>
-        ReadOnlySaveError = 2,
+        ReadOnlySaveError = swFileSaveError_e.swReadOnlySaveError,
 
         /// <summary>
         /// The filename was not provided
         /// </summary>
-        FileNameEmpty = 4,
+        FileNameEmpty = swFileSaveError_e.swFileNameEmpty,
 
         /// <summary>
         /// Filename cannot contain the @ symbol
         /// </summary>
-        FileNameContainsAtSign = 8,
+        FileNameContainsAtSign = swFileSaveError_e.swFileNameContainsAtSign,
 
         /// <summary>
         /// The file is write-locked
         /// </summary>
-        FileLockError = 16,
+        FileLockError = swFileSaveError_e.swFileLockError,
 
         /// <summary>
         /// The save as file type is not valid
         /// </summary>
-        FileSaveFormatNotAvailable = 32,
+        FileSaveFormatNotAvailable = swFileSaveError_e.swFileSaveFormatNotAvailable,
 
         /// <summary>
         /// Obsolete: This error is now in a warning
         /// </summary>
         [Obsolete("This error is now a warning")]
-        FileSaveWithRebuildError = 64,
+        FileSaveWithRebuildError = swFileSaveError_e.swFileSaveWithRebuildError,
 
         /// <summary>
         /// The file already exists, and the save is set to not override existing files
         /// </summary>
-        FileSaveAsDoNotOverwrite = 128,
+        FileSaveAsDoNotOverwrite = swFileSaveError_e.swFileSaveAsDoNotOverwrite,
 
         /// <summary>
         /// The file save extension does not match the SolidWorks document type
         /// </summary>
-        FileSaveAsInvalidFileExtension = 256,
+        FileSaveAsInvalidFileExtension = swFileSaveError_e.swFileSaveAsInvalidFileExtension,
 
         /// <summary>
         /// Save the selected bodies in a part document. Valid option for IPartDoc::SaveToFile2; 
         /// however, not a valid option for IModelDocExtension::SaveAs
         /// </summary>
-        FileSaveAsNoSelection = 512,
+        FileSaveAsNoSelection = swFileSaveError_e.swFileSaveAsNoSelection,
 
         /// <summary>
         /// The version of eDrawings is invalid
         /// </summary>
-        FileSaveAsBadEDrawingsVersion = 1024,
+        FileSaveAsBadEDrawingsVersion = swFileSaveError_e.swFileSaveAsBadEDrawingsVersion,
 
         /// <summary>
         /// The filename is too long
         /// </summary>
-        FileSaveAsNameExceedsMaxPathLength = 2048,
+        FileSaveAsNameExceedsMaxPathLength = swFileSaveError_e.swFileSaveAsNameExceedsMaxPathLength,
 
         /// <summary>
         /// The save as operation is not supported, or was executed is such a way that the resulting
         /// file might not be complete, possibly because SolidWorks is hidden; 
         /// </summary>
-        FileSaveAsNotSupported = 4096,
+        FileSaveAsNotSupported = swFileSaveError_e.swFileSaveAsNotSupported,
 
         /// <summary>
         /// Saving an assembly with renamed components requires saving the references
         /// </summary>
-        FileSaveRequiresSavingReferences = 8192
+        FileSaveRequiresSavingReferences = swFileSaveError_e.swFileSaveRequiresSavingReferences
     }
 }
