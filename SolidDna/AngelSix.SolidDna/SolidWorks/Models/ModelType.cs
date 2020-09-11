@@ -4,6 +4,7 @@ using SolidWorks.Interop.swconst;
 namespace AngelSix.SolidDna
 {
     /// <summary>
+    /// Document types.
     /// The type of SolidWorks model the <see cref="ModelDoc2"/> is, from <see cref="swDocumentTypes_e"/>
     /// </summary>
     public enum ModelType
@@ -11,34 +12,34 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Unknown
         /// </summary>
-        None = 0,
+        None = swDocumentTypes_e.swDocNONE,
         /// <summary>
         /// SolidWorks Part
         /// </summary>
-        Part = 1,
+        Part = swDocumentTypes_e.swDocPART,
         /// <summary>
         /// SolidWorks Assembly
         /// </summary>
-        Assembly = 2,
+        Assembly = swDocumentTypes_e.swDocASSEMBLY,
         /// <summary>
         /// SolidWorks Drawing
         /// </summary>
-        Drawing = 3,
+        Drawing = swDocumentTypes_e.swDocDRAWING,
         /// <summary>
         /// SolidWorks Document Manager File
         /// </summary>
-        DocumentManager = 4,
+        DocumentManager = swDocumentTypes_e.swDocSDM,
         /// <summary>
         /// External File
         /// </summary>
-        ExternalFile = 5,
-        /// <summary>
-        /// Imported Assembly
-        /// </summary>
-        ImportedAssembly = 6,
+        ExternalFile = swDocumentTypes_e.swDocLAYOUT,
         /// <summary>
         /// Imported Part
         /// </summary>
-        ImportedPart = 7,
+        ImportedPart = swDocumentTypes_e.swDocIMPORTED_PART,
+        /// <summary>
+        /// Imported Assembly
+        /// </summary>
+        ImportedAssembly = swDocumentTypes_e.swDocIMPORTED_ASSEMBLY,
     }
 }
