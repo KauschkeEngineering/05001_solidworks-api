@@ -20,13 +20,13 @@ namespace AngelSix.SolidDna
         /// opens drawings and assemblies.
         /// </summary>
         [Obsolete]
-        AutoMissingConfiguration = 32,
+        AutoMissingConfiguration = swOpenDocOptions_e.swOpenDocOptions_AutoMissingConfig,
 
         /// <summary>
         ///  By default, hidden components are loaded when you open an assembly document. 
         ///  Set to not load hidden components when opening an assembly document.
         /// </summary>
-        DontLoadHiddenComponents = 256,
+        DontLoadHiddenComponents = swOpenDocOptions_e.swOpenDocOptions_DontLoadHiddenComponents,
 
         /// <summary>
         /// Open external references in memory only; this setting is valid only if 
@@ -40,7 +40,7 @@ namespace AngelSix.SolidDna
         /// ISldWorks::OpenDoc6 (swOpenDocOptions_e.swOpenDocOptions_LoadExternalReferencesInMemory) 
         /// have sole control over reference loading
         /// </summary>
-        LoadExternalReferencesInMemory = 512,
+        LoadExternalReferencesInMemory = swOpenDocOptions_e.swOpenDocOptions_LoadExternalReferencesInMemory,
 
         /// <summary>
         /// Open assembly document as lightweight.
@@ -54,36 +54,36 @@ namespace AngelSix.SolidDna
         /// 
         /// If set, then you can set <see cref="LoadLightweight"/> to open an assembly document as lightweight
         /// </summary>
-        LoadLightweight = 128,
+        LoadLightweight = swOpenDocOptions_e.swOpenDocOptions_LoadLightweight,
 
         /// <summary>
         /// Load Detached model upon opening document (drawings only).
         /// </summary>
-        LoadModel = 16,
+        LoadModel = swOpenDocOptions_e.swOpenDocOptions_LoadModel,
 
         /// <summary>
         /// Override default setting whether to open an assembly document as lightweight
         /// </summary>
-        OverrideDefaultLoadLightweight = 64,
+        OverrideDefaultLoadLightweight = swOpenDocOptions_e.swOpenDocOptions_OverrideDefaultLoadLightweight,
 
         /// <summary>
         /// Convert document to Detached format (drawings only)
         /// </summary>
-        RapidDraft = 8,
+        RapidDraft = swOpenDocOptions_e.swOpenDocOptions_RapidDraft,
 
         /// <summary>
         /// Open document read only
         /// </summary>
-        ReadOnly = 2,
+        ReadOnly = swOpenDocOptions_e.swOpenDocOptions_ReadOnly,
 
         /// <summary>
         /// Open document silently
         /// </summary>
-        Silent = 1,
+        Silent = swOpenDocOptions_e.swOpenDocOptions_Silent,
 
         /// <summary>
         /// Open document in Large Design Review mode only (assemblies only).
         /// </summary>
-        ViewOnly = 4,
+        ViewOnly = swOpenDocOptions_e.swOpenDocOptions_ViewOnly,
     }
 }
