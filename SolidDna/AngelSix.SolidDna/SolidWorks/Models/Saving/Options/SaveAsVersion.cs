@@ -11,27 +11,27 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Saves the model in the default way with no special settings (this is the typical way)
         /// </summary>
-        CurrentVersion = 0,
+        CurrentVersion = swSaveAsVersion_e.swSaveAsCurrentVersion,
 
         /// <summary>
         /// Obsolete and no longer supported
         /// </summary>
         [Obsolete("Use CurrentVersion instead")]
-        SolidWorks98plus = 1,
+        SolidWorks98plus = swSaveAsVersion_e.swSaveAsSW98plus,
 
         /// <summary>
         /// Saves the model in Pro/E format
         /// </summary>
-        FormatProE = 2,
+        FormatProE = swSaveAsVersion_e.swSaveAsFormatProE,
 
         /// <summary>
         /// Saves a detached drawing as a standard drawing
         /// </summary>
-        StandardDrawing = 3,
+        StandardDrawing = swSaveAsVersion_e.swSaveAsStandardDrawing,
 
         /// <summary>
         /// Saves a standard drawing as a detached drawing
         /// </summary>
-        DetachedDrawing = 4
+        DetachedDrawing = swSaveAsVersion_e.swSaveAsDetachedDrawing
     }
 }
