@@ -1,6 +1,10 @@
-﻿namespace AngelSix.SolidDna
+﻿using SolidWorks.Interop.swconst;
+
+namespace AngelSix.SolidDna
 {
     /// <summary>
+    /// Configuration options.
+    /// <see cref="swInConfigurationOpts_e"/>
     /// Represents a configuration option used in multiple calls
     /// 
     /// NOTE: Known types are here http://help.solidworks.com/2020/english/api/swconst/SOLIDWORKS.Interop.swconst~SOLIDWORKS.Interop.swconst.swInConfigurationOpts_e.html
@@ -11,22 +15,22 @@
         /// <summary>
         /// Suppress Features in Configuration Property
         /// </summary>
-        ConfigPropertySuppressFeatures = 0,
+        ConfigPropertySuppressFeatures = swInConfigurationOpts_e.swConfigPropertySuppressFeatures,
 
         /// <summary>
         /// This configuration
         /// </summary>
-        ThisConfiguration = 1,
+        ThisConfiguration = swInConfigurationOpts_e.swThisConfiguration,
 
         /// <summary>
         /// All configurations
         /// </summary>
-        AllConfiguration = 2,
+        AllConfiguration = swInConfigurationOpts_e.swAllConfiguration,
 
         /// <summary>
         /// Specific configuration
         /// </summary>
-        SpecificConfiguration = 3,
+        SpecificConfiguration = swInConfigurationOpts_e.swSpecifyConfiguration,
 
         /// <summary>
         /// Linked to parent
@@ -36,11 +40,11 @@
         ///     if specified for non-derived configurations, 
         ///     then the active configuration is used
         /// </remarks>
-        LinkedToParent = 4,
+        LinkedToParent = swInConfigurationOpts_e.swLinkedToParent,
 
         /// <summary>
         /// Speedpak Configuration
         /// </summary>
-        SpeedpakConfiguration = 5
+        SpeedpakConfiguration = swInConfigurationOpts_e.swSpeedpakConfiguration
     }
 }
