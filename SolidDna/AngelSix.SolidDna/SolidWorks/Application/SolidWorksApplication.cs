@@ -78,6 +78,8 @@ namespace AngelSix.SolidDna
 
         public bool IsVisible => BaseObject.Visible;
 
+        public bool IsLoaded { get; private set; } = false;
+
         #endregion
 
         #region Public Events
@@ -135,7 +137,7 @@ namespace AngelSix.SolidDna
             BaseObject.FileOpenPostNotify += FileOpenPostNotify;
             BaseObject.FileNewNotify2 += FileNewPostNotify;
             BaseObject.OnIdleNotify += OnIdleNotify;
-
+                
             // If we have a cookie...
             if (cookie > 0)
                 // Get command manager
@@ -198,6 +200,10 @@ namespace AngelSix.SolidDna
             // Wrap any error
             SolidDnaErrors.Wrap(() =>
             {
+                if (IsLoaded == false)
+                {
+                    IsLoaded = true;
+                }
                 // Inform listeners
                 Idle();
             },
@@ -883,11 +889,33 @@ namespace AngelSix.SolidDna
             BaseObject.CloseDoc(documentName);
         }
 
+        /// <summary>
+        /// Opens a file
+        /// </summary>
+        /// <param name="filePath">The path to the file</param>
+        /// <param name="options">The options to use when opening the file (flags, so | multiple options together)</param>
+        public Tuple<FileLoadErrors, Model> OpenFile(OpenDocumentSpecification openDocumentSpecification)
+        {
+            // Wrap any error
+            return SolidDnaErrors.Wrap(() =>
+            {
+                var modelData = new Tuple<FileLoadErrors, Model>((FileLoadErrors)openDocumentSpecification.Error, new Model(BaseObject.OpenDoc7(openDocumentSpecification)));
+                // TODO: Read errors into enums for better reporting
+                // return new model data
+                return modelData;
+            },
+                SolidDnaErrorTypeCode.SolidWorksApplication,
+                SolidDnaErrorCode.SolidWorksModelOpenError,
+                Localization.GetString("SolidWorksModelOpenFileError"));
+        }
+
         public Tuple<FileLoadErrors, Model> OpenDocumentInvisible(string fullDocumentFilePath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true, bool loadExternalReferencesInMemory = true, bool useNewWindow = false)
         {
-            var solidWorksModelData = OpenDocumenInvisibleInWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, loadExternalReferencesInMemory, false); ;
-            if (ActiveModel != null)
+            var solidWorksModelData = OpenDocumenInvisibleInWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, loadExternalReferencesInMemory, false);
+            if (solidWorksModelData.Item2 != null)
             {
+                mActiveModel = solidWorksModelData.Item2;
+
                 // creates a client window containing the active document. 
                 if (useNewWindow)
                 {
@@ -897,7 +925,7 @@ namespace AngelSix.SolidDna
                 ActiveModel.SetUserControlable(false, false, false, true);
 
                 // if opening a assembly or part file the the working directorty need to be set
-                if ((ActiveModel.IsAssembly || ActiveModel.IsPart) && ActiveModel.GetRootComponent().IsRoot)
+                if (/*(*/ActiveModel.IsAssembly/* || ActiveModel.IsPart)*/ && ActiveModel.GetRootComponent().IsRoot)
                 {
                     BaseObject.SetCurrentWorkingDirectory(fullDocumentFilePath.Replace(fullDocumentFilePath.Split('\\').Last(), ""));
                 }
@@ -909,6 +937,13 @@ namespace AngelSix.SolidDna
                 }
             }
             return solidWorksModelData;
+        }
+
+        public OpenDocumentSpecification GetDocumentSpecification(string fullDocumentFilePath)
+        {
+            return BaseObject != null
+                ? new OpenDocumentSpecification((DocumentSpecification)BaseObject.GetOpenDocSpec(fullDocumentFilePath))
+                : null;
         }
 
         //assembly/part document needs to stay open otherwise it is not fully accessable
@@ -958,6 +993,11 @@ namespace AngelSix.SolidDna
             // set EnableBackgroundProcessing = false when the open operation is finished
             BaseObject.EnableBackgroundProcessing = false;
             return modelData;
+        }
+
+        public Model GetModelByDocumentName(string documentFilePath)
+        {
+            return new Model(BaseObject.IGetOpenDocumentByName2(documentFilePath));
         }
 
         public string GetDefaultAssemblyTemplatePath()
