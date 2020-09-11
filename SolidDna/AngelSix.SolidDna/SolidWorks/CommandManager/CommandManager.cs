@@ -84,7 +84,7 @@ namespace AngelSix.SolidDna
             bool addDropdownBoxForParts = false,
             bool addDropdownBoxForAssemblies = false,
             bool addDropdownBoxForDrawings = false,
-            ModelTemplateType documentTypes = ModelTemplateType.Part | ModelTemplateType.Assembly | ModelTemplateType.Drawing)
+            DocumentTemplateTypes documentTypes = DocumentTemplateTypes.Part | DocumentTemplateTypes.Assembly | DocumentTemplateTypes.Drawing)
         {
             // Wrap any error creating the taskpane in a SolidDna exception
             return SolidDnaErrors.Wrap(() =>
@@ -228,7 +228,7 @@ namespace AngelSix.SolidDna
             bool addDropdownBoxForParts = false,
             bool addDropdownBoxForAssemblies = false,
             bool addDropdownBoxForDrawings = false, 
-            ModelTemplateType documentTypes = ModelTemplateType.Part | ModelTemplateType.Assembly | ModelTemplateType.Drawing)
+            DocumentTemplateTypes documentTypes = DocumentTemplateTypes.Part | DocumentTemplateTypes.Assembly | DocumentTemplateTypes.Drawing)
         {
             // NOTE: We may need to look carefully at this Id if things get removed and re-added based on this SolidWorks note:
             //     
@@ -315,7 +315,7 @@ namespace AngelSix.SolidDna
         /// <param name="createIfNotExist">True to create the tab if it does not exist</param>
         /// <param name="clearExistingItems">Removes any existing items on the tab if true</param>
         /// <returns></returns>
-        public CommandManagerTab GetCommandTab(ModelType type, string title, bool createIfNotExist = true, bool clearExistingItems = true)
+        public CommandManagerTab GetCommandTab(DocumentType type, string title, bool createIfNotExist = true, bool clearExistingItems = true)
         {
             // Try and get the tab
             var unsafeTab = BaseObject.GetCommandTab((int)type, title);
