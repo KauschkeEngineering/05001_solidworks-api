@@ -82,9 +82,9 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// The type of documents to show this command group in as a menu
         /// </summary>
-        public ModelTemplateType MenuVisibleInDocumentTypes
+        public DocumentTemplateTypes MenuVisibleInDocumentTypes
         {
-            get => (ModelTemplateType)BaseObject.ShowInDocumentType;
+            get => (DocumentTemplateTypes)BaseObject.ShowInDocumentType;
             set =>
                 // Set base object
                 BaseObject.ShowInDocumentType = (int)value;
@@ -155,7 +155,7 @@ namespace AngelSix.SolidDna
             bool addDropdownBoxForParts = false,
             bool addDropdownBoxForAssemblies = false,
             bool addDropdownBoxForDrawings = false, 
-            ModelTemplateType documentTypes = ModelTemplateType.Part | ModelTemplateType.Assembly | ModelTemplateType.Drawing) : base(commandGroup)
+            DocumentTemplateTypes documentTypes = DocumentTemplateTypes.Part | DocumentTemplateTypes.Assembly | DocumentTemplateTypes.Drawing) : base(commandGroup)
         {
             // Store user Id, used to remove the command group
             UserId = userId;
@@ -351,12 +351,12 @@ namespace AngelSix.SolidDna
             var flyouts = Flyouts?.Where(f => f.TabView != CommandManagerItemTabView.None && f.VisibleForParts).ToList();
 
             // Add items
-            AddItemsToTab(ModelType.Part, manager, items, flyouts);
+            AddItemsToTab(DocumentType.Part, manager, items, flyouts);
 
             // Add dropdown box?
             if (AddDropdownBoxForParts)
                 AddItemsToTab(
-                    ModelType.Part,
+                    DocumentType.Part,
                     manager,
                     new List<CommandManagerItem>
                     {
@@ -374,12 +374,12 @@ namespace AngelSix.SolidDna
             flyouts = Flyouts?.Where(f => f.TabView != CommandManagerItemTabView.None && f.VisibleForAssemblies).ToList();
 
             // Add items
-            AddItemsToTab(ModelType.Assembly, manager, items, flyouts);
+            AddItemsToTab(DocumentType.Assembly, manager, items, flyouts);
 
             // Add dropdown box?
             if (AddDropdownBoxForAssemblies)
                 AddItemsToTab(
-                    ModelType.Assembly,
+                    DocumentType.Assembly,
                     manager,
                     new List<CommandManagerItem>
                     {
@@ -396,12 +396,12 @@ namespace AngelSix.SolidDna
             flyouts = Flyouts?.Where(f => f.TabView != CommandManagerItemTabView.None && f.VisibleForDrawings).ToList();
 
             // Add items
-            AddItemsToTab(ModelType.Drawing, manager, items, flyouts);
+            AddItemsToTab(DocumentType.Drawing, manager, items, flyouts);
 
             // Add dropdown box?
             if (AddDropdownBoxForDrawings)
                 AddItemsToTab(
-                    ModelType.Drawing,
+                    DocumentType.Drawing,
                     manager,
                     new List<CommandManagerItem>
                     {
@@ -432,7 +432,7 @@ namespace AngelSix.SolidDna
         /// <param name="items">Items to add</param>
         /// <param name="items">Flyout Items to add</param>
         /// <param name="title">The title of the tab</param>
-        public void AddItemsToTab(ModelType type, CommandManager manager, List<CommandManagerItem> items, List<CommandManagerFlyout> flyoutItems, string title = "")
+        public void AddItemsToTab(DocumentType type, CommandManager manager, List<CommandManagerItem> items, List<CommandManagerFlyout> flyoutItems, string title = "")
         {
             // Use default title if not specified
             if (string.IsNullOrEmpty(title))
