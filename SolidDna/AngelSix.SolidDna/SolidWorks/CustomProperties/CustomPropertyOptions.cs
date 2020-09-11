@@ -2,14 +2,17 @@
 
 namespace AngelSix.SolidDna
 {
-
+    /// <summary>
+    /// Options when adding custom properties.
+    /// <see cref="swCustomPropertyAddOption_e"/>
+    /// </summary>
     public enum CustomPropertyAddOption
     {
-        // Add the custom property only if it is new
+        // add the custom property only if it is new
         OnlyIfNew = swCustomPropertyAddOption_e.swCustomPropertyOnlyIfNew,
-        // Delete an existing custom property having the same name and add the new custom property
+        // delete an existing custom property having the same name and add the new custom property
         DeleteAndAdd = swCustomPropertyAddOption_e.swCustomPropertyDeleteAndAdd,
-        // Replace the value of an existing custom property having the same name
+        // replace the value of an existing custom property having the same name
         ReplaceValue = swCustomPropertyAddOption_e.swCustomPropertyReplaceValue
     }
 

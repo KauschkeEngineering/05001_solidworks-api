@@ -4,6 +4,7 @@ namespace AngelSix.SolidDna
 {
     /// <summary>
     /// Rebuild options during document activation.
+    /// <see cref="swRebuildOnActivation_e"/>
     /// </summary>
     public enum RebuildOnActivationOptions
     {

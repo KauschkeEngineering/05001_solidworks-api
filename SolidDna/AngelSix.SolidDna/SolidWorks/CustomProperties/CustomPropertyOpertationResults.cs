@@ -2,47 +2,62 @@
 
 namespace AngelSix.SolidDna
 {
-
+    /// <summary>
+    /// Result codes when getting custom properties.
+    /// <see cref="swCustomInfoGetResult_e"/>
+    /// </summary>
     public enum CustomPropertyGetResult
     {
-        // Cached value was returned
+        // cached value was returned
         CachedValue = swCustomInfoGetResult_e.swCustomInfoGetResult_CachedValue,
-        // Custom property does not exist
+        // custom property does not exist
         NotPresent = swCustomInfoGetResult_e.swCustomInfoGetResult_NotPresent,
-        // Resolved value was returned
+        // resolved value was returned
         ResolvedValue = swCustomInfoGetResult_e.swCustomInfoGetResult_ResolvedValue
     }
 
+    /// <summary>
+    /// Result codes when setting custom properties.
+    /// <see cref="swCustomInfoSetResult_e"/>
+    /// </summary>
     public enum CustomPropertySetResult
     {
-        // Success
+        // success
         OK = swCustomInfoSetResult_e.swCustomInfoSetResult_OK,
-        // Custom property does not exist
+        // custom property does not exist
         NotPresent = swCustomInfoSetResult_e.swCustomInfoSetResult_NotPresent,
-        // Specified value has an incorrect typeSpecified value has an incorrect type
+        // specified value has an incorrect typeSpecified value has an incorrect type
         TypeMismatch = swCustomInfoSetResult_e.swCustomInfoSetResult_TypeMismatch,
         // ?? not described in SOLIDWORKS API see: https://help.solidworks.com/2020/English/api/swconst/SOLIDWORKS.Interop.swconst~SOLIDWORKS.Interop.swconst.swCustomInfoSetResult_e.html?verRedirect=1
         // but this is returned if the property is linked for e.g. to parent.
         LinkedProp = swCustomInfoSetResult_e.swCustomInfoSetResult_LinkedProp
     }
 
+    /// <summary>
+    /// Result codes when adding custom properties.
+    /// <see cref="swCustomInfoAddResult_e"/>
+    /// </summary>
     public enum CustomPropertyAddResult
     {
-        // Success
+        // success
         AddedOrChanged = swCustomInfoAddResult_e.swCustomInfoAddResult_AddedOrChanged,
-        // Failed to add the custom property
+        // failed to add the custom property
         GenericFail = swCustomInfoAddResult_e.swCustomInfoAddResult_GenericFail,
-        // Existing custom property with the same name has a different type
+        // existing custom property with the same name has a different type
         MismatchAgainstExistingType = swCustomInfoAddResult_e.swCustomInfoAddResult_MismatchAgainstExistingType,
-        //Specified value of the custom property does not match the specified type
+        // specified value of the custom property does not match the specified type
         MismatchAgainstSpecifiedType = swCustomInfoAddResult_e.swCustomInfoAddResult_MismatchAgainstSpecifiedType,
     }
 
+    /// <summary>
+    /// Result codes when deleting custom properties.
+    /// <see cref="swCustomInfoDeleteResult_e"/>
+    /// </summary>
     public enum CustomPropertyDeleteResult
     {
-        // Success
+        // success
         OK = swCustomInfoDeleteResult_e.swCustomInfoDeleteResult_OK,
-        // Custom property does not exist
+        // custom property does not exist
         NotPresent = swCustomInfoDeleteResult_e.swCustomInfoDeleteResult_NotPresent,
         // ?? not described in SOLIDWORKS API see: http://help.solidworks.com/2020/english/api/swconst/SOLIDWORKS.Interop.swconst~SOLIDWORKS.Interop.swconst.swCustomInfoDeleteResult_e.html?verRedirect=1
         // but this is returned if the property is linked for e.g. to parent.

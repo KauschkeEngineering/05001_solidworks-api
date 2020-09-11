@@ -2,8 +2,13 @@
 
 namespace AngelSix.SolidDna
 {
+    /// <summary>
+    /// File load errors. Bitmask.
+    /// <see cref="swFileLoadError_e"/>
+    /// </summary>
     public enum FileLoadErrors
     {
+        NoErrorOccured = 0,
         // another error was encountered
         GenericError = swFileLoadError_e.swGenericError,
         // unable to locate the file; the file is not loaded or the referenced file (that is, component) is suppressed
