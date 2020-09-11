@@ -13,6 +13,6 @@
         /// <summary>
         /// The model type for this tab 
         /// </summary>
-        public ModelType ModelType { get; set; }
+        public DocumentType ModelType { get; set; }
     }
 }
