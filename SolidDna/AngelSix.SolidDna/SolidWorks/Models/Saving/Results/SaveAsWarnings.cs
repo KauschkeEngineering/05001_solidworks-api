@@ -1,8 +1,12 @@
-﻿using System;
+﻿using SolidWorks.Interop.swconst;
+using System;
 
 namespace AngelSix.SolidDna
 {
     /// <summary>
+    /// Values for File, Save warnings that can be returned from the IModelDoc2 Save methods. 
+    /// These warnings do not cause the File, Save operation to fail.
+    /// <see cref="swFileSaveWarning_e"/>
     /// Any warnings of a model save operation. 
     /// Warnings mean the save was successful, but it had some warnings.
     /// </summary>
@@ -26,56 +30,56 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// There was a problem rebuilding the model
         /// </summary>
-        RebuildError = 1,
+        RebuildError = swFileSaveWarning_e.swFileSaveWarning_RebuildError,
 
         /// <summary>
         /// The model needs to be rebuilt
         /// </summary>
-        NeedsRebuild = 2,
+        NeedsRebuild = swFileSaveWarning_e.swFileSaveWarning_NeedsRebuild,
 
         /// <summary>
         /// The drawing views need updating
         /// </summary>
-        ViewsNeedUpdate = 4,
+        ViewsNeedUpdate = swFileSaveWarning_e.swFileSaveWarning_ViewsNeedUpdate,
 
         /// <summary>
         /// The animator needs to be solved
         /// </summary>
-        AnimatorNeedToSolve = 8,
+        AnimatorNeedToSolve = swFileSaveWarning_e.swFileSaveWarning_AnimatorNeedToSolve,
 
         /// <summary>
         /// The animator feature has edits
         /// </summary>
-        AnimatorFeatureEdits = 16,
+        AnimatorFeatureEdits = swFileSaveWarning_e.swFileSaveWarning_AnimatorFeatureEdits,
 
         /// <summary>
         /// The eDrawing file has a bad selection
         /// </summary>
-        EdrwingsBadSelection = 32,
+        EdrwingsBadSelection = swFileSaveWarning_e.swFileSaveWarning_EdrwingsBadSelection,
 
         /// <summary>
         /// The animator lights has edits
         /// </summary>
-        AnimatorLightEdits = 64,
+        AnimatorLightEdits = swFileSaveWarning_e.swFileSaveWarning_AnimatorLightEdits,
 
         /// <summary>
         /// The animator camera views have issues
         /// </summary>
-        AnimatorCameraViews = 128,
+        AnimatorCameraViews = swFileSaveWarning_e.swFileSaveWarning_AnimatorCameraViews,
 
         /// <summary>
         /// The animator section views have issues
         /// </summary>
-        AnimatorSectionViews = 256,
+        AnimatorSectionViews = swFileSaveWarning_e.swFileSaveWarning_AnimatorSectionViews,
 
         /// <summary>
         /// The file is missing OLE objects
         /// </summary>
-        MissingOLEObjects = 512,
+        MissingOLEObjects = swFileSaveWarning_e.swFileSaveWarning_MissingOLEObjects,
 
         /// <summary>
         /// The file is using the opened view only
         /// </summary>
-        OpenedViewOnly = 1024
+        OpenedViewOnly = swFileSaveWarning_e.swFileSaveWarning_OpenedViewOnly
     }
 }
