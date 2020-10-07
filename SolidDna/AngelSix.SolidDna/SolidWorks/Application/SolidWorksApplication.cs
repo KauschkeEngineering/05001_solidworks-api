@@ -826,7 +826,7 @@ namespace AngelSix.SolidDna
         public object GetPreviewBitmap(string filePath, bool isDrawingSheet = false, string drawingSheetName = "")
         {
             var swClassFact = new SwDMClassFactory();
-            var swDocMgr = (SwDMApplication)swClassFact.GetApplication(Credential.API_LICENCE_KEY);
+            var swDocMgr = (SwDMApplication)swClassFact.GetApplication(Credential.getSolidWorksLicenseAPIKey());
             if (swDocMgr != null)
             {
                 var ver = (Model.MajorSolidWorksVersions)swDocMgr.GetLatestSupportedFileVersion();
@@ -1019,7 +1019,7 @@ namespace AngelSix.SolidDna
         {
 
             var swClassFact = new SwDMClassFactory();
-            var swDocMgr = swClassFact.GetApplication(Credential.API_LICENCE_KEY);
+            var swDocMgr = swClassFact.GetApplication(Credential.getSolidWorksLicenseAPIKey());
             var swSearchOpt = swDocMgr.GetSearchOptionObject();
             swSearchOpt.ClearAllSearchPaths();
             swSearchOpt.AddSearchPath(searchPath);
@@ -1066,7 +1066,7 @@ namespace AngelSix.SolidDna
             }
 
             swClassFact = new SwDMClassFactory();
-            swDocMgr = (SwDMApplication)swClassFact.GetApplication(Credential.API_LICENCE_KEY);
+            swDocMgr = (SwDMApplication)swClassFact.GetApplication(Credential.getSolidWorksLicenseAPIKey());
             swSearchOpt = swDocMgr.GetSearchOptionObject();
             var nRetVal = SwDmDocumentOpenError.swDmDocumentOpenErrorNone;
             swDoc = (SwDMDocumentClass)swDocMgr.GetDocument(documentFileName, (SwDmDocumentType)nDocType, true, out nRetVal);
