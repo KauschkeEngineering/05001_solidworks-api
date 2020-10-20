@@ -10,7 +10,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using static Dna.FrameworkDI;
+using DevelopmentFramework.Logging;
+
+
+using System.Diagnostics;
+using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.InteropServices;
 
 namespace AngelSix.SolidDna
 {
@@ -33,7 +38,7 @@ namespace AngelSix.SolidDna
     public abstract class AddInIntegration : ISwAddin
     {
         private static Process _solidWorksProcess = null;
-		
+
         #region Protected Members
 
         /// <summary>
@@ -67,7 +72,7 @@ namespace AngelSix.SolidDna
 
         /// <summary>
         /// Gets the list of all known reference assemblies in this solution
-															 
+
         /// </summary>
         public AssemblyName[] ReferencedAssemblies => mReferencedAssemblies.ToArray();
 
@@ -77,7 +82,7 @@ namespace AngelSix.SolidDna
         /// </summary>
         public bool DetachedAppDomain { get; set; }
 
-        public static Process SolidWorksProcess => _solidWorksProcess;										   
+        public static Process SolidWorksProcess => _solidWorksProcess;
 
         #endregion
 
@@ -153,7 +158,8 @@ namespace AngelSix.SolidDna
             catch (Exception ex)
             {
                 // Fall-back just write a static log directly
-                File.AppendAllText(Path.ChangeExtension(this.AssemblyFilePath(), "fatal.log.txt"), $"\r\nUnexpected error: {ex}");
+                Logger.LogException("Exception in AddInIntegration constructor: ", ex);
+                //File.AppendAllText(Path.ChangeExtension(this.AssemblyFilePath(), "fatal.log.txt"), $"\r\nUnexpected error: {ex}");
             }
         }
 
@@ -211,7 +217,7 @@ namespace AngelSix.SolidDna
         public void Callback(string arg)
         {
             // Log it
-            Logger?.LogDebugSource($"SolidWorks Callback fired {arg}");
+            Logger.LogDebugSource($"SolidWorks Callback fired {arg}");
 
             PlugInIntegration.OnCallback(arg);
         }
@@ -235,13 +241,13 @@ namespace AngelSix.SolidDna
                     GetType().Assembly.Location, "");
 
                 // Log it
-                Logger?.LogTraceSource($"Fired PreConnectToSolidWorks...");
+                Logger.LogTraceSource($"Fired PreConnectToSolidWorks...");
 
                 // Get the directory path to this actual add-in dll
                 var assemblyPath = this.AssemblyPath();
 
                 // Log it
-                Logger?.LogDebugSource($"{SolidWorksAddInTitle} Connected to SolidWorks...");
+                Logger.LogDebugSource($"{SolidWorksAddInTitle} Connected to SolidWorks...");
 
                 //
                 //   NOTE: Do not need to create it here, as we now create it inside PlugInIntegration.Setup in it's own AppDomain
@@ -252,19 +258,19 @@ namespace AngelSix.SolidDna
                 //SolidWorks = new SolidWorksApplication((SldWorks)ThisSW, Cookie);
 
                 // Log it
-                Logger?.LogDebugSource($"Setting AddinCallbackInfo...");
+                Logger.LogDebugSource($"Setting AddinCallbackInfo...");
 
                 // Setup callback info
                 var ok = ((SldWorks)thisSw).SetAddinCallbackInfo2(0, this, cookie);
 
                 // Log it
-                Logger?.LogDebugSource($"PlugInIntegration Setup...");
+                Logger.LogDebugSource($"PlugInIntegration Setup...");
 
                 // Setup plug-in application domain
                 PlugInIntegration.Setup(assemblyPath, ((SldWorks)thisSw).RevisionNumber(), cookie);
 
                 // Log it
-                Logger?.LogDebugSource($"Firing PreLoadPlugIns...");
+                Logger.LogDebugSource($"Firing PreLoadPlugIns...");
 
                 // If this is the first load, or we are not loading add-ins 
                 // into this domain they need loading every time as they were
@@ -275,7 +281,7 @@ namespace AngelSix.SolidDna
                     PreLoadPlugIns();
 
                     // Log it
-                    Logger?.LogDebugSource($"Configuring PlugIns...");
+                    Logger.LogDebugSource($"Configuring PlugIns...");
 
                     // Perform any plug-in configuration
                     PlugInIntegration.ConfigurePlugIns(assemblyPath);
@@ -285,19 +291,19 @@ namespace AngelSix.SolidDna
                 }
 
                 // Log it
-                Logger?.LogDebugSource($"Firing ApplicationStartup...");
+                Logger.LogDebugSource($"Firing ApplicationStartup...");
 
                 // Call the application startup function for an entry point to the application
                 ApplicationStartup();
 
                 // Log it
-                Logger?.LogDebugSource($"Firing ConnectedToSolidWorks...");
+                Logger.LogDebugSource($"Firing ConnectedToSolidWorks...");
 
                 // Inform listeners
                 ConnectedToSolidWorks();
 
                 // Log it
-                Logger?.LogDebugSource($"PlugInIntegration ConnectedToSolidWorks...");
+                Logger.LogDebugSource($"PlugInIntegration ConnectedToSolidWorks...");
 
                 // And plug-in domain listeners
                 PlugInIntegration.ConnectedToSolidWorks();
@@ -308,7 +314,7 @@ namespace AngelSix.SolidDna
             catch (Exception ex)
             {
                 // Log it
-                Logger?.LogCriticalSource($"Unexpected error: {ex}");
+                Logger.LogCriticalSource($"Unexpected error: {ex}");
 
                 return false;
             }
@@ -321,10 +327,10 @@ namespace AngelSix.SolidDna
         public bool DisconnectFromSW()
         {
             // Log it
-            Logger?.LogDebugSource($"{SolidWorksAddInTitle} Disconnected from SolidWorks...");
+            Logger.LogDebugSource($"{SolidWorksAddInTitle} Disconnected from SolidWorks...");
 
             // Log it
-            Logger?.LogDebugSource($"Firing DisconnectedFromSolidWorks...");
+            Logger.LogDebugSource($"Firing DisconnectedFromSolidWorks...");
 
             // Inform listeners
             DisconnectedFromSolidWorks();
@@ -333,7 +339,7 @@ namespace AngelSix.SolidDna
             PlugInIntegration.DisconnectedFromSolidWorks();
 
             // Log it
-            Logger?.LogDebugSource($"Tearing down...");
+            Logger.LogDebugSource($"Tearing down...");
 
             // Clean up plug-in app domain
             PlugInIntegration.Teardown();
@@ -358,7 +364,7 @@ namespace AngelSix.SolidDna
         public static void OnConnectedToSolidWorks()
         {
             // Log it
-            Logger?.LogDebugSource($"Firing ConnectedToSolidWorks event...");
+            Logger.LogDebugSource($"Firing ConnectedToSolidWorks event...");
 
             ConnectedToSolidWorks();
         }
@@ -369,7 +375,7 @@ namespace AngelSix.SolidDna
         public static void OnDisconnectedFromSolidWorks()
         {
             // Log it
-            Logger?.LogDebugSource($"Firing DisconnectedFromSolidWorks event...");
+            Logger.LogDebugSource($"Firing DisconnectedFromSolidWorks event...");
 
             DisconnectedFromSolidWorks();
         }
@@ -394,7 +400,7 @@ namespace AngelSix.SolidDna
                 var assemblyName = t.Assembly.Location;
 
                 // Log it
-                Logger?.LogInformationSource($"Registering {assemblyName}");
+                Logger.LogInformationSource($"Registering {assemblyName}");
 
                 // Get registry key path
                 var keyPath = string.Format(@"SOFTWARE\SolidWorks\AddIns\{0:b}", t.GUID);
@@ -419,7 +425,7 @@ namespace AngelSix.SolidDna
                     // Force auto-discovering plug-in during COM registration
                     PlugInIntegration.AutoDiscoverPlugins = true;
 
-                    Logger?.LogInformationSource("Configuring plugins...");
+                    Logger.LogInformationSource("Configuring plugins...");
 
                     // Let plug-ins configure title and descriptions
                     PlugInIntegration.ConfigurePlugIns(pluginPath);
@@ -428,12 +434,12 @@ namespace AngelSix.SolidDna
                     rk.SetValue("Title", SolidWorksAddInTitle);
                     rk.SetValue("Description", SolidWorksAddInDescription);
 
-                    Logger?.LogInformationSource($"COM Registration successful. '{SolidWorksAddInTitle}' : '{SolidWorksAddInDescription}'");
+                    Logger.LogInformationSource($"COM Registration successful. '{SolidWorksAddInTitle}' : '{SolidWorksAddInDescription}'");
                 }
             }
             catch (Exception ex)
             {
-                Logger?.LogCriticalSource($"COM Registration error. {ex}");
+                Logger.LogCriticalSource($"COM Registration error. {ex}");
                 throw;
             }
         }
@@ -472,7 +478,7 @@ namespace AngelSix.SolidDna
                 SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject("SldWorks.Application"), 0);
 
                 // Log it
-                Logger?.LogDebugSource($"Acquired active instance SolidWorks in Stand-Alone mode");
+                Logger.LogDebugSource($"Acquired active instance SolidWorks in Stand-Alone mode");
 
                 // Return if successful
                 return SolidWorks != null;
@@ -481,7 +487,7 @@ namespace AngelSix.SolidDna
             catch (COMException)
             {
                 // Log it
-                Logger?.LogDebugSource($"Failed to get active instance of SolidWorks in Stand-Alone mode");
+                Logger.LogDebugSource($"Failed to get active instance of SolidWorks in Stand-Alone mode");
 
                 // Return failure
                 return false;
@@ -500,10 +506,16 @@ namespace AngelSix.SolidDna
                 TearDown();
 
                 // Try and get the active SolidWorks instance
-                SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject(string.Format("SldWorks.Application.{0}", (int)progIdVersion)), 0);
 
+                var sw_ProgId = string.Format("SldWorks.Application.{0}", (int)progIdVersion);
                 // Log it
                 Logger.LogDebugSource($"Aquired active instance SolidWorks in Stand-Alone mode");
+
+                // Try and get the active SolidWorks instance
+                var obj = Marshal.GetActiveObject(sw_ProgId);
+                Logger.LogDebugSource($"Get GetActiveObject finish");
+                SolidWorks = new SolidWorksApplication((SldWorks)obj, 0);
+                Logger.LogDebugSource($"finish with quired active instance SolidWorks in Stand-Alone mode");
 
                 // Return if successful
                 return SolidWorks != null;
@@ -512,7 +524,9 @@ namespace AngelSix.SolidDna
             catch (COMException ex)
             {
                 // Log it
-                Logger.LogDebugSource($"Failed to get active instance of SolidWorks in Stand-Alone mode");
+                //Logger.LogDebugSource($"Failed to get active instance of SolidWorks in Stand-Alone mode");
+                //Logger.LogException($"Failed to get active instance of SolidWorks in Stand-Alone mode", ex);
+                // TODOdaka
 
                 // Return failure
                 return false;
@@ -556,9 +570,10 @@ namespace AngelSix.SolidDna
                     var processInfo = new ProcessStartInfo()
                     {
                         FileName = solidWorksExePath,
-                        Arguments = "/r", //no splash screen will be shown while loading SolidWorks application
+                        //Arguments = "/r", //no splash screen will be shown while loading SolidWorks application
                         CreateNoWindow = false,
-                        WindowStyle = ProcessWindowStyle.Hidden
+                        //WindowStyle = ProcessWindowStyle.Hidden
+                        WindowStyle = ProcessWindowStyle.Maximized
                     };
                     _solidWorksProcess = Process.Start(processInfo);
                     // set the priorty to high for SOLIDWORKS to gain more CPU time
@@ -650,7 +665,8 @@ namespace AngelSix.SolidDna
                                 case SWProgIdVersion.SW_2018:
                                     return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2018, registryValue.ToString());
                                 case SWProgIdVersion.SW_2019:
-                                    return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2019, registryValue.ToString()); ;
+                                    return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2019, registryValue.ToString());
+                                    ;
                             }
                         }
                     }
@@ -811,7 +827,7 @@ namespace AngelSix.SolidDna
             if (SolidWorks != null)
             {
                 // Log it
-                Logger?.LogDebugSource($"Disposing SolidWorks COM reference...");
+                Logger.LogDebugSource($"Disposing SolidWorks COM reference...");
 
                 // Dispose SolidWorks COM
                 SolidWorks?.Dispose();
@@ -820,7 +836,193 @@ namespace AngelSix.SolidDna
             // Set to null
             SolidWorks = null;
         }
-
         #endregion
+
+
+        [DllImport("ole32.dll")]
+        private static extern int CreateBindCtx(uint reserved, out IBindCtx ppbc);
+
+
+
+        public static bool GetSwAppFromProcess(int processId)
+        {
+            //var monikerName = "SolidWorks_PID_" + processId.ToString();
+            var monikerName = "!{655FC8FC-6216-46E2-82B6-221A9A271624}";
+
+            Logger.LogDebugSource($"Find solidworks process id: " + monikerName);
+
+
+            IBindCtx context = null;
+            IRunningObjectTable rot = null;
+            IEnumMoniker monikers = null;
+
+
+            Type type = Type.GetTypeFromProgID("SldWorks.Application");
+
+            try
+            {
+                CreateBindCtx(0, out context);
+
+                context.GetRunningObjectTable(out rot);
+                rot.EnumRunning(out monikers);
+
+                var moniker = new IMoniker[1];
+                IntPtr pNumFetched = new IntPtr();
+
+                while (monikers.Next(1, moniker, pNumFetched) == 0)
+                {
+                    var curMoniker = moniker.First();
+
+                    string name = null;
+
+
+                    if (curMoniker != null)
+                    {
+                        try
+                        {
+                            curMoniker.GetDisplayName(context, null, out name);
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                        }
+                    }
+
+                    Logger.LogDebugSource($"Type: " + curMoniker.GetType() + " get name: " + name);
+
+/*                    string applicationName = "";
+                    dynamic application = null;
+                    Guid IUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
+                    object ppvResult;
+                    curMoniker.BindToObject(context, null, ref IUnknown, out ppvResult);
+                    application = ppvResult;
+                    applicationName = application.Name;*/
+
+                    //Logger.LogDebugSource($"Application name: "+ applicationName);
+
+
+
+                        // 19022-100-00-0_Testrahmen.SLDASM
+
+                    if (string.Equals(monikerName,name, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        Logger.LogDebugSource($"Found correct com object");
+                        //object com_instance = null;
+                        rot.GetObject(curMoniker, out var com_instance);
+                        //SldWorks com_instance_converted = (SldWorks)com_instance;
+
+                        SldWorks app = com_instance as SldWorks;
+
+
+                        var processid = app.GetProcessID();
+                        ModelDoc2 m_swModel = (ModelDoc2) app.ActiveDoc;
+
+                        var pathName = m_swModel.GetPathName();
+
+                        //SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject("SldWorks.Application"), 0);
+
+
+                        SolidWorks = new SolidWorksApplication(app, 0);
+                        //SolidWorks = new SolidWorksApplication((SldWorks)com_instance, 0);
+
+                        //SolidWorks = new SolidWorksApplication((SldWorks)com_instance, 0);
+                        //SolidWorks = new SolidWorksApplication(app, 0);
+                        //SolidWorks = new SolidWorksApplication(app, 0);
+                    }
+
+                    //object com_instance;
+                    //rot.GetObject(curMoniker, out var app);
+                    //rot.GetObject(curMoniker, out com_instance);
+                    //SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject("SldWorks.Application"), 0);
+
+                    //object com_instance_converted = (ISldWorks)com_instance;
+                    //SolidWorks = new SolidWorksApplication((ISldWorks)com_instance, 0);
+                    //SolidWorks = new SolidWorksApplication(app as SldWorks, 0);
+                    //SolidWorks = new SolidWorksApplication((SldWorks)app, 0);
+                    //return true;
+
+                    /*                    if (string.Equals(monikerName,
+                                            name, StringComparison.CurrentCultureIgnoreCase))
+                                        {
+                                            //object app;
+                                            rot.GetObject(curMoniker, out var app);
+                                            //SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject("SldWorks.Application"), 0);
+                                            SolidWorks = new SolidWorksApplication((SldWorks)app, 0);
+                                            return true;
+                                        }*/
+                }
+            }
+            finally
+            {
+                if (monikers != null)
+                {
+                    Marshal.ReleaseComObject(monikers);
+                }
+
+                if (rot != null)
+                {
+                    Marshal.ReleaseComObject(rot);
+                }
+
+                if (context != null)
+                {
+                    Marshal.ReleaseComObject(context);
+                }
+            }
+
+            return false;
+        }
+
+
+        public static SolidWorksApplication GetSwAppFromProcessId(int processId)
+        {
+            var monikerName = "SolidWorks_PID_" + processId.ToString();
+
+            IBindCtx context = null;
+            IRunningObjectTable rot = null;
+            IEnumMoniker monikers = null;
+
+            try
+            {
+                CreateBindCtx(0, out context);
+
+                context.GetRunningObjectTable(out rot);
+                rot.EnumRunning(out monikers);
+
+                var moniker = new IMoniker[1];
+
+                while (monikers.Next(1, moniker, IntPtr.Zero) == 0)
+                {
+                    var curMoniker = moniker.First();
+
+                    string name = null;
+
+                    if (curMoniker != null)
+                    {
+                        try
+                        {
+                            curMoniker.GetDisplayName(context, null, out name);
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                        }
+                    }
+
+                    if (string.Equals(monikerName,
+                        name, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        object app;
+                        rot.GetObject(curMoniker, out app);
+                        SolidWorks = new SolidWorksApplication((SldWorks)app, 0);
+                        return SolidWorks;
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+
+            }
+            return null;
+        }
+
     }
 }
