@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swdocumentmgr;
+using DevelopmentFramework.Logging;
 
 namespace AngelSix.SolidDna
 {
@@ -197,6 +198,7 @@ namespace AngelSix.SolidDna
         /// <returns></returns>
         private int OnIdleNotify()
         {
+            Logger.LogDebugSource($"OnIdleNotify is called");
             // Wrap any error
             SolidDnaErrors.Wrap(() =>
             {
