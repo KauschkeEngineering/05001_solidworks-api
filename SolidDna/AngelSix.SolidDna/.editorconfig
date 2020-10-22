@@ -118,3 +118,6 @@ dotnet_style_qualification_for_method = false:suggestion
 #prefer properties not to be prefaced with this. or Me. in Visual Basic
 dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_prefer_conditional_expression_over_return = true:warning 
+
+# IDE0032: Use auto property
+dotnet_style_prefer_auto_properties = true:silent
