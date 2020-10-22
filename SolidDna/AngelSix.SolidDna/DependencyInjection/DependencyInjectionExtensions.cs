@@ -16,6 +16,7 @@ namespace AngelSix.SolidDna
         public static FrameworkConstruction AddLocalizationManager(this FrameworkConstruction construction)
         {
             // Add the localization manager
+            // todo:daka: LocalizationManager necessary???
             construction.Services.AddSingleton<ILocalizationManager>(new LocalizationManager
              {
                  StringResourceDefinition = new ResourceDefinition
