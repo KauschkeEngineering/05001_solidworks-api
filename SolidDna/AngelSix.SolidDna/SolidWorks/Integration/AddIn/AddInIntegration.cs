@@ -839,25 +839,35 @@ namespace AngelSix.SolidDna
         #endregion
 
 
+
+        public static bool GetAssemblyNameFromProcess(int processId, ref string assemblyName)
+        {
+            SldWorks app = GetSwAppFromProcess(processId);
+
+
+            ModelDoc2 m_swModel = (ModelDoc2)app.ActiveDoc;
+            if (m_swModel != null)
+            {
+                assemblyName = m_swModel.GetPathName();
+                Logger.LogDebugSource($"Found solidworks app with process id: " + processId + " and file name: " + assemblyName);
+                return true;
+            }
+            else
+            {
+                Logger.LogDebugSource($"Dead SolidWorks process!");
+                return false;
+            }
+        }
+
         [DllImport("ole32.dll")]
         private static extern int CreateBindCtx(uint reserved, out IBindCtx ppbc);
 
-
-
-        public static bool GetSwAppFromProcess(int processId)
+        public static SldWorks GetSwAppFromProcess(int processId)
         {
-            //var monikerName = "SolidWorks_PID_" + processId.ToString();
-            var monikerName = "!{655FC8FC-6216-46E2-82B6-221A9A271624}";
-
-            Logger.LogDebugSource($"Find solidworks process id: " + monikerName);
-
-
+            var monikerName = "SolidWorks_PID_" + processId.ToString();
             IBindCtx context = null;
             IRunningObjectTable rot = null;
             IEnumMoniker monikers = null;
-
-
-            Type type = Type.GetTypeFromProgID("SldWorks.Application");
 
             try
             {
@@ -887,142 +897,35 @@ namespace AngelSix.SolidDna
                         }
                     }
 
-                    Logger.LogDebugSource($"Type: " + curMoniker.GetType() + " get name: " + name);
-
-/*                    string applicationName = "";
-                    dynamic application = null;
-                    Guid IUnknown = new Guid("{00000000-0000-0000-C000-000000000046}");
-                    object ppvResult;
-                    curMoniker.BindToObject(context, null, ref IUnknown, out ppvResult);
-                    application = ppvResult;
-                    applicationName = application.Name;*/
-
-                    //Logger.LogDebugSource($"Application name: "+ applicationName);
-
-
-
-                        // 19022-100-00-0_Testrahmen.SLDASM
-
                     if (string.Equals(monikerName,name, StringComparison.CurrentCultureIgnoreCase))
                     {
-                        Logger.LogDebugSource($"Found correct com object");
-                        //object com_instance = null;
+                        //Logger.LogDebugSource($"Found correct com object");
                         rot.GetObject(curMoniker, out var com_instance);
-                        //SldWorks com_instance_converted = (SldWorks)com_instance;
-
                         SldWorks app = com_instance as SldWorks;
-
-
-                        var processid = app.GetProcessID();
-                        ModelDoc2 m_swModel = (ModelDoc2) app.ActiveDoc;
-
-                        var pathName = m_swModel.GetPathName();
-
-                        //SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject("SldWorks.Application"), 0);
-
-
-                        SolidWorks = new SolidWorksApplication(app, 0);
-                        //SolidWorks = new SolidWorksApplication((SldWorks)com_instance, 0);
-
-                        //SolidWorks = new SolidWorksApplication((SldWorks)com_instance, 0);
-                        //SolidWorks = new SolidWorksApplication(app, 0);
-                        //SolidWorks = new SolidWorksApplication(app, 0);
-                    }
-
-                    //object com_instance;
-                    //rot.GetObject(curMoniker, out var app);
-                    //rot.GetObject(curMoniker, out com_instance);
-                    //SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject("SldWorks.Application"), 0);
-
-                    //object com_instance_converted = (ISldWorks)com_instance;
-                    //SolidWorks = new SolidWorksApplication((ISldWorks)com_instance, 0);
-                    //SolidWorks = new SolidWorksApplication(app as SldWorks, 0);
-                    //SolidWorks = new SolidWorksApplication((SldWorks)app, 0);
-                    //return true;
-
-                    /*                    if (string.Equals(monikerName,
-                                            name, StringComparison.CurrentCultureIgnoreCase))
-                                        {
-                                            //object app;
-                                            rot.GetObject(curMoniker, out var app);
-                                            //SolidWorks = new SolidWorksApplication((SldWorks)Marshal.GetActiveObject("SldWorks.Application"), 0);
-                                            SolidWorks = new SolidWorksApplication((SldWorks)app, 0);
-                                            return true;
-                                        }*/
-                }
-            }
-            finally
-            {
-                if (monikers != null)
-                {
-                    Marshal.ReleaseComObject(monikers);
-                }
-
-                if (rot != null)
-                {
-                    Marshal.ReleaseComObject(rot);
-                }
-
-                if (context != null)
-                {
-                    Marshal.ReleaseComObject(context);
-                }
-            }
-
-            return false;
-        }
-
-
-        public static SolidWorksApplication GetSwAppFromProcessId(int processId)
-        {
-            var monikerName = "SolidWorks_PID_" + processId.ToString();
-
-            IBindCtx context = null;
-            IRunningObjectTable rot = null;
-            IEnumMoniker monikers = null;
-
-            try
-            {
-                CreateBindCtx(0, out context);
-
-                context.GetRunningObjectTable(out rot);
-                rot.EnumRunning(out monikers);
-
-                var moniker = new IMoniker[1];
-
-                while (monikers.Next(1, moniker, IntPtr.Zero) == 0)
-                {
-                    var curMoniker = moniker.First();
-
-                    string name = null;
-
-                    if (curMoniker != null)
-                    {
-                        try
-                        {
-                            curMoniker.GetDisplayName(context, null, out name);
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                        }
-                    }
-
-                    if (string.Equals(monikerName,
-                        name, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        object app;
-                        rot.GetObject(curMoniker, out app);
-                        SolidWorks = new SolidWorksApplication((SldWorks)app, 0);
-                        return SolidWorks;
+                        return app;
                     }
                 }
             }
-            catch(Exception ex)
+            catch(Exception e)
             {
 
             }
             return null;
         }
 
+        public static bool CreateSwAppFromProcessId(int processId)
+        {
+            SldWorks app = GetSwAppFromProcess(processId);
+            SolidWorks = new SolidWorksApplication(app, 0);
+
+            if(SolidWorks != null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
