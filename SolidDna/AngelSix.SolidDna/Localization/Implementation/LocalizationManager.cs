@@ -116,7 +116,7 @@ namespace AngelSix.SolidDna
             //       We do not want to fail silently
             if (IoC.Localization == null)
             {
-                Logger.log(LogLevel.WARN, "IoC.Localization string is null");
+                //Logger.log(LogLevel.WARN, "IoC.Localization string is null");
                 return "ioc.localization is null"; // TODO:daka: null if running solidworks object is get by moniker object from running object table (rot)
             }
             else
