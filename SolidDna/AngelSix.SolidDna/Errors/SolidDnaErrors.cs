@@ -1,7 +1,7 @@
 ﻿using Dna;
 using System;
 using System.Threading.Tasks;
-using static Dna.FrameworkDI;
+using DevelopmentFramework.Logging;
 
 namespace AngelSix.SolidDna
 {
@@ -63,9 +63,9 @@ namespace AngelSix.SolidDna
                 if (SolidDnaEnvironment.LogAndIgnoreUncaughtExceptions)
                 {
                     // Log the error
-                    Logger?.LogCriticalSource($"SolidDNA Exception created. {error.SolidDnaError?.ToString()}");
+                    Logger.LogCriticalSource($"SolidDNA Exception created. {error.SolidDnaError?.ToString()}");
                     if (error.InnerException != null)
-                        Logger?.LogCriticalSource($"Inner Exception: { error.InnerException.GetErrorMessage()}");
+                        Logger.LogCriticalSource($"Inner Exception: { error.InnerException.GetErrorMessage()}");
                 }
                 // Otherwise, throw 
                 else
@@ -99,15 +99,19 @@ namespace AngelSix.SolidDna
                 if (SolidDnaEnvironment.LogAndIgnoreUncaughtExceptions)
                 {
                     // Log the error
-                    Logger?.LogCriticalSource($"SolidDNA Exception created. {error.SolidDnaError?.ToString()}");
+                    Logger.LogCriticalSource($"SolidDNA Exception created. {error.SolidDnaError?.ToString()}");
                     if (error.InnerException != null)
-                        Logger?.LogCriticalSource($"Inner Exception: { error.InnerException.GetErrorMessage()}");
+                        Logger.LogCriticalSource($"Inner Exception: { error.InnerException.GetErrorMessage()}");
 
                     return default;
                 }
-                // Otherwise, throw 
-                else
-                    throw error;
+                else // Otherwise, throw 
+                {
+                    Logger.LogCriticalSource($"SolidDNA Exception created. {error.SolidDnaError?.ToString()}");
+                    //throw error; // TODO:daka 
+                    return default;
+                }
+                
             }
         }
 
@@ -137,9 +141,9 @@ namespace AngelSix.SolidDna
                 if (SolidDnaEnvironment.LogAndIgnoreUncaughtExceptions)
                 {
                     // Log the error
-                    Logger?.LogCriticalSource($"SolidDNA Exception created. {error.SolidDnaError?.ToString()}");
+                    Logger.LogCriticalSource($"SolidDNA Exception created. {error.SolidDnaError?.ToString()}");
                     if (error.InnerException != null)
-                        Logger?.LogCriticalSource($"Inner Exception: { error.InnerException.GetErrorMessage()}");
+                        Logger.LogCriticalSource($"Inner Exception: { error.InnerException.GetErrorMessage()}");
                 }
                 // Otherwise, throw 
                 else
@@ -175,9 +179,9 @@ namespace AngelSix.SolidDna
                 if (SolidDnaEnvironment.LogAndIgnoreUncaughtExceptions)
                 {
                     // Log the error
-                    Logger?.LogCriticalSource($"SolidDNA Exception created. {error.SolidDnaError?.ToString()}");
+                    Logger.LogCriticalSource($"SolidDNA Exception created. {error.SolidDnaError?.ToString()}");
                     if (error.InnerException != null)
-                        Logger?.LogCriticalSource($"Inner Exception: { error.InnerException.GetErrorMessage()}");
+                        Logger.LogCriticalSource($"Inner Exception: { error.InnerException.GetErrorMessage()}");
 
                     // Return a default object
                     return default;
