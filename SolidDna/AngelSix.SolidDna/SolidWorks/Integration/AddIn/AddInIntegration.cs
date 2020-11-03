@@ -570,10 +570,9 @@ namespace AngelSix.SolidDna
                     var processInfo = new ProcessStartInfo()
                     {
                         FileName = solidWorksExePath,
-                        //Arguments = "/r", //no splash screen will be shown while loading SolidWorks application
+                        Arguments = "/r", //no splash screen will be shown while loading SolidWorks application
                         CreateNoWindow = false,
-                        //WindowStyle = ProcessWindowStyle.Hidden
-                        WindowStyle = ProcessWindowStyle.Maximized
+                        WindowStyle = ProcessWindowStyle.Hidden
                     };
                     _solidWorksProcess = Process.Start(processInfo);
                     // set the priorty to high for SOLIDWORKS to gain more CPU time
@@ -917,6 +916,7 @@ namespace AngelSix.SolidDna
         {
             SldWorks app = GetSwAppFromProcess(processId);
             SolidWorks = new SolidWorksApplication(app, 0);
+            _solidWorksProcess = Process.GetProcessById(processId);
 
             if(SolidWorks != null)
             {
