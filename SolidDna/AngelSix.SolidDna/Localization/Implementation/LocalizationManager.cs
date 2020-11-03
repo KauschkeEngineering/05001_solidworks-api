@@ -103,7 +103,7 @@ namespace AngelSix.SolidDna
             //       We do not want to fail silently
             return await IoC.Localization.GetStringAsync(name, culture);
         }
-
+        
         /// <summary>
         /// Gets a string resource
         /// </summary>
@@ -112,6 +112,11 @@ namespace AngelSix.SolidDna
         /// <returns>Returns the value of the string if found, and null if not found</returns>
         public static string GetString(string name, string culture = null)
         {
+            // todo:daka method stops during debug mode. define symbol which is only valid during debugging and not in debug mode
+/*#if DEBUG
+            return name;
+#endif */
+            Logger.log(LogLevel.FATAL, "#######################################");
             // NOTE: No null check because it should always be injected or throw if not as the expected result would be the actual resource string
             //       We do not want to fail silently
             if (IoC.Localization == null)

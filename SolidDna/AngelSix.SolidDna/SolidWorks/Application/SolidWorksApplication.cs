@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swdocumentmgr;
+using DevelopmentFramework.Logging;
 
 namespace AngelSix.SolidDna
 {
@@ -118,33 +119,41 @@ namespace AngelSix.SolidDna
         /// </summary>
         public SolidWorksApplication(SldWorks solidWorks, int cookie) : base(solidWorks)
         {
-            // Set preferences
-            Preferences = new SolidWorksPreferences();
+            try
+            {
+                // Set preferences
+                Preferences = new SolidWorksPreferences();
 
-            // Store cookie Id
-            mSwCookie = cookie;
+                // Store cookie Id
+                mSwCookie = cookie;
 
-            //
-            //   NOTE: As we are in our own AppDomain, the callback is registered in the main SolidWorks AppDomain
-            //         We then pass that into our domain
-            //
-            // Setup callback info
-            // var ok = BaseObject.SetAddinCallbackInfo2(0, this, cookie);
+                //
+                //   NOTE: As we are in our own AppDomain, the callback is registered in the main SolidWorks AppDomain
+                //         We then pass that into our domain
+                //
+                // Setup callback info
+                // var ok = BaseObject.SetAddinCallbackInfo2(0, this, cookie);
 
-            // Hook into main events
-            BaseObject.ActiveModelDocChangeNotify += ActiveModelChanged;
-            BaseObject.FileOpenPreNotify += FileOpenPreNotify;
-            BaseObject.FileOpenPostNotify += FileOpenPostNotify;
-            BaseObject.FileNewNotify2 += FileNewPostNotify;
-            BaseObject.OnIdleNotify += OnIdleNotify;
-                
-            // If we have a cookie...
-            if (cookie > 0)
-                // Get command manager
-                CommandManager = new CommandManager(UnsafeObject.GetCommandManager(mSwCookie));
+                // Hook into main events
+                BaseObject.ActiveModelDocChangeNotify += ActiveModelChanged;
+                BaseObject.FileOpenPreNotify += FileOpenPreNotify;
+                BaseObject.FileOpenPostNotify += FileOpenPostNotify;
+                BaseObject.FileNewNotify2 += FileNewPostNotify;
+                BaseObject.OnIdleNotify += OnIdleNotify;
 
-            // Get whatever the current model is on load
-            ReloadActiveModelInformation();
+                // If we have a cookie...
+                if (cookie > 0)
+                    // Get command manager
+                    CommandManager = new CommandManager(UnsafeObject.GetCommandManager(mSwCookie));
+
+                // Get whatever the current model is on load
+                ReloadActiveModelInformation();
+            }
+            catch(Exception ex)
+            {
+                Logger.LogException("Exception in SolidWorksApplication constructor: ", ex);
+            }
+            
         }
 
         #endregion
@@ -202,14 +211,16 @@ namespace AngelSix.SolidDna
             {
                 if (IsLoaded == false)
                 {
+                    Logger.log(LogLevel.INFO, "Solidworks is in idle state. Set to loaded to true");
                     IsLoaded = true;
                 }
                 // Inform listeners
+                Logger.log(LogLevel.INFO, "Inform Solidworks listeners about idle state");
                 Idle();
             },
                 SolidDnaErrorTypeCode.SolidWorksApplication,
                 SolidDnaErrorCode.SolidWorksApplicationError,
-                Localization.GetString("SolidWorksApplicationOnIdleNotificationError"));
+             Localization.GetString("SolidWorksApplicationOnIdleNotificationError"));
 
             // NOTE: 0 is OK, anything else is an error
             return 0;
