@@ -1134,6 +1134,8 @@ namespace AngelSix.SolidDna
 
         public void ExitApplication(bool saveAllDirtyDocuments)
         {
+            Logger.log(LogLevel.INFO, "Exit Solidworks Applications");
+            var docCounter = 0;
             if (BaseObject != null)
             {
                 while (HasOpenDocuments())
@@ -1142,7 +1144,9 @@ namespace AngelSix.SolidDna
                     foreach (var model in openDocuments)
                     {
                         var modelDoc = new Model((ModelDoc2)model);
+                        Logger.log(LogLevel.INFO, "Close document: "+ modelDoc.FilePath);
                         BaseObject.CloseDoc(modelDoc.FilePath);
+                        docCounter++;
                     }
                     //if (saveAllDirtyDocuments == false)
                     //{
@@ -1151,6 +1155,7 @@ namespace AngelSix.SolidDna
                 }
                 BaseObject.ExitApp();
             }
+            Logger.log(LogLevel.INFO, "Closed " + docCounter.ToString() + " documents");
         }
 
         public bool CloseAllDoucments(bool closeUnsafed)
