@@ -732,6 +732,12 @@ namespace AngelSix.SolidDna
             }
         }
 
+        public static void CloseSolidWorksProcess()
+        {
+            Logger.log(LogLevel.INFO, "Set Solidworks process to null");
+            _solidWorksProcess = null;
+        }
+
         public static bool KillHangSolidWorksProcess()
         {
             // get the current process of SolidWorks
@@ -849,6 +855,13 @@ namespace AngelSix.SolidDna
             {
                 assemblyName = m_swModel.GetPathName();
                 Logger.LogDebugSource($"Found solidworks app with process id: " + processId + " and file name: " + assemblyName);
+
+                if(assemblyName.EndsWith("SLDDRW"))
+                {
+                    Logger.log(LogLevel.WARN, "Can not use active solidworks process. It is a drawing and not a assembly");
+                    return false;
+                }
+
                 return true;
             }
             else
