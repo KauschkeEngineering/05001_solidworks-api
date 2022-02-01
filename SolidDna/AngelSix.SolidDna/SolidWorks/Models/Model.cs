@@ -116,6 +116,8 @@ namespace AngelSix.SolidDna
 
         public bool IsDirty => BaseObject.GetSaveFlag();
 
+        public int InstanceCount { get; set; } = 1;
+
         #endregion
 
         #region Public Events
@@ -1241,7 +1243,7 @@ namespace AngelSix.SolidDna
                 dependencies.Add(dependant);
 
             // Find any drawings that exist...
-            foreach (var drawing in dependencies.Where(f => !f.ToLower().EndsWith(".slddrw") && File.Exists(Path.ChangeExtension(f, ".slddrw")))
+            foreach (var drawing in dependencies.Where(f => !f.ToLower().EndsWith(DrawingDocument.FILE_EXTENSION) && File.Exists(Path.ChangeExtension(f, DrawingDocument.FILE_EXTENSION)))
                 // Clone list so we can add new items to same list
                 .ToList())
             {
@@ -1262,20 +1264,27 @@ namespace AngelSix.SolidDna
         /// </summary>
         /// <param name="options">Any save as options</param>
         /// <returns></returns>
-        public ModelSaveResult Save(SaveAsOptions options = SaveAsOptions.None)
+        public ModelSaveResult Save(bool ignoreSaveFlag, SaveAsOptions options = SaveAsOptions.None, AttachedRenamedDocumentNotify attachedRenamedDocumentNotify = null)
         {
-            // Start with a successful result
-            var results = new ModelSaveResult();
-
-            // Set errors and warnings to none to start with
-            var errors = 0;
-            var warnings = 0;
-
-            // Wrap any error
-            return SolidDnaErrors.Wrap(() =>
+            if (BaseObject.GetSaveFlag() || ignoreSaveFlag)
             {
+                // Start with a successful result
+                var results = new ModelSaveResult();
+
+                // Set errors and warnings to none to start with
+                var errors = 0;
+                var warnings = 0;
+
+                // Wrap any error
+                return SolidDnaErrors.Wrap(() =>
+                {
+                // if option is set to swSaveAsOptions_SaveReferenced there need to be a attached event for referenced douments to notify
+                // otherwise Save3 will stuck
+                AttachEventHandlers(attachedRenamedDocumentNotify);
                 // Try and save the model using the Save3 method
                 BaseObject.Save3((int)options, ref errors, ref warnings);
+                // after saving the event handler needs to be detached
+                DetachEventHandlers(attachedRenamedDocumentNotify);
 
                 // Add any warnings
                 results.Warnings = (SaveAsWarnings)warnings;
@@ -1294,14 +1303,16 @@ namespace AngelSix.SolidDna
                 // as this RCW is now invalid. If this model is not active when saved then 
                 // it will simply reload the active models information
                 if (!HasBeenSaved)
-                    SolidWorksEnvironment.Application.RequestActiveModelChanged();
+                        SolidWorksEnvironment.Application.RequestActiveModelChanged();
 
                 // Return result
                 return results;
-            },
-                SolidDnaErrorTypeCode.SolidWorksModel,
-                SolidDnaErrorCode.SolidWorksModelSaveError,
-                Localization.GetString("SolidWorksModelSaveError"));
+                },
+                    SolidDnaErrorTypeCode.SolidWorksModel,
+                    SolidDnaErrorCode.SolidWorksModelSaveError,
+                    Localization.GetString("SolidWorksModelSaveError"));
+            }
+            return new ModelSaveResult() { Warnings = SaveAsWarnings.AlreadySaved };
         }
         /// <summary>
         /// Saves a file to the specified path, with the specified options
@@ -1408,31 +1419,15 @@ namespace AngelSix.SolidDna
 
         public delegate int AttachedRenamedDocumentNotify(ref object target);
 
-        public bool RebuildAndSave(AttachedRenamedDocumentNotify attachedRenamedDocumentNotify, bool updateReferences, bool rebuildNecessaryModels, bool ignoreSaveFlag = false)
+        public ModelSaveResult RebuildAndSave(bool ignoreSaveFlag = true, SaveAsOptions options = SaveAsOptions.None, AttachedRenamedDocumentNotify attachedRenamedDocumentNotify = null)
         {
-            var errors = 0;
-            var warnings = 0;
-            // rebuilds only those features that need to be rebuilt in the active configuration in the model
-            if (rebuildNecessaryModels)
-                BaseObject.EditRebuild3();
-            // rebuilds the model in assembly and drawing documents and returns the status of the rebuild. 
-            //Extension.Rebuild(swRebuildOptions_e.swRebuildAll);
-
-            if (BaseObject.GetSaveFlag() || ignoreSaveFlag)
-            {
-                if (updateReferences)
-                    AttachEventHandlers(attachedRenamedDocumentNotify);
-                var ret = BaseObject.Save3((int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced, ref errors, ref warnings);
-                if (updateReferences)
-                    DetachEventHandlers(attachedRenamedDocumentNotify);
-                return ret;
-            }
-            return true;
+            Rebuild();
+            return Save(ignoreSaveFlag, options, RenamedDocumentNotify);
         }
 
-        public bool Rename(string oldName, string newName)
+        public bool Rebuild()
         {
-            return Extension.Rename(oldName, newName);
+            return BaseObject.EditRebuild3();
         }
 
         private void AttachEventHandlers(AttachedRenamedDocumentNotify attachedRenamedDocumentNotify)
