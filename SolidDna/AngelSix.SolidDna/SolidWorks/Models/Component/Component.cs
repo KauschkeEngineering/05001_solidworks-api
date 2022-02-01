@@ -41,7 +41,11 @@ namespace AngelSix.SolidDna
             }
         }
 
-        public string NameWithInstanceCount => BaseObject.Name2;
+        public string NameWithInstanceCount
+        {
+            get => BaseObject.Name2;
+            set => BaseObject.Name2 = value;
+        }
 
         public string FilePath => BaseObject.GetPathName();
 
@@ -66,6 +70,7 @@ namespace AngelSix.SolidDna
         public bool IsHidden => BaseObject.IsHidden(false);
 
         public bool IsLoaded => BaseObject.IsLoaded();
+        public bool IsVirtual => BaseObject.IsVirtual;
 
         #endregion
 
