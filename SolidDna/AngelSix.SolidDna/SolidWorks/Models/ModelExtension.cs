@@ -125,26 +125,21 @@ namespace AngelSix.SolidDna
 
         #endregion
 
-        public bool Rebuild(swRebuildOptions_e buildOption)
+        public bool Rebuild(RebuildOptions rebuildOption = RebuildOptions.None)
         {
-            return ((ModelDocExtension)mBaseObject).Rebuild((int)buildOption);
+            return rebuildOption != RebuildOptions.None ? ((ModelDocExtension)mBaseObject).Rebuild((int)rebuildOption) : false;
         }
 
-        public bool Rename(string oldName, string newName)
+        public RenameDocumentError Rename(string oldName, string newName)
         {
-            if (BaseObject != null)
-            {
-                if (BaseObject.SelectByID2(oldName, "COMPONENT", 0, 0, 0, false, 0, null, 0))
-                    if (BaseObject.RenameDocument(newName) == 0)
-                        return true;
-            }
-            return false;
-
+            return BaseObject.SelectByID2(oldName, "COMPONENT", 0, 0, 0, false, 0, null, 0)
+                    ? (RenameDocumentError)BaseObject.RenameDocument(newName)
+                    : RenameDocumentError.NoModelLoaded;
         }
 
         public bool Select()
         {
-            return BaseObject != null ? BaseObject.SelectByID2(Parent.Name, "COMPONENT", 0, 0, 0, false, 0, null, 0) : false;
+            return BaseObject.SelectByID2(Parent.Name, "COMPONENT", 0, 0, 0, false, 0, null, 0);
         }
 
         public void SetIsometricZoomToFitView(bool showIsometric)
