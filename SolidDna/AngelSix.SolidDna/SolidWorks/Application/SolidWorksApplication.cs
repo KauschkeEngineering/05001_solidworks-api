@@ -503,9 +503,9 @@ namespace AngelSix.SolidDna
             {
                 // Get file type
                 var fileType =
-                    filePath.ToLower().EndsWith(".sldprt") ? DocumentType.Part :
-                    filePath.ToLower().EndsWith(".sldasm") ? DocumentType.Assembly :
-                    filePath.ToLower().EndsWith(".slddrw") ? DocumentType.Drawing : throw new ArgumentException("Unknown file type");
+                    filePath.ToLower().EndsWith(PartDocument.FILE_EXTENSION) ? DocumentType.Part :
+                    filePath.ToLower().EndsWith(AssemblyDocument.FILE_EXTENSION) ? DocumentType.Assembly :
+                    filePath.ToLower().EndsWith(DrawingDocument.FILE_EXTENSION) ? DocumentType.Drawing : throw new ArgumentException("Unknown file type");
 
                 // Set errors and warnings
                 var errors = 0;
@@ -1135,27 +1135,28 @@ namespace AngelSix.SolidDna
         public void ExitApplication(bool saveAllDirtyDocuments)
         {
             Logger.log(LogLevel.INFO, "Exit Solidworks Applications");
-            var docCounter = 0;
             if (BaseObject != null)
             {
                 while (HasOpenDocuments())
                 {
-                    var openDocuments = (object[])BaseObject.GetDocuments();
-                    foreach (var model in openDocuments)
+                    if (saveAllDirtyDocuments)
                     {
-                        var modelDoc = new Model((ModelDoc2)model);
-                        Logger.log(LogLevel.INFO, "Close document: "+ modelDoc.FilePath);
-                        BaseObject.CloseDoc(modelDoc.FilePath);
-                        docCounter++;
+                        var openDocuments = (object[])BaseObject.GetDocuments();
+                        foreach (var model in openDocuments)
+                        {
+                            var modelDoc = new Model((ModelDoc2)model);
+                            Logger.log(LogLevel.INFO, "Save document: " + modelDoc.FilePath);
+                            if (modelDoc.IsDirty)
+                            {
+                                modelDoc.Save(false, SaveAsOptions.Silent, null);
+                            }
+                        }
                     }
-                    //if (saveAllDirtyDocuments == false)
-                    //{
-                    //    BaseObject.CloseAllDocuments(true);
-                    //}
+                    CloseAllDoucments(true);
                 }
                 BaseObject.ExitApp();
             }
-            Logger.log(LogLevel.INFO, "Closed " + docCounter.ToString() + " documents");
+            Logger.log(LogLevel.INFO, "Closed all documents");
         }
 
         public bool CloseAllDoucments(bool closeUnsafed)
