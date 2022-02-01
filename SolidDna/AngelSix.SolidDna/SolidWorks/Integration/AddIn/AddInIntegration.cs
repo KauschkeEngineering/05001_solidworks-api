@@ -723,7 +723,7 @@ namespace AngelSix.SolidDna
             return false;
         }
 
-        public static void SetSolidWorksProcess()
+        public static void LoadActiveSolidWorksProcess()
         {
             // get the current process of SolidWorks
             if (_solidWorksProcess == null)
@@ -850,13 +850,27 @@ namespace AngelSix.SolidDna
             SldWorks app = GetSwAppFromProcess(processId);
 
 
-            ModelDoc2 m_swModel = (ModelDoc2)app.ActiveDoc;
-            if (m_swModel != null)
+            foreach (var doc in (object[])app.GetDocuments())
             {
-                assemblyName = m_swModel.GetPathName();
+                ModelDoc2 modelDoc = (ModelDoc2)doc;
+                if (modelDoc != null)
+                {
+                    var model = new Model((ModelDoc2)modelDoc);
+                    if (model.IsAssembly)
+                    {
+                        app.ActivateDoc(model.Name);
+                        break;
+                    }
+
+                }
+            }
+            ModelDoc2 activeModelDoc = (ModelDoc2)app.ActiveDoc;
+            if (activeModelDoc != null)
+            {
+                assemblyName = activeModelDoc.GetPathName();
                 Logger.LogDebugSource($"Found solidworks app with process id: " + processId + " and file name: " + assemblyName);
 
-                if(assemblyName.EndsWith("SLDDRW"))
+                if(assemblyName.ToLower().EndsWith(DrawingDocument.FILE_EXTENSION))
                 {
                     Logger.log(LogLevel.WARN, "Can not use active solidworks process. It is a drawing and not a assembly");
                     return false;
