@@ -80,6 +80,11 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// The file is using the opened view only
         /// </summary>
-        OpenedViewOnly = swFileSaveWarning_e.swFileSaveWarning_OpenedViewOnly
+        OpenedViewOnly = swFileSaveWarning_e.swFileSaveWarning_OpenedViewOnly,
+
+        /// <summary>
+        /// The file is not dirty and there is no need to save it.
+        /// </summary>
+        AlreadySaved = 9999
     }
 }
