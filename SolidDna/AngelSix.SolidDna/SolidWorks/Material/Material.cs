@@ -24,12 +24,17 @@
         /// <summary>
         /// The full path of the database that contains this material
         /// </summary>
-        public string Database { get; set; }
+        public MaterialDatabase Database { get; set; }
 
         /// <summary>
         /// The name and classification of the material
         /// </summary>
         public string DisplayName => $"{Name} ({Classification})";
+
+        /// <summary>
+        /// The name and classification of the material
+        /// </summary>
+        public string SearchName => Name + " " + Classification/* + " " + Description*/;
 
         /// <summary>
         /// Indicates if this material information was found in a known database file
@@ -47,7 +52,7 @@
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{Name} ({Classification}) [{Database}]";
+            return $"{Name} {Classification}";
         }
     }
 }
