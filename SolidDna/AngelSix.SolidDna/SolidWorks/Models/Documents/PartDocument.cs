@@ -1,5 +1,8 @@
 ﻿using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AngelSix.SolidDna
 {
@@ -64,6 +67,59 @@ namespace AngelSix.SolidDna
                     // Run action
                     action(model);
                 }
+            },
+                SolidDnaErrorTypeCode.SolidWorksModel,
+                SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError,
+                Localization.GetString(nameof(SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError)));
+        }
+
+        // TODO: add error code for new method
+
+        public Material GetMaterial(List<MaterialDatabase> materialDatabases, string configName = "")
+        {
+            // Wrap any error
+            return SolidDnaErrors.Wrap(() =>
+            {
+                string usedDatabase = "";
+                string usedMaterialName = mBaseObject.GetMaterialPropertyName2(configName, out usedDatabase);
+                //MaterialVisualPropertiesData myMatVisProps = mBaseObject.GetMaterialVisualProperties();
+                var id = mBaseObject.MaterialIdName;
+
+                if (usedDatabase.Equals("") && usedMaterialName.Equals(""))
+                    return new Material();
+                else
+                {
+                    var materialDatabasePath = materialDatabases.FirstOrDefault(database => database.Name.ToLower().Equals(usedDatabase.ToLower()));
+                    return materialDatabasePath == null
+                        ? new Material() { Database = new MaterialDatabase(usedDatabase), Name = usedMaterialName }
+                        : AddInIntegration.SolidWorks.FindMaterial(materialDatabases.FirstOrDefault(database => database.Name.ToLower().Equals(usedDatabase.ToLower())).FullPath, usedMaterialName);
+                }
+            },
+                SolidDnaErrorTypeCode.SolidWorksModel,
+                SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError,
+                Localization.GetString(nameof(SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError)));
+        }
+
+        // TODO: add error code for new method
+
+        public void SetMaterialDatabase(string databaseName, string configName = "")
+        {
+            // Wrap any error
+            SolidDnaErrors.Wrap(() =>
+            {
+                mBaseObject.SetMaterialPropertyName2(configName, databaseName, "");
+            },
+                SolidDnaErrorTypeCode.SolidWorksModel,
+                SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError,
+                Localization.GetString(nameof(SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError)));
+        }
+
+        public void SetMaterial(string databaseName, string materialName, string configName = "")
+        {
+            // Wrap any error
+            SolidDnaErrors.Wrap(() =>
+            {
+                mBaseObject.SetMaterialPropertyName2(configName, databaseName, materialName);
             },
                 SolidDnaErrorTypeCode.SolidWorksModel,
                 SolidDnaErrorCode.SolidWorksModelPartGetFeatureByNameError,
