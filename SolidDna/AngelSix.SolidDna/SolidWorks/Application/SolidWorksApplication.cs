@@ -8,6 +8,7 @@ using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swdocumentmgr;
 using DevelopmentFramework.Logging;
+using AngelSix.SolidDna.DocumentManager;
 
 namespace AngelSix.SolidDna
 {
@@ -149,11 +150,11 @@ namespace AngelSix.SolidDna
                 // Get whatever the current model is on load
                 ReloadActiveModelInformation();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Logger.LogException("Exception in SolidWorksApplication constructor: ", ex);
             }
-            
+
         }
 
         #endregion
@@ -564,6 +565,31 @@ namespace AngelSix.SolidDna
 
         #region Materials
 
+        public List<string> GetMaterialDatabases()
+        {
+            // Wrap any error
+            return SolidDnaErrors.Wrap(() =>
+            {
+                string[] databases = (string[])BaseObject.GetMaterialDatabases();
+                return new List<string>(databases);
+            },
+                SolidDnaErrorTypeCode.SolidWorksApplication,
+                SolidDnaErrorCode.SolidWorksApplicationGetMaterialDatabasesError,
+                Localization.GetString("SolidWorksApplicationGetMaterialDatabasessError"));
+        }
+
+        public string GetMaterialSchemaPathName()
+        {
+            // Wrap any error
+            return SolidDnaErrors.Wrap(() =>
+            {
+                return BaseObject.GetMaterialSchemaPathName();
+            },
+                SolidDnaErrorTypeCode.SolidWorksApplication,
+                SolidDnaErrorCode.SolidWorksApplicationGetMaterialDatabasesError,
+                Localization.GetString("SolidWorksApplicationGetMaterialDatabasessError"));
+        }
+
         /// <summary>
         /// Gets a list of all materials in SolidWorks
         /// </summary>
@@ -661,7 +687,7 @@ namespace AngelSix.SolidDna
                             // Add them to the list
                             materials.Add(new Material
                             {
-                                Database = database,
+                                Database = new MaterialDatabase(database),
                                 DatabaseFileFound = true,
                                 Classification = classification,
                                 Name = material.Attribute("name")?.Value,
@@ -813,26 +839,26 @@ namespace AngelSix.SolidDna
 
         #endregion
 
-        private SwDmDocumentType GetDocumentType(string filePath)
-        {
-            // Determine type of SOLIDWORKS file based on file extension
-            if (filePath.ToLower().EndsWith(PartDocument.FILE_EXTENSION))
-            {
-                return SwDmDocumentType.swDmDocumentPart;
-            }
-            else if (filePath.ToLower().EndsWith(AssemblyDocument.FILE_EXTENSION))
-            {
-                return SwDmDocumentType.swDmDocumentAssembly;
-            }
-            else if (filePath.ToLower().EndsWith(DrawingDocument.FILE_EXTENSION))
-            {
-                return SwDmDocumentType.swDmDocumentDrawing;
-            }
-            else
-            {
-                return SwDmDocumentType.swDmDocumentUnknown;
-            }
-        }
+        //private static SwDmDocumentType GetDocumentType(string filePath)
+        //{
+        //    // Determine type of SOLIDWORKS file based on file extension
+        //    if (filePath.ToLower().EndsWith(PartDocument.FILE_EXTENSION))
+        //    {
+        //        return SwDmDocumentType.swDmDocumentPart;
+        //    }
+        //    else if (filePath.ToLower().EndsWith(AssemblyDocument.FILE_EXTENSION))
+        //    {
+        //        return SwDmDocumentType.swDmDocumentAssembly;
+        //    }
+        //    else if (filePath.ToLower().EndsWith(DrawingDocument.FILE_EXTENSION))
+        //    {
+        //        return SwDmDocumentType.swDmDocumentDrawing;
+        //    }
+        //    else
+        //    {
+        //        return SwDmDocumentType.swDmDocumentUnknown;
+        //    }
+        //}
 
         public object GetPreviewBitmap(string filePath, bool isDrawingSheet = false, string drawingSheetName = "")
         {
@@ -841,7 +867,7 @@ namespace AngelSix.SolidDna
             if (swDocMgr != null)
             {
                 var ver = (Model.MajorSolidWorksVersions)swDocMgr.GetLatestSupportedFileVersion();
-                var swDoc = (SwDMDocument12)swDocMgr.GetDocument(filePath, GetDocumentType(filePath), true, out var nRetVal);
+                var swDoc = (SwDMDocument12)swDocMgr.GetDocument(filePath, Application.GetInstance().GetDocumentType(filePath), true, out var nRetVal);
                 if (swDoc != null)
                 {
                     if (isDrawingSheet)
@@ -977,7 +1003,7 @@ namespace AngelSix.SolidDna
             swDocSpecification.LoadExternalReferencesInMemory = true;
             swDocSpecification.Selective = selective;
 
-            switch (GetDocumentType(fullDocumentFilePath))
+            switch (Application.GetInstance().GetDocumentType(fullDocumentFilePath))
             {
                 case SwDmDocumentType.swDmDocumentPart:
                     swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocPART;
@@ -1016,14 +1042,47 @@ namespace AngelSix.SolidDna
             return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplateAssembly);
         }
 
+        public bool SetDefaultAssemblyTemplatePath(string assemblyTemplatePath)
+        {
+            return !assemblyTemplatePath.Equals(string.Empty)
+                ? BaseObject.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplateAssembly, assemblyTemplatePath)
+                : false;
+        }
+
         public string GetDefaultPartTemplatePath()
         {
             return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplatePart);
+        }
+        
+        public bool SetDefaultPartTemplatePath(string partTemplatePath)
+        {
+            return !partTemplatePath.Equals(string.Empty)
+                ? BaseObject.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplatePart, partTemplatePath)
+                : false;
         }
 
         public string GetDefaultDrawingTemplatePath()
         {
             return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplateDrawing);
+        }
+
+        public bool SetDefaultDrawingTemplatePath(string drawingTemplatePath)
+        {
+            return !drawingTemplatePath.Equals(string.Empty)
+                ? BaseObject.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplateDrawing, drawingTemplatePath)
+                : false;
+        }
+
+        public string GetDefaultMaterialDatabasesLocation()
+        {
+            return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swFileLocationsMaterialDatabases);
+        }
+
+        public bool SetDefaultMaterialDatabasesLocation(string defaultMaterialDatabasePath)
+        {
+            return !defaultMaterialDatabasePath.Equals(string.Empty)
+                ? BaseObject.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swFileLocationsMaterialDatabases, defaultMaterialDatabasePath)
+                : false;
         }
 
         public bool IsTopParentAssembly(string assemblyFilePath, string searchPath)
@@ -1047,59 +1106,6 @@ namespace AngelSix.SolidDna
                 }
             }
             return false;
-        }
-
-        public string[] GetDocumentReferences(string documentFileName)
-        {
-            var swClassFact = default(SwDMClassFactory);
-            var swDocMgr = default(SwDMApplication);
-            var swDoc = default(SwDMDocumentClass);
-            var swSearchOpt = default(SwDMSearchOption);
-            var nDocType = 0;
-
-            switch (GetDocumentType(documentFileName))
-            {
-                case SwDmDocumentType.swDmDocumentUnknown:
-                    nDocType = (int)SwDmDocumentType.swDmDocumentUnknown;
-                    return null;
-                case SwDmDocumentType.swDmDocumentPart:
-                    nDocType = (int)SwDmDocumentType.swDmDocumentPart;
-                    break;
-                case SwDmDocumentType.swDmDocumentAssembly:
-                    nDocType = (int)SwDmDocumentType.swDmDocumentAssembly;
-                    break;
-                case SwDmDocumentType.swDmDocumentDrawing:
-                    nDocType = (int)SwDmDocumentType.swDmDocumentDrawing;
-                    break;
-                default:
-                    nDocType = (int)SwDmDocumentType.swDmDocumentUnknown;
-                    return null;
-            }
-
-            swClassFact = new SwDMClassFactory();
-            swDocMgr = (SwDMApplication)swClassFact.GetApplication(Credential.getSolidWorksLicenseAPIKey());
-            swSearchOpt = swDocMgr.GetSearchOptionObject();
-            var nRetVal = SwDmDocumentOpenError.swDmDocumentOpenErrorNone;
-            swDoc = (SwDMDocumentClass)swDocMgr.GetDocument(documentFileName, (SwDmDocumentType)nDocType, true, out nRetVal);
-            if (swDoc != null)
-                return (string[])swDoc.GetAllExternalReferences(swSearchOpt);
-            return null;
-        }
-
-        public List<Model.MajorSolidWorksVersions> GetFileSWVersion(string fileName)
-        {
-            var solidWorksFileVersion = new List<Model.MajorSolidWorksVersions>();
-            if (BaseObject != null)
-            {
-                var fileVersionHistories = (string[])BaseObject.VersionHistory(fileName);
-                foreach (var fileVersionHistory in fileVersionHistories)
-                {
-                    var majorVersion = fileVersionHistory.Split('[')[0];
-                    solidWorksFileVersion.Add((Model.MajorSolidWorksVersions)int.Parse(majorVersion));
-                }
-                return solidWorksFileVersion;
-            }
-            return solidWorksFileVersion;
         }
 
         // TODO: Dont forget to delete the template model after retriving the desired data

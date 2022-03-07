@@ -61,6 +61,11 @@
         /// </summary>
         SolidWorksApplicationVersionError = 9008,
 
+        /// <summary>
+        /// There was an error when trying to get all materials databases
+        /// </summary>
+        SolidWorksApplicationGetMaterialDatabasesError = 9009,
+
         #endregion
 
         #region SolidWorks Taskpane (10,000)
