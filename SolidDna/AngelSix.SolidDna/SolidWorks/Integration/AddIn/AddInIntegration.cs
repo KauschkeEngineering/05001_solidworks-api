@@ -11,14 +11,14 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using DevelopmentFramework.Logging;
-
-
-using System.Diagnostics;
 using System.Runtime.InteropServices.ComTypes;
-using System.Runtime.InteropServices;
 
 namespace AngelSix.SolidDna
 {
+
+    private const uint SOLIDWORKS_APP_SUPPORTED_START_YEAR = 2016;
+    private const uint SOLIDWORKS_APP_SUPPORTED_END_YEAR = 2022;
+
     public enum SWProgIdVersion
     {
         UNKNOWN = -1,
@@ -26,7 +26,9 @@ namespace AngelSix.SolidDna
         SW_2017,
         SW_2018,
         SW_2019,
-        SW_2020
+        SW_2020,
+        SW_2021,
+        SW_2022
     }
 
     /// <summary>
@@ -597,7 +599,7 @@ namespace AngelSix.SolidDna
         {
             var installedSolidWorksVersions = new List<Tuple<SWProgIdVersion, string>>();
 
-            for (var version = 2016; version <= 2019; version++)
+            for (var version = SOLIDWORKS_APP_SUPPORTED_START_YEAR; version <= SOLIDWORKS_APP_SUPPORTED_END_YEAR; version++)
             {
                 using (var baseRegistryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(string.Format("Software\\SolidWorks\\SOLIDWORKS {0}\\Setup", version)))
                 {
@@ -619,6 +621,15 @@ namespace AngelSix.SolidDna
                                     break;
                                 case 2019:
                                     installedSolidWorksVersions.Add(new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2019, registryValue.ToString()));
+                                    break;
+                                case 2020:
+                                    installedSolidWorksVersions.Add(new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2020, registryValue.ToString()));
+                                    break;
+                                case 2021:
+                                    installedSolidWorksVersions.Add(new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2021, registryValue.ToString()));
+                                    break;
+                                case 2022:
+                                    installedSolidWorksVersions.Add(new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2022, registryValue.ToString()));
                                     break;
                             }
                         }
@@ -645,6 +656,15 @@ namespace AngelSix.SolidDna
                 case SWProgIdVersion.SW_2019:
                     version = "2019";
                     break;
+                case SWProgIdVersion.SW_2020:
+                    version = "2020";
+                    break;
+                case SWProgIdVersion.SW_2021:
+                    version = "2021";
+                    break;
+                case SWProgIdVersion.SW_2022:
+                    version = "2022";
+                    break;
             }
             if (version.Equals("") == false)
             {
@@ -665,7 +685,12 @@ namespace AngelSix.SolidDna
                                     return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2018, registryValue.ToString());
                                 case SWProgIdVersion.SW_2019:
                                     return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2019, registryValue.ToString());
-                                    ;
+                                case SWProgIdVersion.SW_2020:
+                                    return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2021, registryValue.ToString());
+                                case SWProgIdVersion.SW_2021:
+                                    return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2021, registryValue.ToString());
+                                case SWProgIdVersion.SW_2022:
+                                    return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2022, registryValue.ToString());
                             }
                         }
                     }
@@ -870,7 +895,7 @@ namespace AngelSix.SolidDna
                 assemblyName = activeModelDoc.GetPathName();
                 Logger.LogDebugSource($"Found solidworks app with process id: " + processId + " and file name: " + assemblyName);
 
-                if(assemblyName.ToLower().EndsWith(DrawingDocument.FILE_EXTENSION))
+                if (assemblyName.ToLower().EndsWith(DrawingDocument.FILE_EXTENSION))
                 {
                     Logger.log(LogLevel.WARN, "Can not use active solidworks process. It is a drawing and not a assembly");
                     return false;
@@ -923,7 +948,7 @@ namespace AngelSix.SolidDna
                         }
                     }
 
-                    if (string.Equals(monikerName,name, StringComparison.CurrentCultureIgnoreCase))
+                    if (string.Equals(monikerName, name, StringComparison.CurrentCultureIgnoreCase))
                     {
                         //Logger.LogDebugSource($"Found correct com object");
                         rot.GetObject(curMoniker, out var com_instance);
@@ -932,7 +957,7 @@ namespace AngelSix.SolidDna
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
 
             }
@@ -945,7 +970,7 @@ namespace AngelSix.SolidDna
             SolidWorks = new SolidWorksApplication(app, 0);
             _solidWorksProcess = Process.GetProcessById(processId);
 
-            if(SolidWorks != null)
+            if (SolidWorks != null)
             {
                 return true;
             }
