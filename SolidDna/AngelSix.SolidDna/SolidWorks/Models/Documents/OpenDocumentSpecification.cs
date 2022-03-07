@@ -161,5 +161,7 @@ namespace AngelSix.SolidDna
         {
             mDocumentSpecification = documentSpecification;
         }
+
+        public object PLMObjectSpecification => mDocumentSpecification.PLMObjectSpecification;
     }
 }
