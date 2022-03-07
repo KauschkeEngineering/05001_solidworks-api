@@ -16,9 +16,6 @@ using System.Runtime.InteropServices.ComTypes;
 namespace AngelSix.SolidDna
 {
 
-    private const uint SOLIDWORKS_APP_SUPPORTED_START_YEAR = 2016;
-    private const uint SOLIDWORKS_APP_SUPPORTED_END_YEAR = 2022;
-
     public enum SWProgIdVersion
     {
         UNKNOWN = -1,
@@ -39,6 +36,9 @@ namespace AngelSix.SolidDna
     /// </summary>
     public abstract class AddInIntegration : ISwAddin
     {
+        private const uint SOLIDWORKS_APP_SUPPORTED_START_YEAR = 2016;
+        private const uint SOLIDWORKS_APP_SUPPORTED_END_YEAR = 2022;
+
         private static Process _solidWorksProcess = null;
 
         #region Protected Members
