@@ -15,6 +15,7 @@ namespace AngelSix.SolidDna
     {
         public enum MajorSolidWorksVersions
         {
+            UNKNOWN = 0,
             SOLIDWORKS_95 = 44,
             SOLIDWORKS_96 = 243,
             SOLIDWORKS_97 = 483,
@@ -42,7 +43,9 @@ namespace AngelSix.SolidDna
             SOLIDWORKS_2017 = 10000,
             SOLIDWORKS_2018 = 11000,
             SOLIDWORKS_2019 = 12000,
-            SOLIDWORKS_2020 = 13000
+            SOLIDWORKS_2020 = 13000,
+            SOLIDWORKS_2021 = 14000,
+            SOLIDWORKS_2022 = 15000
         }
 
         #region Public Properties
@@ -977,13 +980,13 @@ namespace AngelSix.SolidDna
                 var materialName = ids[1];
 
                 // See if we have a database file with the same name
-                var fullPath = SolidWorksEnvironment.Application.GetMaterials()?.FirstOrDefault(f => string.Equals(databaseName, Path.GetFileNameWithoutExtension(f.Database), StringComparison.InvariantCultureIgnoreCase));
+                var fullPath = SolidWorksEnvironment.Application.GetMaterials()?.FirstOrDefault(f => string.Equals(databaseName, Path.GetFileNameWithoutExtension(f.Database.FullPath), StringComparison.InvariantCultureIgnoreCase));
                 var found = fullPath != null;
 
                 // Now we have the file, try and find the material from it
                 if (found)
                 {
-                    var foundMaterial = SolidWorksEnvironment.Application.FindMaterial(fullPath.Database, materialName);
+                    var foundMaterial = SolidWorksEnvironment.Application.FindMaterial(fullPath.Database.FullPath, materialName);
                     if (foundMaterial != null)
                         return foundMaterial;
                 }
@@ -992,7 +995,7 @@ namespace AngelSix.SolidDna
                 // So fill in as much information as we have
                 return new Material
                 {
-                    Database = databaseName,
+                    Database = new MaterialDatabase(databaseName),
                     Name = materialName
                 };
             },
@@ -1021,7 +1024,7 @@ namespace AngelSix.SolidDna
                     AsPart().SetMaterialPropertyName2(string.Empty, string.Empty, string.Empty);
                 // Otherwise set the material
                 else
-                    AsPart().SetMaterialPropertyName2(configuration, material.Database, material.Name);
+                    AsPart().SetMaterialPropertyName2(configuration, material.Database.FullPath, material.Name);
             },
                 SolidDnaErrorTypeCode.SolidWorksModel,
                 SolidDnaErrorCode.SolidWorksModelSetMaterialError,
