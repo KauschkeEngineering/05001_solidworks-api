@@ -317,7 +317,7 @@ namespace AngelSix.SolidDna
                 // TODO: Check if swSheet can be casted to SwDMSheet2
                 mDrawingSheets.Add(new DrawingSheet((Sheet)swSheet, this));
 
-                if ((swSheet.IsLoaded()))
+                if (swSheet.IsLoaded())
                 {
 
                 }
