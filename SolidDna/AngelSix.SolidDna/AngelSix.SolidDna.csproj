@@ -4,7 +4,7 @@
     <TargetFramework>net48</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>1.0.1.13</Version>
-    <Authors>Luke Malpass</Authors>
+    <Authors>Luke Malpass, Maximilian Burkhardt</Authors>
     <Company>AngelSix Ltd</Company>
     <Description>The new SolidDNA SDK, making the SolidWorks API easier, well behaved and modern</Description>
     <Copyright>Copyright © 2016-2020</Copyright>
