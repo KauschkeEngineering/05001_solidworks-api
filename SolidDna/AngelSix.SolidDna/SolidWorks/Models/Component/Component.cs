@@ -115,6 +115,11 @@ namespace AngelSix.SolidDna
             return File.Exists(componentPath + "\\" + Name + DrawingDocument.FILE_EXTENSION);
         }
 
+        public Component GetParentComponent()
+        {
+            return new Component(BaseObject.GetParent());
+        }
+
         #region Dispose
 
         public override void Dispose()
