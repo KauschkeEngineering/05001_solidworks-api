@@ -25,5 +25,10 @@ namespace AngelSix.SolidDna
         }
 
         #endregion
+
+        public Component GetRootComponent()
+        {
+            return new Component(BaseObject.GetRootComponent3(true));
+        }
     }
 }
