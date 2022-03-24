@@ -1,4 +1,5 @@
 ﻿using SolidWorks.Interop.swdocumentmgr;
+using System.Linq;
 using static AngelSix.SolidDna.Model;
 
 namespace AngelSix.SolidDna.DocumentManager
@@ -85,6 +86,29 @@ namespace AngelSix.SolidDna.DocumentManager
             if (swDoc != null && nRetVal == SwDmDocumentOpenError.swDmDocumentOpenErrorNone)
                 return (string[])swDoc.GetAllExternalReferences(swSearchOpt);
             return null;
+        }
+
+
+        public bool IsTopParentAssembly(string assemblyFilePath, string searchPath)
+        {
+            var swSearchOpt = _documentManagerApplication.GetSearchOptionObject();
+            swSearchOpt.ClearAllSearchPaths();
+            swSearchOpt.AddSearchPath(searchPath);
+            var filter = swSearchOpt.SearchFilters;
+            swSearchOpt.SearchFilters = (int)(SwDmSearchFilters.SwDmSearchExternalReference | SwDmSearchFilters.SwDmSearchForAssembly);
+            var nRetVal = SwDmDocumentOpenError.swDmDocumentOpenErrorNone;
+
+            var swDoc = (SwDMDocumentClass)_documentManagerApplication.GetDocument(assemblyFilePath, SwDmDocumentType.swDmDocumentAssembly, true, out nRetVal);
+            if (swDoc != null)
+            {
+                var references = swDoc.WhereUsed(swSearchOpt);
+                if (references == null)
+                {
+                    swDoc.CloseDoc();
+                    return true;
+                }
+            }
+            return false;
         }
 
     }
