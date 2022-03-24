@@ -460,5 +460,10 @@ namespace AngelSix.SolidDna
 
         #endregion
 
+        public int GetFileReferenceCount()
+        {
+            return BaseObject.ListExternalFileReferencesCount();
+        }
+
     }
 }
