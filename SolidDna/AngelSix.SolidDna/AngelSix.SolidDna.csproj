@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\DevelopmentFramework\DevelopmentFramework.csproj" />
+    <ProjectReference Include="..\..\..\..\05001_DevelopmentFramework\DevelopmentFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
