@@ -20,7 +20,7 @@ namespace AngelSix.SolidDna.DocumentManager
         {
             if (_instance == null)
             {
-                _instance = new Application(Credential.getSolidWorksLicenseAPIKey());
+                _instance = new Application(Credential.GetSolidWorksLicenseAPIKey());
             }
             return _instance;
         }

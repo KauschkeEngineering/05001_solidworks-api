@@ -863,7 +863,7 @@ namespace AngelSix.SolidDna
         public object GetPreviewBitmap(string filePath, bool isDrawingSheet = false, string drawingSheetName = "")
         {
             var swClassFact = new SwDMClassFactory();
-            var swDocMgr = (SwDMApplication)swClassFact.GetApplication(Credential.getSolidWorksLicenseAPIKey());
+            var swDocMgr = (SwDMApplication)swClassFact.GetApplication(Credential.GetSolidWorksLicenseAPIKey());
             if (swDocMgr != null)
             {
                 var ver = (Model.MajorSolidWorksVersions)swDocMgr.GetLatestSupportedFileVersion();
@@ -1089,7 +1089,7 @@ namespace AngelSix.SolidDna
         {
 
             var swClassFact = new SwDMClassFactory();
-            var swDocMgr = swClassFact.GetApplication(Credential.getSolidWorksLicenseAPIKey());
+            var swDocMgr = swClassFact.GetApplication(Credential.GetSolidWorksLicenseAPIKey());
             var swSearchOpt = swDocMgr.GetSearchOptionObject();
             swSearchOpt.ClearAllSearchPaths();
             swSearchOpt.AddSearchPath(searchPath);

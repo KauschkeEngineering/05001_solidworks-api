@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
 
 namespace AngelSix.SolidDna
 {
@@ -12,9 +14,13 @@ namespace AngelSix.SolidDna
         ///  TODO: It would be better to store the hashed key
         /// </summary>
         /// <returns></returns>
-        static public string getSolidWorksLicenseAPIKey()
+        static public string GetSolidWorksLicenseAPIKey()
         {
-            var key = System.IO.File.ReadAllText(API_LICENCE_KEY_FILE);
+            // TODO: Do not store key on client pc
+            // instead send the api key via https if user has logged in successfully
+            // then only hold the api key in RAM as long as the app is running
+            // use ProtectedMemory to securly store the key in RAM
+            var key = File.ReadAllText(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + API_LICENCE_KEY_FILE);
             return key;
         }
     }
