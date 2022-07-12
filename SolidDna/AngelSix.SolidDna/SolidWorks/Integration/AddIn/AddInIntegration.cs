@@ -979,5 +979,18 @@ namespace AngelSix.SolidDna
                 return false;
             }
         }
+
+        public static SolidWorksApplication GetSwAppFromProcessId(int processId)
+        {
+            SldWorks app = GetSwAppFromProcess(processId);
+            SolidWorks = new SolidWorksApplication(app, 0);
+            return SolidWorks;
+        }
+
+        public static void ActivateBoundSolidWorks(Process solidWorksProcess, SolidWorksApplication solidWorksApplication)
+        {
+            _solidWorksProcess = solidWorksProcess;
+            SolidWorks = solidWorksApplication;
+        }
     }
 }
