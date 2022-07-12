@@ -1,4 +1,5 @@
-﻿using SolidWorks.Interop.sldworks;
+﻿using DevelopmentFramework.Logging;
+using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using System;
 using System.Collections.Generic;
@@ -219,6 +220,7 @@ namespace AngelSix.SolidDna
         /// </summary>
         protected void ReloadModelData()
         {
+            Logger.log(LogLevel.INFO,"Reload model data");
             // Clean up any previous data
             DisposeAllReferences();
 
