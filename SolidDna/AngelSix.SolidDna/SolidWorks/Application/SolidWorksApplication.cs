@@ -1111,30 +1111,40 @@ namespace AngelSix.SolidDna
         // TODO: Dont forget to delete the template model after retriving the desired data
         public Model GetModelDummyByTemplate(string templateFilePath)
         {
-            if (BaseObject != null)
+            try
             {
-                var nDocType = -1;
-                if (templateFilePath.EndsWith(".asmdot"))
+                if (BaseObject != null)
                 {
-                    nDocType = (int)SwDmDocumentType.swDmDocumentAssembly;
+                    var nDocType = -1;
+                    if (templateFilePath.EndsWith(".asmdot"))
+                    {
+                        nDocType = (int)SwDmDocumentType.swDmDocumentAssembly;
+                    }
+                    else if (templateFilePath.EndsWith(".prtdot"))
+                    {
+                        nDocType = (int)SwDmDocumentType.swDmDocumentPart;
+                    }
+                    else if (templateFilePath.EndsWith(".drwdot"))
+                    {
+                        nDocType = (int)SwDmDocumentType.swDmDocumentDrawing;
+                    }
+                    Logger.log(LogLevel.INFO, $"Try getting dummy model by template file: {templateFilePath} docType: {nDocType}");
+                    BaseObject.DocumentVisible(false, nDocType);
+                    var dummyModel = new Model((ModelDoc2)BaseObject.NewDocument(templateFilePath, 0, 0, 0));
+                    Logger.log(LogLevel.INFO, $"Set dummy model invisble");
+                    //BaseObject.DocumentVisible(false, nDocType);
+                    // create the dummy model in a new window 
+                    // this is done to more efficient close the dummy model without the need to make the app or the model visible
+                    Logger.log(LogLevel.INFO, $"Create new window for dummy model");
+                    BaseObject.CreateNewWindow();
+                    return dummyModel;
                 }
-                else if (templateFilePath.EndsWith(".prtdot"))
-                {
-                    nDocType = (int)SwDmDocumentType.swDmDocumentPart;
-                }
-                else if (templateFilePath.EndsWith(".drwdot"))
-                {
-                    nDocType = (int)SwDmDocumentType.swDmDocumentDrawing;
-                }
-
-                BaseObject.DocumentVisible(true, nDocType);
-                var dummyModel = new Model((ModelDoc2)BaseObject.NewDocument(templateFilePath, 0, 0, 0));
-                BaseObject.DocumentVisible(false, nDocType);
-                // create the dummy model in a new window 
-                // this is done to more efficient close the dummy model without the need to make the app or the model visible
-                BaseObject.CreateNewWindow();
-                return dummyModel;
             }
+            catch (Exception ex)
+            {
+                Logger.log(LogLevel.ERROR, $"Error while getting dummy model by template of SOLIDWORKS.{System.Environment.NewLine}{ex.StackTrace}");
+            }
+            
             return null;
         }
 
