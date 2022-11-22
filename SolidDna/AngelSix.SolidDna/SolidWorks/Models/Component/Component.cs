@@ -72,6 +72,12 @@ namespace AngelSix.SolidDna
         public bool IsLoaded => BaseObject.IsLoaded();
         public bool IsVirtual => BaseObject.IsVirtual;
 
+        public string ReferencedConfiguration
+        {
+            get => BaseObject.ReferencedConfiguration;
+            set => BaseObject.ReferencedConfiguration = value;
+        }
+
         #endregion
 
         #region Constructor

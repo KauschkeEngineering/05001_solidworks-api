@@ -15,7 +15,6 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace AngelSix.SolidDna
 {
-
     public enum SWProgIdVersion
     {
         UNKNOWN = -1,
@@ -38,6 +37,8 @@ namespace AngelSix.SolidDna
     {
         private const uint SOLIDWORKS_APP_SUPPORTED_START_YEAR = 2016;
         private const uint SOLIDWORKS_APP_SUPPORTED_END_YEAR = 2022;
+
+        public const string SOLIDWORKS_PROCESS_NAME = "SLDWORKS";
 
         private static Process _solidWorksProcess = null;
 
@@ -310,6 +311,9 @@ namespace AngelSix.SolidDna
                 // And plug-in domain listeners
                 PlugInIntegration.ConnectedToSolidWorks();
 
+                _solidWorksProcess = Process.GetCurrentProcess();
+                _solidWorksProcess.PriorityClass = ProcessPriorityClass.High;
+
                 // Return ok
                 return true;
             }
@@ -516,6 +520,7 @@ namespace AngelSix.SolidDna
                 // Try and get the active SolidWorks instance
                 var obj = Marshal.GetActiveObject(sw_ProgId);
                 Logger.LogDebugSource($"Get GetActiveObject finish");
+                _solidWorksProcess = Process.GetCurrentProcess();
                 SolidWorks = new SolidWorksApplication((SldWorks)obj, 0);
                 Logger.LogDebugSource($"finish with quired active instance SolidWorks in Stand-Alone mode");
 
@@ -574,7 +579,7 @@ namespace AngelSix.SolidDna
                         FileName = solidWorksExePath,
                         Arguments = "/r", //no splash screen will be shown while loading SolidWorks application
                         CreateNoWindow = false,
-                        WindowStyle = ProcessWindowStyle.Hidden
+                        WindowStyle = ProcessWindowStyle.Normal
                     };
                     _solidWorksProcess = Process.Start(processInfo);
                     // set the priorty to high for SOLIDWORKS to gain more CPU time
@@ -743,7 +748,7 @@ namespace AngelSix.SolidDna
             }
             catch (COMException ex)
             {
-
+                // if there is no SOLIDWORKS application is available this error will occur
             }
             return false;
         }
@@ -753,14 +758,8 @@ namespace AngelSix.SolidDna
             // get the current process of SolidWorks
             if (_solidWorksProcess == null)
             {
-                _solidWorksProcess = Process.GetProcessesByName("SLDWORKS").FirstOrDefault();
+                _solidWorksProcess = Process.GetProcessesByName(SOLIDWORKS_PROCESS_NAME).FirstOrDefault();
             }
-        }
-
-        public static void CloseSolidWorksProcess()
-        {
-            Logger.log(LogLevel.INFO, "Set Solidworks process to null");
-            _solidWorksProcess = null;
         }
 
         public static bool KillHangSolidWorksProcess()
@@ -863,8 +862,14 @@ namespace AngelSix.SolidDna
                 SolidWorks?.Dispose();
             }
 
+            if (SolidWorksProcess != null)
+            {
+                SolidWorksProcess.Dispose();
+            }
+
             // Set to null
             SolidWorks = null;
+            _solidWorksProcess = null;
         }
         #endregion
 
@@ -897,7 +902,7 @@ namespace AngelSix.SolidDna
 
                 if (assemblyName.ToLower().EndsWith(DrawingDocument.FILE_EXTENSION))
                 {
-                    Logger.log(LogLevel.WARN, "Can not use active solidworks process. It is a drawing and not a assembly");
+                    Logger.Log(LogLevel.WARN, "Can not use active solidworks process. It is a drawing and not a assembly");
                     return false;
                 }
 
@@ -913,7 +918,7 @@ namespace AngelSix.SolidDna
         [DllImport("ole32.dll")]
         private static extern int CreateBindCtx(uint reserved, out IBindCtx ppbc);
 
-        public static SldWorks GetSwAppFromProcess(int processId)
+        private static SldWorks GetSwAppFromProcess(int processId)
         {
             var monikerName = "SolidWorks_PID_" + processId.ToString();
             IBindCtx context = null;
@@ -964,11 +969,14 @@ namespace AngelSix.SolidDna
             return null;
         }
 
-        public static bool CreateSwAppFromProcessId(int processId)
+        public static bool ConnectToSwAppFromProcessId(int processId)
         {
             SldWorks app = GetSwAppFromProcess(processId);
-            SolidWorks = new SolidWorksApplication(app, 0);
-            _solidWorksProcess = Process.GetProcessById(processId);
+            if (app != null)
+            {
+                SolidWorks = new SolidWorksApplication(app, 0);
+                _solidWorksProcess = Process.GetProcessById(processId);
+            }
 
             if (SolidWorks != null)
             {
@@ -978,13 +986,6 @@ namespace AngelSix.SolidDna
             {
                 return false;
             }
-        }
-
-        public static SolidWorksApplication GetSwAppFromProcessId(int processId)
-        {
-            SldWorks app = GetSwAppFromProcess(processId);
-            SolidWorks = new SolidWorksApplication(app, 0);
-            return SolidWorks;
         }
 
         public static void ActivateBoundSolidWorks(Process solidWorksProcess, SolidWorksApplication solidWorksApplication)

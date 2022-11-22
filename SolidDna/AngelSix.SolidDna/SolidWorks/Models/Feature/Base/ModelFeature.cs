@@ -62,6 +62,8 @@ namespace AngelSix.SolidDna
 
         #region Public Properties
 
+        public object Definition => BaseObject.GetDefinition();
+
         /// <summary>
         /// The specific type of this feature
         /// </summary>
@@ -1140,11 +1142,7 @@ namespace AngelSix.SolidDna
 
         public Component GetComponent()
         {
-            if (SpecificFeature != null && SpecificFeature is Component2)
-            {
-                return new Component((Component2)SpecificFeature);
-            }
-            return null;
+            return SpecificFeature != null && SpecificFeature is Component2 ? new Component((Component2)SpecificFeature) : null;
         }
 
         public bool SelectFirst()

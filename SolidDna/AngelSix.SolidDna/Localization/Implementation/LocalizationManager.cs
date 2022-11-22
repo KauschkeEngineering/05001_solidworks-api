@@ -113,7 +113,7 @@ namespace AngelSix.SolidDna
         public static string GetString(string name, string culture = null)
         {
             return name;
-            Logger.log(LogLevel.DEBUG, "GetString from Localization Manager");
+            Logger.Log(LogLevel.DEBUG, "GetString from Localization Manager");
             // NOTE: No null check because it should always be injected or throw if not as the expected result would be the actual resource string
             //       We do not want to fail silently
             if (IoC.Localization == null)

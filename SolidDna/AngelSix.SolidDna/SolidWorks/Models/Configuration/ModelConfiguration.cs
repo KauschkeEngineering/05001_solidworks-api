@@ -12,6 +12,8 @@ namespace AngelSix.SolidDna
 
         public string Name => BaseObject.Name;
 
+        public bool IsDirty => BaseObject.IsDirty();
+
         #endregion
 
         #region Constructor
@@ -26,9 +28,9 @@ namespace AngelSix.SolidDna
 
         #endregion
 
-        public Component GetRootComponent()
+        public Component GetRootComponent(bool resolve)
         {
-            return new Component(BaseObject.GetRootComponent3(true));
+            return BaseObject != null ? new Component(BaseObject.GetRootComponent3(resolve)) : null;
         }
     }
 }

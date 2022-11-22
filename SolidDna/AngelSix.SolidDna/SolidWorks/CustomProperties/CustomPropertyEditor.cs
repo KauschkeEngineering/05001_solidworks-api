@@ -46,7 +46,7 @@ namespace AngelSix.SolidDna
             // TODO: Add error checking and exception catching
 
             // Get custom property
-            BaseObject.Get5(name, false, out var val, out var resolvedVal, out var wasResolved);
+            BaseObject.Get6(name, false, out var val, out var resolvedVal, out var wasResolved, out var isLinked);
 
             // Return desired result
             return resolve ? resolvedVal : val;
@@ -63,7 +63,7 @@ namespace AngelSix.SolidDna
             // TODO: Add error checking and exception catching
 
             // Get custom property
-            var result = BaseObject.Get5(name, false, out var val, out var resolvedVal, out var wasResolved);
+            var result = BaseObject.Get6(name, false, out var val, out var resolvedVal, out var wasResolved, out var isLinked);
 
             // Return desired result
             return resolve ? new Tuple<CustomPropertyGetResult, string>((CustomPropertyGetResult)result, resolvedVal) : new Tuple<CustomPropertyGetResult, string>((CustomPropertyGetResult)result, val);
@@ -181,7 +181,7 @@ namespace AngelSix.SolidDna
         /// Gets a specified custom properties
         /// </summary>
         /// <returns></returns>
-        public Type GetCustomPropertyType(string name)
+        public Type GetCustomPropertyType1(string name)
         {
             // TODO: Add error checking and exception catching
 
@@ -192,6 +192,31 @@ namespace AngelSix.SolidDna
             var names = (string[])BaseObject.GetNames();
 
             return new CustomProperty(this, names.FirstOrDefault(propertyName => propertyName.Equals(name))).DataType;
+        }
+
+        /// <summary>
+        /// Gets a specified custom properties
+        /// </summary>
+        /// <returns></returns>
+        public Type GetCustomPropertyType(string name)
+        {
+            var solidworksType = (CustomPropertyTypes)BaseObject.GetType2(name);
+            switch (solidworksType)
+            {
+                case CustomPropertyTypes.Unknown:
+                    return null;
+                case CustomPropertyTypes.Number:
+                    return typeof(long);
+                case CustomPropertyTypes.Double:
+                    return typeof(double);
+                case CustomPropertyTypes.YesOrNo:
+                    return typeof(bool);
+                case CustomPropertyTypes.Text:
+                    return typeof(string);
+                case CustomPropertyTypes.Date:
+                    return typeof(DateTime);
+            }
+            return null;
         }
 
 

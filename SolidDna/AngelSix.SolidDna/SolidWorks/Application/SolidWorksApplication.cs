@@ -9,6 +9,7 @@ using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swdocumentmgr;
 using DevelopmentFramework.Logging;
 using AngelSix.SolidDna.DocumentManager;
+using DevelopmentFramework.MVVM.Service;
 
 namespace AngelSix.SolidDna
 {
@@ -154,7 +155,6 @@ namespace AngelSix.SolidDna
             {
                 Logger.LogException("Exception in SolidWorksApplication constructor: ", ex);
             }
-
         }
 
         #endregion
@@ -212,11 +212,11 @@ namespace AngelSix.SolidDna
             {
                 if (IsLoaded == false)
                 {
-                    Logger.log(LogLevel.INFO, "Solidworks is in idle state. Set to loaded to true");
+                    Logger.Log(LogLevel.INFO, "Solidworks is in idle state. Set to loaded to true");
                     IsLoaded = true;
                 }
                 // Inform listeners
-                Logger.log(LogLevel.INFO, "Inform Solidworks listeners about idle state");
+                Logger.Log(LogLevel.INFO, "Inform Solidworks listeners about idle state");
                 Idle();
             },
                 SolidDnaErrorTypeCode.SolidWorksApplication,
@@ -493,6 +493,26 @@ namespace AngelSix.SolidDna
         }
 
         /// <summary>
+        /// Loops all open documents with an active view (=loaded) returning a safe <see cref="Model"/> for each document,
+        /// disposing of the COM reference after its use
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Model> ActiveOpenDocuments()
+        {
+            // Loop each child
+            foreach (ModelDoc2 modelDoc in (object[])BaseObject.GetDocuments())
+            {
+                if (modelDoc.ActiveView != null)
+                {
+                    // Create safe model
+                    using (var model = new Model(modelDoc))
+                        // Return it
+                        yield return model;
+                }
+            }
+        }
+
+        /// <summary>
         /// Opens a file
         /// </summary>
         /// <param name="filePath">The path to the file</param>
@@ -542,6 +562,18 @@ namespace AngelSix.SolidDna
                 SolidDnaErrorTypeCode.SolidWorksApplication,
                 SolidDnaErrorCode.SolidWorksModelCloseError,
                 Localization.GetString("SolidWorksModelCloseFileError"));
+        }
+
+        /// <summary>
+        /// Closes a file
+        /// </summary>
+        /// <param name="filePath">The path to the file</param>
+        public async Task CloseFileAsync(string filePath)
+        {
+            await Task.Run(() =>
+            {
+                CloseFile(filePath);
+            });
         }
 
         #endregion
@@ -916,12 +948,12 @@ namespace AngelSix.SolidDna
             return ((SwDMSheet2)mBaseObject).GetPreviewPNGBitmap(out var error);
         }
 
-        public void CloseDocumentWithoutSaving(string documentPath)
+        public void CloseVisibleDocumentUnsaved(string documentPath)
         {
             BaseObject.QuitDoc(documentPath);
         }
 
-        public void CloseDocument(string documentName)
+        public void CloseDocumentUnsaved(string documentName)
         {
             BaseObject.CloseDoc(documentName);
         }
@@ -944,36 +976,6 @@ namespace AngelSix.SolidDna
                 SolidDnaErrorTypeCode.SolidWorksApplication,
                 SolidDnaErrorCode.SolidWorksModelOpenError,
                 Localization.GetString("SolidWorksModelOpenFileError"));
-        }
-
-        public Tuple<FileLoadErrors, Model> OpenDocumentInvisible(string fullDocumentFilePath, bool readOnly = true, bool silent = true, bool useLightWeightDefault = true, bool loadLightWeight = false, bool ignoreHiddenComponents = true, bool loadExternalReferencesInMemory = true, bool useNewWindow = false)
-        {
-            var solidWorksModelData = OpenDocumenInvisibleInWithSpecification(fullDocumentFilePath, readOnly, silent, useLightWeightDefault, loadLightWeight, ignoreHiddenComponents, loadExternalReferencesInMemory, false);
-            if (solidWorksModelData.Item2 != null)
-            {
-                mActiveModel = solidWorksModelData.Item2;
-
-                // creates a client window containing the active document. 
-                if (useNewWindow)
-                {
-                    BaseObject.CreateNewWindow();
-                }
-                // set the loaded model to invisble an not controlable
-                ActiveModel.SetUserControlable(false, false, false, true);
-
-                // if opening a assembly or part file the the working directorty need to be set
-                if (/*(*/ActiveModel.IsAssembly/* || ActiveModel.IsPart)*/ && ActiveModel.GetRootComponent().IsRoot)
-                {
-                    BaseObject.SetCurrentWorkingDirectory(fullDocumentFilePath.Replace(fullDocumentFilePath.Split('\\').Last(), ""));
-                }
-
-                if (ActiveModel.IsDrawing == true)
-                {
-                    // TODO: Add event handlers for background processing
-                    ActiveModel.Drawing.SetBackgroundProcessingOption(BackgroundProcessOptions.BackgroundProcessingDeferToApplication);
-                }
-            }
-            return solidWorksModelData;
         }
 
         public OpenDocumentSpecification GetDocumentSpecification(string fullDocumentFilePath)
@@ -1128,29 +1130,29 @@ namespace AngelSix.SolidDna
                     {
                         nDocType = (int)SwDmDocumentType.swDmDocumentDrawing;
                     }
-                    Logger.log(LogLevel.INFO, $"Try getting dummy model by template file: {templateFilePath} docType: {nDocType}");
+                    Logger.Log(LogLevel.INFO, $"Try getting dummy model by template file: {templateFilePath} docType: {nDocType}");
                     BaseObject.DocumentVisible(false, nDocType);
                     var dummyModel = new Model((ModelDoc2)BaseObject.NewDocument(templateFilePath, 0, 0, 0));
-                    Logger.log(LogLevel.INFO, $"Set dummy model invisble");
+                    Logger.Log(LogLevel.INFO, $"Set dummy model invisble");
                     //BaseObject.DocumentVisible(false, nDocType);
                     // create the dummy model in a new window 
                     // this is done to more efficient close the dummy model without the need to make the app or the model visible
-                    Logger.log(LogLevel.INFO, $"Create new window for dummy model");
+                    Logger.Log(LogLevel.INFO, $"Create new window for dummy model");
                     BaseObject.CreateNewWindow();
                     return dummyModel;
                 }
             }
             catch (Exception ex)
             {
-                Logger.log(LogLevel.ERROR, $"Error while getting dummy model by template of SOLIDWORKS.{System.Environment.NewLine}{ex.StackTrace}");
+                Logger.Log(LogLevel.ERROR, $"Error while getting dummy model by template of SOLIDWORKS.{System.Environment.NewLine}{ex.StackTrace}");
             }
             
             return null;
         }
 
-        public void ExitApplication(bool saveAllDirtyDocuments)
+        public bool CloseAllDocuments(bool saveAllDirtyDocuments)
         {
-            Logger.log(LogLevel.INFO, "Exit Solidworks Applications");
+            Logger.LogDebugSource($"Closing all document and save all dirty: {saveAllDirtyDocuments}");
             if (BaseObject != null)
             {
                 while (HasOpenDocuments())
@@ -1161,24 +1163,54 @@ namespace AngelSix.SolidDna
                         foreach (var model in openDocuments)
                         {
                             var modelDoc = new Model((ModelDoc2)model);
-                            Logger.log(LogLevel.INFO, "Save document: " + modelDoc.FilePath);
-                            if (modelDoc.IsDirty)
+                            if (modelDoc.IsDirty && saveAllDirtyDocuments)
                             {
-                                modelDoc.Save(false, SaveAsOptions.Silent, null);
+                                Logger.LogDebugSource($"Saving dirty document silent: {modelDoc.FilePath}");
+                                modelDoc.Save(false, SaveAsOptions.SaveReferenced, null);
                             }
                         }
+                        if (CloseAllDoucmentsUnsafed(true))
+                            return true;
                     }
-                    CloseAllDoucments(true);
                 }
-                BaseObject.ExitApp();
             }
-            Logger.log(LogLevel.INFO, "Closed all documents");
+            Logger.LogDebugSource("Closed all documents");
+            return false;
         }
 
-        public bool CloseAllDoucments(bool closeUnsafed)
+        public async Task<bool> CloseAllDocumentsAsync(bool saveAllDirtyDocuments)
+        {
+            return await Task.Run(() =>
+            {
+                return CloseAllDocuments(saveAllDirtyDocuments);
+            });
+        }
+
+        public bool ExitApplication(bool saveAllDirtyDocuments)
+        {
+            var result = false;
+            Logger.LogDebugSource("Exiting Solidworks applications");
+            if (BaseObject != null)
+            {
+                result = CloseAllDocuments(saveAllDirtyDocuments);
+                BaseObject.ExitApp();
+            }
+            Logger.LogDebugSource("Closed all documents");
+            return result;
+        }
+
+        public async Task<bool> ExitApplicationAsync(bool saveAllDirtyDocuments)
+        {
+            return await Task.Run(() =>
+            {
+                return ExitApplication(saveAllDirtyDocuments);
+            });
+        }
+
+        private bool CloseAllDoucmentsUnsafed(bool includeDirty)
         {
             if (BaseObject != null)
-                return BaseObject.CloseAllDocuments(closeUnsafed);
+                return BaseObject.CloseAllDocuments(includeDirty);
             return false;
         }
 
@@ -1197,8 +1229,8 @@ namespace AngelSix.SolidDna
                 BaseObject.CommandInProgress = !controlable;
                 BaseObject.UserControl = controlable;
                 BaseObject.UserControlBackground = controlable;
-                BaseObject.Visible = isApplicationVisible;
                 ((IFrame)BaseObject.Frame()).KeepInvisible = !isApplicationVisible;
+                BaseObject.Visible = isApplicationVisible;
             }
         }
 
@@ -1231,7 +1263,7 @@ namespace AngelSix.SolidDna
         {
             if (BaseObject != null)
             {
-                if (BaseObject.GetDocuments() != null)
+                if (BaseObject.GetDocumentCount() > 0)
                 {
                     return true;
                 }

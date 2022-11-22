@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace AngelSix.SolidDna
 {
@@ -14,6 +15,10 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class Model : SharedSolidDnaObject<ModelDoc2>
     {
+        private FeatureManager featureManager;
+        private SelectionManager selectionManager;
+        private ConfigurationManager configurationManager;
+
         public enum MajorSolidWorksVersions
         {
             UNKNOWN = 0,
@@ -55,9 +60,9 @@ namespace AngelSix.SolidDna
         /// The absolute file path of this model if it has been saved
         /// </summary>
         public string FilePath { get; protected set; }
-        
+
         public string Name { get; protected set; }
-        
+
         /// <summary>
         /// Indicates if this file has been saved (so exists on disk).
         /// If not, it's a new model currently only in-memory and will not have a file path
@@ -90,14 +95,19 @@ namespace AngelSix.SolidDna
         public ModelExtension Extension { get; protected set; }
 
         /// <summary>
-        /// Contains the current active configuration information
+        /// The feature manager for this model
         /// </summary>
-        public ModelConfiguration ActiveConfiguration { get; protected set; }
+        public FeatureManager FeatureManager { get => featureManager; protected set => featureManager = value; }
 
         /// <summary>
         /// The selection manager for this model
         /// </summary>
-        public SelectionManager SelectionManager { get; protected set; }
+        public SelectionManager SelectionManager { get => selectionManager; protected set => selectionManager = value; }
+
+        /// <summary>
+        /// The configuration manager for this model
+        /// </summary>
+        public ConfigurationManager ConfigurationManager { get => configurationManager; protected set => configurationManager = value; }
 
         /// <summary>
         /// Get the number of configurations
@@ -116,7 +126,7 @@ namespace AngelSix.SolidDna
 
         public bool IsVisible => BaseObject.Visible;
 
-        public ModelView ActiveModelView => new ModelView(BaseObject.IActiveView);
+        public ModelView ActiveModelView { get; protected set; }
 
         public bool IsDirty => BaseObject.GetSaveFlag();
 
@@ -220,7 +230,7 @@ namespace AngelSix.SolidDna
         /// </summary>
         protected void ReloadModelData()
         {
-            Logger.log(LogLevel.INFO,"Reload model data");
+            Logger.Log(LogLevel.INFO, "Reload model data");
             // Clean up any previous data
             DisposeAllReferences();
 
@@ -239,11 +249,14 @@ namespace AngelSix.SolidDna
             // Get the extension
             Extension = new ModelExtension(BaseObject.Extension, this);
 
-            // Get the active configuration
-            ActiveConfiguration = new ModelConfiguration(BaseObject.IGetActiveConfiguration());
+            // Get the feature manager
+            FeatureManager = new FeatureManager(BaseObject.FeatureManager);
 
             // Get the selection manager
             SelectionManager = new SelectionManager(BaseObject.ISelectionManager);
+
+            // Get the configuration manager
+            ConfigurationManager = new ConfigurationManager(BaseObject.ConfigurationManager);
 
             // Set drawing access
             Drawing = IsDrawing ? new DrawingDocument((DrawingDoc)BaseObject) : null;
@@ -253,6 +266,8 @@ namespace AngelSix.SolidDna
 
             // Set assembly access
             Assembly = IsAssembly ? new AssemblyDocument((AssemblyDoc)BaseObject) : null;
+
+            ActiveModelView = new ModelView(BaseObject.IActiveView);
 
             // Inform listeners
             ModelInformationChanged();
@@ -686,6 +701,14 @@ namespace AngelSix.SolidDna
         #endregion
 
         #region Specific Model
+
+
+        /// <summary>
+        /// Casts the current model to an assembly
+        /// NOTE: Check the <see cref="ModelType"/> to confirm this model is of the correct type before casting
+        /// </summary>
+        /// <returns></returns>
+        public ModelDoc2 AsModelDoc2 => BaseObject;
 
         /// <summary>
         /// Casts the current model to an assembly
@@ -1164,25 +1187,20 @@ namespace AngelSix.SolidDna
             try
             {
                 // Try and create component object from active configuration
-                component = new Component(ActiveConfiguration.UnsafeObject?.GetRootComponent3(true));
+                component = ConfigurationManager.ActiveConfiguration.GetRootComponent(true);
             }
             // If COM failure...
             catch (InvalidComObjectException)
             {
                 // Re-get configuration
-                ActiveConfiguration = new ModelConfiguration(BaseObject.IGetActiveConfiguration());
+                ConfigurationManager = new ConfigurationManager(BaseObject.ConfigurationManager);
 
                 // Try once more
-                component = new Component(ActiveConfiguration.UnsafeObject?.GetRootComponent3(true));
+                component = ConfigurationManager.ActiveConfiguration.GetRootComponent(true);
             }
 
             // Return components
             return RecurseComponents(component);
-        }
-
-        public Component GetRootComponent()
-        {
-            return new Component(ActiveConfiguration.UnsafeObject?.GetRootComponent3(true));
         }
 
         #region Private Component Helpers
@@ -1264,6 +1282,14 @@ namespace AngelSix.SolidDna
 
         #region Saving
 
+        public async Task<ModelSaveResult> SaveAsync(bool ignoreSaveFlag, SaveAsOptions options = SaveAsOptions.None, AttachedRenamedDocumentNotify attachedRenamedDocumentNotify = null)
+        {
+            return await Task.Run(() =>
+            {
+                return Save(ignoreSaveFlag, options, attachedRenamedDocumentNotify);
+            });
+        }
+
         /// <summary>
         /// Saves the current model, with the specified options
         /// </summary>
@@ -1283,35 +1309,35 @@ namespace AngelSix.SolidDna
                 // Wrap any error
                 return SolidDnaErrors.Wrap(() =>
                 {
-                // if option is set to swSaveAsOptions_SaveReferenced there need to be a attached event for referenced douments to notify
-                // otherwise Save3 will stuck
-                AttachEventHandlers(attachedRenamedDocumentNotify);
-                // Try and save the model using the Save3 method
-                BaseObject.Save3((int)options, ref errors, ref warnings);
-                // after saving the event handler needs to be detached
-                DetachEventHandlers(attachedRenamedDocumentNotify);
+                    // if option is set to swSaveAsOptions_SaveReferenced there need to be a attached event for referenced douments to notify
+                    // otherwise Save3 will stuck
+                    AttachEventHandlers(attachedRenamedDocumentNotify);
+                    // Try and save the model using the Save3 method
+                    BaseObject.Save3((int)options, ref errors, ref warnings);
+                    // after saving the event handler needs to be detached
+                    DetachEventHandlers(attachedRenamedDocumentNotify);
 
-                // Add any warnings
-                results.Warnings = (SaveAsWarnings)warnings;
+                    // Add any warnings
+                    results.Warnings = (SaveAsWarnings)warnings;
 
-                // Add any errors
-                results.Errors = (SaveAsErrors)errors;
+                    // Add any errors
+                    results.Errors = (SaveAsErrors)errors;
 
-                // If successful, and this is not a new file 
-                // (otherwise the RCW changes and SolidWorksApplication has to reload ActiveModel)...
-                if (results.Successful && HasBeenSaved)
-                    // Reload model data
-                    ReloadModelData();
+                    // If successful, and this is not a new file 
+                    // (otherwise the RCW changes and SolidWorksApplication has to reload ActiveModel)...
+                    if (results.Successful && HasBeenSaved)
+                        // Reload model data
+                        ReloadModelData();
 
-                // If we have not been saved, SolidWorks never fires any FileSave events at all
-                // so request a refresh of the ActiveModel. That is the best we can do
-                // as this RCW is now invalid. If this model is not active when saved then 
-                // it will simply reload the active models information
-                if (!HasBeenSaved)
+                    // If we have not been saved, SolidWorks never fires any FileSave events at all
+                    // so request a refresh of the ActiveModel. That is the best we can do
+                    // as this RCW is now invalid. If this model is not active when saved then 
+                    // it will simply reload the active models information
+                    if (!HasBeenSaved)
                         SolidWorksEnvironment.Application.RequestActiveModelChanged();
 
-                // Return result
-                return results;
+                    // Return result
+                    return results;
                 },
                     SolidDnaErrorTypeCode.SolidWorksModel,
                     SolidDnaErrorCode.SolidWorksModelSaveError,
@@ -1319,6 +1345,7 @@ namespace AngelSix.SolidDna
             }
             return new ModelSaveResult() { Warnings = SaveAsWarnings.AlreadySaved };
         }
+
         /// <summary>
         /// Saves a file to the specified path, with the specified options
         /// </summary>
@@ -1399,9 +1426,13 @@ namespace AngelSix.SolidDna
             Extension?.Dispose();
             Extension = null;
 
-            // Release the active configuration
-            ActiveConfiguration?.Dispose();
-            ActiveConfiguration = null;
+            // Release the feature manager
+            FeatureManager?.Dispose();
+            FeatureManager = null;
+
+            // Release the configuration manager
+            ConfigurationManager?.Dispose();
+            ConfigurationManager = null;
 
             // Selection manager
             SelectionManager?.Dispose();
@@ -1426,6 +1457,12 @@ namespace AngelSix.SolidDna
 
         public ModelSaveResult RebuildAndSave(bool ignoreSaveFlag = true, SaveAsOptions options = SaveAsOptions.None, AttachedRenamedDocumentNotify attachedRenamedDocumentNotify = null)
         {
+            //if (Extension.NeedRebuild != (int)ModelRebuildStatus.FullyRebuilt)
+            //{
+            //Rebuild();
+            //}
+            //AddInIntegration.SolidWorks.ActivateDocument(Name);
+            //BaseObject.ForceRebuild3(true);
             Rebuild();
             return Save(ignoreSaveFlag, options, RenamedDocumentNotify);
         }
@@ -1544,11 +1581,47 @@ namespace AngelSix.SolidDna
                 BaseObject.Visible = isVisible;
         }
 
+        public void EnableFeatureTree()
+        {
+            if (BaseObject != null)
+            {
+                FeatureManager.EnableFeatureTree = true;
+                FeatureManager.EnableFeatureTreeWindow = true;
+            }
+        }
+
+        public void DisableFeatureTree()
+        {
+            if (BaseObject != null)
+            {
+                FeatureManager.EnableFeatureTree = false;
+                FeatureManager.EnableFeatureTreeWindow = false;
+            }
+        }
+
+        public void SetFeatureTreeEnabled(bool isEnabled)
+        {
+            if (BaseObject != null)
+            {
+                FeatureManager.EnableFeatureTree = isEnabled;
+                FeatureManager.EnableFeatureTreeWindow = isEnabled;
+            }
+        }
+
+        public void SetEnableGraphicsUpdate(bool isEnabled)
+        {
+            if (ActiveModelView != null)
+            {
+                ActiveModelView.EnableGraphicsUpdate = isEnabled;
+            }
+        }
+
         public void SetUserControlable(bool isFeatureTreeEnabled, bool isGraphicsUpdateEnabled, bool isVisible, bool isLocked)
         {
             if (BaseObject != null)
             {
-                ((FeatureManager)BaseObject.FeatureManager).EnableFeatureTree = isFeatureTreeEnabled;
+                FeatureManager.EnableFeatureTree = isFeatureTreeEnabled;
+                FeatureManager.EnableFeatureTreeWindow = isFeatureTreeEnabled;
                 if (ActiveModelView != null)
                 {
                     ActiveModelView.EnableGraphicsUpdate = isGraphicsUpdateEnabled;
@@ -1644,6 +1717,23 @@ namespace AngelSix.SolidDna
                     }
                 }
             }
+        }
+
+        public void SetAsDirty()
+        {
+            BaseObject?.SetSaveFlag();
+        }
+
+        public bool SwitchConfiguation(string configurationName)
+        {
+            if (BaseObject.ShowConfiguration2(configurationName))
+            {
+                if (Extension.NeedRebuild == 1)
+                {
+                    return Rebuild();
+                }
+            }
+            return false;
         }
     }
 }

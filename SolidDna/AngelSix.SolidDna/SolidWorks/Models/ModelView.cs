@@ -23,6 +23,8 @@ namespace AngelSix.SolidDna
             }
         }
 
+        public bool IsLoaded => BaseObject != null;
+
         #endregion
 
         #region Constructor
