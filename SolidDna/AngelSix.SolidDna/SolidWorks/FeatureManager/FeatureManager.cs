@@ -30,25 +30,5 @@ namespace AngelSix.SolidDna
 
         #endregion
 
-        private ModelFeature CreateSpecificFeature(object featureData)
-        {
-            return new ModelFeature(BaseObject.CreateFeature(featureData));
-        }
-
-        public ModelFeature CreateFeature(object featureData)
-        {
-            return CreateSpecificFeature(featureData);
-        }
-
-        public ModelFeature CreateFeature(FeatureChainPatternData featureData)
-        {
-            return CreateSpecificFeature(featureData);
-        }
-
-        public ModelFeature CreateFeature(FeatureLinearPatternData featureData)
-        {
-            return CreateSpecificFeature(featureData);
-        }
-
     }
 }
