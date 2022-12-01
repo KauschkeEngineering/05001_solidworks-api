@@ -1169,10 +1169,12 @@ namespace AngelSix.SolidDna
                                 modelDoc.Save(false, SaveAsOptions.SaveReferenced, null);
                             }
                         }
+                        CleanActiveModelData();
                         if (CloseAllDoucmentsUnsafed(true))
                             return true;
                     }
                 }
+                return true;
             }
             Logger.LogDebugSource("Closed all documents");
             return false;
