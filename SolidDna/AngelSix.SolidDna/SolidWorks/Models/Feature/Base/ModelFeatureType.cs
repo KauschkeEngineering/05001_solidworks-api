@@ -33,6 +33,9 @@
         /// </summary>
         MateReference,
 
+        // TODO: There is no concrete class fir
+        MatePatternReference,
+
         /// <summary>
         /// The feature is <see cref="FeatureSmartComponentData"/>
         /// </summary>

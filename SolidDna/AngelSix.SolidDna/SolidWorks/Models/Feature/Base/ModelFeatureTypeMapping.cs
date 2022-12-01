@@ -105,6 +105,9 @@ namespace AngelSix.SolidDna
                 case "PosGroupFolder":
                     return ModelFeatureType.MateReference;
 
+                case "ReferencePattern": // has never been explained on the help page
+                    return ModelFeatureType.MatePatternReference;
+
                 case "SmartComponentFeature":
                     return ModelFeatureType.SmartComponentFeatureData;
 
@@ -171,6 +174,9 @@ namespace AngelSix.SolidDna
 
                 case "DerivedCirPattern":
                 case "DerivedLPattern":
+                case "DerivedHolePattern":
+                case "DerivedSketchPattern":
+                case "DerivedCurvePattern":
                     return ModelFeatureType.DerivedPatternData;
 
                 case "DimPattern":

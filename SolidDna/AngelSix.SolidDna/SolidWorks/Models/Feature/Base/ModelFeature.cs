@@ -62,7 +62,7 @@ namespace AngelSix.SolidDna
 
         #region Public Properties
 
-        public object Definition => BaseObject.GetDefinition();
+        public object Definition => GetFeatureDefinition();
 
         /// <summary>
         /// The specific type of this feature
@@ -166,6 +166,12 @@ namespace AngelSix.SolidDna
         /// Checks if this feature's specific type is a Mate Reference 
         /// </summary>
         public bool IsMateReference => FeatureType == ModelFeatureType.MateReference;
+
+        /// <summary>
+        /// Checks if this feature's specific type is a Mate Pattern Reference
+        /// TODO: This is not explained in the help manual of SOLIDWORKS
+        /// </summary>
+        public bool IsMatePatternReference => FeatureType == ModelFeatureType.MatePatternReference;
 
         /// <summary>
         /// Checks if this feature's specific type is a Motion Study Results
@@ -952,6 +958,22 @@ namespace AngelSix.SolidDna
 
         }
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public ModelFeature(object model) : base((Feature)model)
+        {
+            // Get the specific feature
+            mSpecificFeature = new SolidDnaObject<object>(BaseObject?.GetSpecificFeature2());
+
+            // Get the definition
+            mFeatureData = new SolidDnaObject<object>(BaseObject?.GetDefinition());
+
+            if (BaseObject != null)
+                IsInitialized = true;
+
+        }
+
         #endregion
 
         #region Public Methods
@@ -1085,6 +1107,16 @@ namespace AngelSix.SolidDna
             return BaseObject.GetTypeName2();
         }
 
+
+        /// <summary>
+        /// Gets the SolidWorks feature type name, such as RefSurface, CosmeticWeldBead, FeatSurfaceBodyFolder etc...
+        /// </summary>
+        /// <returns></returns>
+        protected object GetFeatureDefinition()
+        {
+            return BaseObject.GetDefinition();
+        }
+
         #endregion
 
         #region ToString
@@ -1122,27 +1154,39 @@ namespace AngelSix.SolidDna
         public ModelFeature GetNextFeature()
         {
             if (BaseObject != null)
-                return new ModelFeature((Feature)BaseObject.GetNextFeature());
+            {
+                var nextFeature = BaseObject.GetNextFeature();
+                if (nextFeature != null)
+                    return new ModelFeature(nextFeature);
+            }
             return null;
         }
 
         public ModelFeature GetFirstSubFeature()
         {
             if (BaseObject != null)
-                return new ModelFeature((Feature)BaseObject.GetFirstSubFeature());
+            {
+                var firstSubFeature = BaseObject.GetFirstSubFeature();
+                if (firstSubFeature != null)
+                    return new ModelFeature(firstSubFeature);
+            }
             return null;
         }
 
         public ModelFeature GetNextSubFeature()
         {
             if (BaseObject != null)
-                return new ModelFeature((Feature)BaseObject.GetNextSubFeature());
+            {
+                var nextSubFeature = BaseObject.GetNextSubFeature();
+                if (nextSubFeature != null)
+                    return new ModelFeature(nextSubFeature);
+            }
             return null;
         }
 
         public Component GetComponent()
         {
-            return SpecificFeature != null && SpecificFeature is Component2 ? new Component((Component2)SpecificFeature) : null;
+            return SpecificFeature != null && SpecificFeature is Component2 component ? new Component(component) : null;
         }
 
         public bool SelectFirst()

@@ -12,7 +12,7 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Default constructor
         /// </summary>
-        public FeatureLocalSketchPatternData(ILocalSketchPatternFeatureData model) : base(model)
+        public FeatureLocalSketchPatternData(object model) : base((ILocalSketchPatternFeatureData)model)
         {
 
         }

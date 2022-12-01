@@ -40,6 +40,5 @@ namespace AngelSix.SolidDna
             Group2PatternFeature = null;
         }
 
-        
     }
 }
