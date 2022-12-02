@@ -500,14 +500,18 @@ namespace AngelSix.SolidDna
         public IEnumerable<Model> ActiveOpenDocuments()
         {
             // Loop each child
-            foreach (ModelDoc2 modelDoc in (object[])BaseObject.GetDocuments())
+            var openDocuments = BaseObject.GetDocuments();
+            if (openDocuments != null)
             {
-                if (modelDoc.ActiveView != null)
+                foreach (ModelDoc2 modelDoc in (object[])openDocuments)
                 {
-                    // Create safe model
-                    using (var model = new Model(modelDoc))
-                        // Return it
-                        yield return model;
+                    if (modelDoc.ActiveView != null)
+                    {
+                        // Create safe model
+                        using (var model = new Model(modelDoc))
+                            // Return it
+                            yield return model;
+                    }
                 }
             }
         }
