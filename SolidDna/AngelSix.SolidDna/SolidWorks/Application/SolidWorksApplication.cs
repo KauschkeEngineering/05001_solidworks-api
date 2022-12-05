@@ -1156,7 +1156,7 @@ namespace AngelSix.SolidDna
 
         public bool CloseAllDocuments(bool saveAllDirtyDocuments)
         {
-            Logger.LogDebugSource($"Closing all document and save all dirty: {saveAllDirtyDocuments}");
+            Logger.LogDebug($"Closing all document and save all dirty: {saveAllDirtyDocuments}");
             if (BaseObject != null)
             {
                 while (HasOpenDocuments())
@@ -1169,7 +1169,7 @@ namespace AngelSix.SolidDna
                             var modelDoc = new Model((ModelDoc2)model);
                             if (modelDoc.IsDirty && saveAllDirtyDocuments)
                             {
-                                Logger.LogDebugSource($"Saving dirty document silent: {modelDoc.FilePath}");
+                                Logger.LogDebug($"Saving dirty document silent: {modelDoc.FilePath}");
                                 modelDoc.Save(false, SaveAsOptions.SaveReferenced, null);
                             }
                         }
@@ -1180,7 +1180,7 @@ namespace AngelSix.SolidDna
                 }
                 return true;
             }
-            Logger.LogDebugSource("Closed all documents");
+            Logger.LogDebug("Closed all documents");
             return false;
         }
 
@@ -1195,13 +1195,13 @@ namespace AngelSix.SolidDna
         public bool ExitApplication(bool saveAllDirtyDocuments)
         {
             var result = false;
-            Logger.LogDebugSource("Exiting Solidworks applications");
+            Logger.LogDebug("Exiting Solidworks applications");
             if (BaseObject != null)
             {
                 result = CloseAllDocuments(saveAllDirtyDocuments);
                 BaseObject.ExitApp();
             }
-            Logger.LogDebugSource("Closed all documents");
+            Logger.LogDebug("Closed all documents");
             return result;
         }
 
