@@ -132,6 +132,8 @@ namespace AngelSix.SolidDna
 
         public int InstanceCount { get; set; } = 1;
 
+        public bool IsOpenedReadOnly => BaseObject.IsOpenedReadOnly();
+
         #endregion
 
         #region Public Events
@@ -1310,6 +1312,9 @@ namespace AngelSix.SolidDna
                 return SolidDnaErrors.Wrap(() =>
                 {
                     // if option is set to swSaveAsOptions_SaveReferenced there need to be a attached event for referenced douments to notify
+                    if (options == SaveAsOptions.SaveReferenced && attachedRenamedDocumentNotify == null)
+                        attachedRenamedDocumentNotify = RenamedDocumentNotify;
+
                     // otherwise Save3 will stuck
                     AttachEventHandlers(attachedRenamedDocumentNotify);
                     // Try and save the model using the Save3 method
@@ -1457,12 +1462,6 @@ namespace AngelSix.SolidDna
 
         public ModelSaveResult RebuildAndSave(bool ignoreSaveFlag = true, SaveAsOptions options = SaveAsOptions.None, AttachedRenamedDocumentNotify attachedRenamedDocumentNotify = null)
         {
-            //if (Extension.NeedRebuild != (int)ModelRebuildStatus.FullyRebuilt)
-            //{
-            //Rebuild();
-            //}
-            //AddInIntegration.SolidWorks.ActivateDocument(Name);
-            //BaseObject.ForceRebuild3(true);
             Rebuild();
             return Save(ignoreSaveFlag, options, RenamedDocumentNotify);
         }
