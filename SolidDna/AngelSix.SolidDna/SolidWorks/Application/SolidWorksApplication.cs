@@ -1184,12 +1184,34 @@ namespace AngelSix.SolidDna
             return false;
         }
 
-        public async Task<bool> CloseAllDocumentsAsync(bool saveAllDirtyDocuments)
+        public async Task<bool> CloseAllDocumentsAsync(bool ignoreSaveFlag)
         {
             return await Task.Run(() =>
             {
-                return CloseAllDocuments(saveAllDirtyDocuments);
+                return CloseAllDocuments(ignoreSaveFlag);
             });
+        }
+
+        public async Task SaveAllOpenedDocumentsAsync(SaveAsOptions saveAsOptions, bool ignoreSaveFlag)
+        {
+            await Task.Run(() =>
+            {
+                SaveAllOpenedDocuments(saveAsOptions, ignoreSaveFlag);
+            });
+        }
+
+        public void SaveAllOpenedDocuments(SaveAsOptions saveAsOptions, bool ignoreSaveFlag)
+        {
+            var openDocuments = (object[])BaseObject.GetDocuments();
+            foreach (var model in openDocuments)
+            {
+                var modelDoc = new Model((ModelDoc2)model);
+                if (modelDoc.IsDirty || ignoreSaveFlag)
+                {
+                    Logger.LogDebug($"Saving document: {modelDoc.FilePath}");
+                    modelDoc.Save(ignoreSaveFlag, saveAsOptions, null);
+                }
+            }
         }
 
         public bool ExitApplication(bool saveAllDirtyDocuments)
