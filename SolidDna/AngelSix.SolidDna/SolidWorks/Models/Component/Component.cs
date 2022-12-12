@@ -126,6 +126,28 @@ namespace AngelSix.SolidDna
             return new Component(BaseObject.GetParent());
         }
 
+        public ExcludeFromBOMError ExcludeFromBOM()
+        {
+            return (ExcludeFromBOMError)BaseObject.SetExcludeFromBOM2(true, (int)ModelConfigurationOptions.ThisConfiguration, null);
+        }
+
+        public ExcludeFromBOMError IncludeToBOM()
+        {
+            return (ExcludeFromBOMError)BaseObject.SetExcludeFromBOM2(false, (int)ModelConfigurationOptions.ThisConfiguration, null);
+        }
+
+        public bool IsExcludedFromBOM()
+        {
+            var result = (bool[])BaseObject.GetExcludeFromBOM2((int)ModelConfigurationOptions.ThisConfiguration, null);
+            return result[0];
+        }
+
+        public bool IsIncludedToBOM()
+        {
+            var result = BaseObject.GetExcludeFromBOM2((int)ModelConfigurationOptions.ThisConfiguration, null);
+            return true;
+        }
+
         #region Dispose
 
         public override void Dispose()

@@ -556,7 +556,7 @@ namespace AngelSix.SolidDna
         /// Closes a file
         /// </summary>
         /// <param name="filePath">The path to the file</param>
-        public void CloseFile(string filePath)
+        public void CloseFile(string filePath = "")
         {
             // Wrap any error
             SolidDnaErrors.Wrap(() =>
@@ -1278,13 +1278,14 @@ namespace AngelSix.SolidDna
             return new IntPtr(-1);
         }
 
-        public void ActivateDocument(string documentName)
+        public Model ActivateDocument(string documentName)
         {
             if (BaseObject != null)
             {
                 var error = 0;
-                BaseObject.ActivateDoc3(documentName, false, (int)RebuildOnActivationOptions.RebuildActiveDoc, ref error);
+                return new Model((ModelDoc2)BaseObject.ActivateDoc3(documentName, false, (int)RebuildOnActivationOptions.RebuildActiveDoc, ref error));
             }
+            return null;
         }
 
         public bool HasOpenDocuments()

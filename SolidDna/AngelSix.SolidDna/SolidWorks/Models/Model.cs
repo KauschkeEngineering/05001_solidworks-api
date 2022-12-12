@@ -1447,6 +1447,11 @@ namespace AngelSix.SolidDna
             ClearModelEventHandlers();
         }
 
+        public void DisposeModel()
+        {
+            Dispose();
+        }
+
         public override void Dispose()
         {
             // Clean up embedded objects

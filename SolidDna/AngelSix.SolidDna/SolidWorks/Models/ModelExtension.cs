@@ -150,6 +150,11 @@ namespace AngelSix.SolidDna
             }
         }
 
+        public void ZoomToSheet()
+        {
+            BaseObject.ViewZoomToSheet();
+        }
+
         #region Get/Set Unit System
 
         public UnitSystems GetUnitSystem()

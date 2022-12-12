@@ -61,5 +61,15 @@ namespace AngelSix.SolidDna
                     BaseObject.ZoomByFactor(zoomFactor);
         }
 
+        public bool Activate()
+        {
+            if (BaseObject != null)
+            {
+                BaseObject.Activate();
+                return true;
+            }
+            return false;
+        }
+
     }
 }
