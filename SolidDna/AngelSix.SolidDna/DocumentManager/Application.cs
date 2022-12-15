@@ -28,6 +28,10 @@ namespace AngelSix.SolidDna.DocumentManager
         public SwDmDocumentType GetDocumentType(string filePath)
         {
             // Determine type of SOLIDWORKS file based on file extension
+            if (filePath == null || string.Equals(filePath, string.Empty))
+            {
+                return SwDmDocumentType.swDmDocumentUnknown;
+            }
             if (filePath.ToLower().EndsWith(PartDocument.FILE_EXTENSION))
             {
                 return SwDmDocumentType.swDmDocumentPart;
