@@ -3,13 +3,13 @@
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.1.13</Version>
+    <Version>0.2.0.0</Version>
     <Authors>Luke Malpass, Maximilian Burkhardt</Authors>
     <Company>AngelSix Ltd</Company>
     <Description>The new SolidDNA SDK, making the SolidWorks API easier, well behaved and modern</Description>
-    <Copyright>Copyright © 2016-2022</Copyright>
+    <Copyright>Copyright © 2023 - Kauschke Engineering Systems GmbH</Copyright>
     <PackageProjectUrl>https://github.com/angelsix/solidworks-api</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/angelsix/solidworks-api</RepositoryUrl>
+    <RepositoryUrl>https://github.com/KauschkeEngineering/05001_solidworks-api/</RepositoryUrl>
     <PackageTags>soliddna solidworks angelsix luke malpass api</PackageTags>
     <AssemblyVersion>1.0.1.13</AssemblyVersion>
     <BaseOutputPath>.\bin\x64\</BaseOutputPath>
