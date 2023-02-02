@@ -403,60 +403,63 @@ namespace AngelSix.SolidDna
         /// </summary>
         protected void ClearModelEventHandlers()
         {
-            switch (ModelType)
+            if (IsLoaded)
             {
-                case DocumentType.Part when AsPart() == null:
-                case DocumentType.Assembly when AsAssembly() == null:
-                case DocumentType.Drawing when AsDrawing() == null:
+                switch (ModelType)
                 {
-                    // Happens in multiple cases:
-                    // 1: When SolidWorks is being closed
-                    // 1: When the non-last model is being closed
-                    // 2: When the first model is opened after all models were closed.
-                    return;
+                    case DocumentType.Part when AsPart() == null:
+                    case DocumentType.Assembly when AsAssembly() == null:
+                    case DocumentType.Drawing when AsDrawing() == null:
+                    {
+                        // Happens in multiple cases:
+                        // 1: When SolidWorks is being closed
+                        // 1: When the non-last model is being closed
+                        // 2: When the first model is opened after all models were closed.
+                        return;
+                    }
                 }
-            }
 
-            // Based on the type of model this is...
-            switch (ModelType)
-            {
-                // Hook into the save and destroy events to keep data fresh
-                case DocumentType.Assembly:
-                    AsAssembly().ActiveConfigChangePostNotify -= ActiveConfigChangePostNotify;
-                    AsAssembly().DestroyNotify -= FileDestroyedNotify;
-                    AsAssembly().FileSaveAsNotify2 -= FileSaveAsPreNotify;
-                    AsAssembly().FileSavePostCancelNotify -= FileSaveCanceled;
-                    AsAssembly().FileSavePostNotify -= FileSavePostNotify;
-                    AsAssembly().ModifyNotify -= FileModified;
-                    AsAssembly().RegenPostNotify2 -= AssemblyOrPartRebuilt;
-                    AsAssembly().UserSelectionPostNotify -= UserSelectionPostNotify;
-                    AsAssembly().ClearSelectionsNotify -= UserSelectionPostNotify;
-                    break;
-                case DocumentType.Part:
-                    AsPart().ActiveConfigChangePostNotify -= ActiveConfigChangePostNotify;
-                    AsPart().DestroyNotify -= FileDestroyedNotify;
-                    AsPart().FileSaveAsNotify2 -= FileSaveAsPreNotify;
-                    AsPart().FileSavePostCancelNotify -= FileSaveCanceled;
-                    AsPart().FileSavePostNotify -= FileSavePostNotify;
-                    AsPart().ModifyNotify -= FileModified;
-                    AsPart().RegenPostNotify2 -= AssemblyOrPartRebuilt;
-                    AsPart().UserSelectionPostNotify -= UserSelectionPostNotify;
-                    AsPart().ClearSelectionsNotify -= UserSelectionPostNotify;
-                    break;
-                case DocumentType.Drawing:
-                    AsDrawing().ActivateSheetPostNotify -= SheetActivatePostNotify;
-                    AsDrawing().ActivateSheetPreNotify -= SheetActivatePreNotify;
-                    AsDrawing().AddItemNotify -= DrawingItemAddNotify;
-                    AsDrawing().DeleteItemNotify -= DrawingDeleteItemNotify;
-                    AsDrawing().DestroyNotify -= FileDestroyedNotify;
-                    AsDrawing().FileSaveAsNotify2 -= FileSaveAsPreNotify;
-                    AsDrawing().FileSavePostCancelNotify -= FileSaveCanceled;
-                    AsDrawing().FileSavePostNotify -= FileSavePostNotify;
-                    AsDrawing().ModifyNotify -= FileModified;
-                    AsDrawing().RegenPostNotify -= DrawingRebuilt;
-                    AsDrawing().UserSelectionPostNotify -= UserSelectionPostNotify;
-                    AsDrawing().ClearSelectionsNotify -= UserSelectionPostNotify;
-                    break;
+                // Based on the type of model this is...
+                switch (ModelType)
+                {
+                    // Hook into the save and destroy events to keep data fresh
+                    case DocumentType.Assembly:
+                        AsAssembly().ActiveConfigChangePostNotify -= ActiveConfigChangePostNotify;
+                        AsAssembly().DestroyNotify -= FileDestroyedNotify;
+                        AsAssembly().FileSaveAsNotify2 -= FileSaveAsPreNotify;
+                        AsAssembly().FileSavePostCancelNotify -= FileSaveCanceled;
+                        AsAssembly().FileSavePostNotify -= FileSavePostNotify;
+                        AsAssembly().ModifyNotify -= FileModified;
+                        AsAssembly().RegenPostNotify2 -= AssemblyOrPartRebuilt;
+                        AsAssembly().UserSelectionPostNotify -= UserSelectionPostNotify;
+                        AsAssembly().ClearSelectionsNotify -= UserSelectionPostNotify;
+                        break;
+                    case DocumentType.Part:
+                        AsPart().ActiveConfigChangePostNotify -= ActiveConfigChangePostNotify;
+                        AsPart().DestroyNotify -= FileDestroyedNotify;
+                        AsPart().FileSaveAsNotify2 -= FileSaveAsPreNotify;
+                        AsPart().FileSavePostCancelNotify -= FileSaveCanceled;
+                        AsPart().FileSavePostNotify -= FileSavePostNotify;
+                        AsPart().ModifyNotify -= FileModified;
+                        AsPart().RegenPostNotify2 -= AssemblyOrPartRebuilt;
+                        AsPart().UserSelectionPostNotify -= UserSelectionPostNotify;
+                        AsPart().ClearSelectionsNotify -= UserSelectionPostNotify;
+                        break;
+                    case DocumentType.Drawing:
+                        AsDrawing().ActivateSheetPostNotify -= SheetActivatePostNotify;
+                        AsDrawing().ActivateSheetPreNotify -= SheetActivatePreNotify;
+                        AsDrawing().AddItemNotify -= DrawingItemAddNotify;
+                        AsDrawing().DeleteItemNotify -= DrawingDeleteItemNotify;
+                        AsDrawing().DestroyNotify -= FileDestroyedNotify;
+                        AsDrawing().FileSaveAsNotify2 -= FileSaveAsPreNotify;
+                        AsDrawing().FileSavePostCancelNotify -= FileSaveCanceled;
+                        AsDrawing().FileSavePostNotify -= FileSavePostNotify;
+                        AsDrawing().ModifyNotify -= FileModified;
+                        AsDrawing().RegenPostNotify -= DrawingRebuilt;
+                        AsDrawing().UserSelectionPostNotify -= UserSelectionPostNotify;
+                        AsDrawing().ClearSelectionsNotify -= UserSelectionPostNotify;
+                        break;
+                }
             }
         }
 
