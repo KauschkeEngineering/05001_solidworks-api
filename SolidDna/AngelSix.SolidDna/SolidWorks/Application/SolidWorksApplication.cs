@@ -9,7 +9,6 @@ using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swdocumentmgr;
 using DevelopmentFramework.Logging;
 using AngelSix.SolidDna.DocumentManager;
-using DevelopmentFramework.MVVM.Service;
 
 namespace AngelSix.SolidDna
 {
@@ -43,7 +42,8 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Locking object for synchronizing the disposing of SolidWorks and reloading active model info.
         /// </summary>
-        private readonly object mDisposingLock = new object();
+        private readonly object _disposingLock = new object();
+        private readonly object _openCloseModelLock = new object();
 
         #endregion
 
@@ -444,7 +444,7 @@ namespace AngelSix.SolidDna
                 await Task.Delay(200);
 
                 // Lock to prevent Disposing to change while this section is running.
-                lock (mDisposingLock)
+                lock (_disposingLock)
                 {
                     if (Disposing)
                         // If we are disposing SolidWorks, there is no need to reload active model info.
@@ -536,8 +536,12 @@ namespace AngelSix.SolidDna
                 var errors = 0;
                 var warnings = 0;
 
-                // Attempt to open the document
-                var modelCom = BaseObject.OpenDoc6(filePath, (int)fileType, (int)options, configuration, ref errors, ref warnings);
+                ModelDoc2 modelCom;
+                lock (_openCloseModelLock)
+                {
+                    // Attempt to open the document
+                    modelCom = BaseObject.OpenDoc6(filePath, (int)fileType, (int)options, configuration, ref errors, ref warnings);
+                }
 
                 // TODO: Read errors into enums for better reporting
                 // For now just check if model is not null
@@ -561,7 +565,33 @@ namespace AngelSix.SolidDna
             // Wrap any error
             SolidDnaErrors.Wrap(() =>
             {
-                BaseObject.CloseDoc(filePath);
+                lock (_openCloseModelLock)
+                {
+                    BaseObject.CloseDoc(filePath);
+                }
+            },
+                SolidDnaErrorTypeCode.SolidWorksApplication,
+                SolidDnaErrorCode.SolidWorksModelCloseError,
+                Localization.GetString("SolidWorksModelCloseFileError"));
+        }
+
+        /// <summary>
+        /// Closes a file
+        /// </summary>
+        /// <param name="filePath">The path to the file</param>
+        public void CloseModel(Model modelToClose)
+        {
+            // Wrap any error
+            SolidDnaErrors.Wrap(() =>
+            {
+                if (modelToClose != null && modelToClose.IsLoaded)
+                {
+                    lock (_openCloseModelLock)
+                    {
+                        BaseObject.CloseDoc(modelToClose.FilePath);
+                        modelToClose.DisposeModel();
+                    }
+                }
             },
                 SolidDnaErrorTypeCode.SolidWorksApplication,
                 SolidDnaErrorCode.SolidWorksModelCloseError,
@@ -856,7 +886,7 @@ namespace AngelSix.SolidDna
         /// </summary>
         public override void Dispose()
         {
-            lock (mDisposingLock)
+            lock (_disposingLock)
             {
 
                 // Flag as disposing
@@ -925,28 +955,6 @@ namespace AngelSix.SolidDna
             return null;
         }
 
-        //public List<DrawingSheet> GetDrawingSheets(string drawingFilePath)
-        //{
-        //    var drawingSheets = new List<DrawingSheet>();
-        //    var swClassFact = new SwDMClassFactory();
-        //    var swDocMgr = (SwDMApplication)swClassFact.GetApplication(API_LICENCE_KEY);
-        //    if (swDocMgr != null)
-        //    {
-        //        var swDoc = (SwDMDocument12)swDocMgr.GetDocument(drawingFilePath, SwDmDocumentType.swDmDocumentDrawing, true, out var nRetVal);
-        //        if (swDoc != null)
-        //        {
-        //            var sheets = (object[])swDoc.GetSheets();
-
-        //            foreach (var sheet in sheets)
-        //            {
-        //                drawingSheets.Add(new DrawingSheet((Sheet)sheet, null));
-        //            }
-        //            return drawingSheets;
-        //        }
-        //    }
-        //    return drawingSheets;
-        //}
-
         public object GetDPreviewBitmap(string drawingFilePath)
         {
             return ((SwDMSheet2)mBaseObject).GetPreviewPNGBitmap(out var error);
@@ -955,11 +963,6 @@ namespace AngelSix.SolidDna
         public void CloseVisibleDocumentUnsaved(string documentPath)
         {
             BaseObject.QuitDoc(documentPath);
-        }
-
-        public void CloseDocumentUnsaved(string documentName)
-        {
-            BaseObject.CloseDoc(documentName);
         }
 
         /// <summary>
@@ -972,7 +975,11 @@ namespace AngelSix.SolidDna
             // Wrap any error
             return SolidDnaErrors.Wrap(() =>
             {
-                var modelData = new Tuple<FileLoadErrors, Model>((FileLoadErrors)openDocumentSpecification.Error, new Model(BaseObject.OpenDoc7(openDocumentSpecification)));
+                Tuple<FileLoadErrors, Model> modelData;
+                lock (_openCloseModelLock)
+                {
+                    modelData = new Tuple<FileLoadErrors, Model>((FileLoadErrors)openDocumentSpecification.Error, new Model(BaseObject.OpenDoc7(openDocumentSpecification)));
+                }
                 // TODO: Read errors into enums for better reporting
                 // return new model data
                 return modelData;
@@ -989,129 +996,21 @@ namespace AngelSix.SolidDna
                 : null;
         }
 
-        //assembly/part document needs to stay open otherwise it is not fully accessable
-        //1. Set ISldWorks::EnableBackgroundProcessing to true (for drawings only).
-        //2. Use ISldWorks Event BackgroundProcessingStartNotify to handle the background processing start event.
-        //3. Open the drawing document by calling either ISldWorks::OpenDoc6 or ISldWorks::OpenDoc7.
-        //4. Set IDrawingDoc::BackgroundProcessingOption to swBackgroundProcessOption_e.swBackgroundProcessing_DeferToApplication.
-        //5. Call ISldWorks::IsBackgroundProcessingCompleted repeatedly, which polls the status of the open operation, to know when background processing ends.
-        //6. Use ISldWorks Event BackgroundProcessingEndNotify to handle the background processing end event.
-        //7. When the open operation is finished, set ISldWorks::EnableBackgroundProcessing to false.
-        private Tuple<FileLoadErrors, Model> OpenDocumenInvisibleInWithSpecification(string fullDocumentFilePath, bool readOnly, bool openSilent, bool useLightWeightDefault, bool loadLightWeight, bool ignoreHiddenComponents, bool loadExternalReferencesInMemory, bool selective)
-        {
-            var swDocSpecification = default(DocumentSpecification);
-            swDocSpecification = (DocumentSpecification)BaseObject.GetOpenDocSpec(fullDocumentFilePath);
-            swDocSpecification.ReadOnly = readOnly;
-            swDocSpecification.Silent = openSilent;
-            swDocSpecification.UseLightWeightDefault = useLightWeightDefault;
-            swDocSpecification.LightWeight = loadLightWeight;
-            swDocSpecification.IgnoreHiddenComponents = ignoreHiddenComponents;
-            swDocSpecification.LoadExternalReferencesInMemory = true;
-            swDocSpecification.Selective = selective;
-
-            switch (Application.GetInstance().GetDocumentType(fullDocumentFilePath))
-            {
-                case SwDmDocumentType.swDmDocumentPart:
-                    swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocPART;
-                    break;
-                case SwDmDocumentType.swDmDocumentAssembly:
-                    swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocASSEMBLY;
-                    break;
-                case SwDmDocumentType.swDmDocumentDrawing:
-                    // set EnableBackgroundProcessing = true to more efficiently and programmatically open a drawing document that requires a lot of CPU time and no user input
-                    BaseObject.EnableBackgroundProcessing = true;
-                    swDocSpecification.DocumentType = (int)swDocumentTypes_e.swDocDRAWING;
-                    break;
-            }
-
-            // creating a document invisibly by passing false to DocumentVisible method, then it is not possible to make it visible with IModelDoc2:Visible
-            // if only set to true for drawing the SOLIDWORKS session will also be terminated
-            // so every document nees to be se to true
-            BaseObject.DocumentVisible(true, (int)swDocSpecification.DocumentType);
-            // Use KeepInvisible when SOLIDWORKS is invisible and it shall activate a component and SOLIDWORKS has to be prevented from becoming visible
-            // be sure to set this property back to false after the operation for which it was to true completes
-            var modelData = new Tuple<FileLoadErrors, Model>((FileLoadErrors)swDocSpecification.Error, new Model((ModelDoc2)BaseObject.OpenDoc7(swDocSpecification)));
-            BaseObject.DocumentVisible(false, (int)swDocSpecification.DocumentType);
-
-            // set EnableBackgroundProcessing = false when the open operation is finished
-            BaseObject.EnableBackgroundProcessing = false;
-            return modelData;
-        }
-
         public Model GetModelByDocumentName(string documentFilePath)
         {
             return new Model(BaseObject.IGetOpenDocumentByName2(documentFilePath));
         }
 
-        public string GetDefaultAssemblyTemplatePath()
+        public string GetUserPreference(UserPreference userPreference)
         {
-            return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplateAssembly);
+            return BaseObject.GetUserPreferenceStringValue((int)userPreference);
         }
 
-        public bool SetDefaultAssemblyTemplatePath(string assemblyTemplatePath)
+        public bool SetUserPreference(UserPreference userPreference, string value)
         {
-            return !assemblyTemplatePath.Equals(string.Empty)
-                ? BaseObject.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplateAssembly, assemblyTemplatePath)
+            return !value.Equals(string.Empty)
+                ? BaseObject.SetUserPreferenceStringValue((int)userPreference, value)
                 : false;
-        }
-
-        public string GetDefaultPartTemplatePath()
-        {
-            return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplatePart);
-        }
-        
-        public bool SetDefaultPartTemplatePath(string partTemplatePath)
-        {
-            return !partTemplatePath.Equals(string.Empty)
-                ? BaseObject.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplatePart, partTemplatePath)
-                : false;
-        }
-
-        public string GetDefaultDrawingTemplatePath()
-        {
-            return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplateDrawing);
-        }
-
-        public bool SetDefaultDrawingTemplatePath(string drawingTemplatePath)
-        {
-            return !drawingTemplatePath.Equals(string.Empty)
-                ? BaseObject.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swDefaultTemplateDrawing, drawingTemplatePath)
-                : false;
-        }
-
-        public string GetDefaultMaterialDatabasesLocation()
-        {
-            return BaseObject.GetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swFileLocationsMaterialDatabases);
-        }
-
-        public bool SetDefaultMaterialDatabasesLocation(string defaultMaterialDatabasePath)
-        {
-            return !defaultMaterialDatabasePath.Equals(string.Empty)
-                ? BaseObject.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swFileLocationsMaterialDatabases, defaultMaterialDatabasePath)
-                : false;
-        }
-
-        public bool IsTopParentAssembly(string assemblyFilePath, string searchPath)
-        {
-
-            var swClassFact = new SwDMClassFactory();
-            var swDocMgr = swClassFact.GetApplication(Credential.GetSolidWorksLicenseAPIKey());
-            var swSearchOpt = swDocMgr.GetSearchOptionObject();
-            swSearchOpt.ClearAllSearchPaths();
-            swSearchOpt.AddSearchPath(searchPath);
-            var nRetVal = SwDmDocumentOpenError.swDmDocumentOpenErrorNone;
-
-            var swDoc = (SwDMDocumentClass)swDocMgr.GetDocument(assemblyFilePath, SwDmDocumentType.swDmDocumentAssembly, true, out nRetVal);
-            if (swDoc != null)
-            {
-                var references = swDoc.WhereUsed(swSearchOpt);
-                if (references == null ||
-                    ((string[])references).Where(referencedFile => referencedFile.ToLower().Contains(AssemblyDocument.FILE_EXTENSION)).Count() == 0)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         // TODO: Dont forget to delete the template model after retriving the desired data
@@ -1134,15 +1033,17 @@ namespace AngelSix.SolidDna
                     {
                         nDocType = (int)SwDmDocumentType.swDmDocumentDrawing;
                     }
-                    Logger.Log(LogLevel.INFO, $"Try getting dummy model by template file: {templateFilePath} docType: {nDocType}");
-                    BaseObject.DocumentVisible(false, nDocType);
-                    var dummyModel = new Model((ModelDoc2)BaseObject.NewDocument(templateFilePath, 0, 0, 0));
-                    Logger.Log(LogLevel.INFO, $"Set dummy model invisble");
-                    //BaseObject.DocumentVisible(false, nDocType);
-                    // create the dummy model in a new window 
-                    // this is done to more efficient close the dummy model without the need to make the app or the model visible
-                    Logger.Log(LogLevel.INFO, $"Create new window for dummy model");
-                    BaseObject.CreateNewWindow();
+
+                    Model dummyModel = null;
+                    lock (_openCloseModelLock)
+                    {
+                        Logger.Log(LogLevel.INFO, $"Try getting dummy model by template file: {templateFilePath} docType: {nDocType}");
+                        BaseObject.DocumentVisible(false, nDocType);
+                        dummyModel = new Model((ModelDoc2)BaseObject.NewDocument(templateFilePath, 0, 0, 0));
+                        Logger.Log(LogLevel.INFO, $"Set dummy model invisble");
+                        BaseObject.DocumentVisible(true, nDocType);
+                    }
+
                     return dummyModel;
                 }
             }
@@ -1150,7 +1051,7 @@ namespace AngelSix.SolidDna
             {
                 Logger.Log(LogLevel.ERROR, $"Error while getting dummy model by template of SOLIDWORKS.{System.Environment.NewLine}{ex.StackTrace}");
             }
-            
+
             return null;
         }
 
@@ -1256,9 +1157,11 @@ namespace AngelSix.SolidDna
             {
                 BaseObject.CommandInProgress = !controlable;
                 BaseObject.UserControl = controlable;
-                BaseObject.UserControlBackground = controlable;
+                BaseObject.EnableFileMenu = controlable;
+                BaseObject.UserControlBackground = !controlable;
                 ((IFrame)BaseObject.Frame()).KeepInvisible = !isApplicationVisible;
                 BaseObject.Visible = isApplicationVisible;
+                BaseObject.CommandInProgress = !controlable;
             }
         }
 
