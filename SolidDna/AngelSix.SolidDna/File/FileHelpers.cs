@@ -22,10 +22,10 @@ namespace AngelSix.SolidDna
                 return string.Empty;
 
             // Normalize slashes
-            var normalizedPath = path.Replace('/', '\\');
+            var normalizedPath = path.Replace('/', Path.DirectorySeparatorChar);
 
             // Get the last slash
-            var lastSlash = normalizedPath.LastIndexOf('\\');
+            var lastSlash = normalizedPath.LastIndexOf(Path.DirectorySeparatorChar);
 
             // If we don't have any folders, return the passed in path
             if (lastSlash <= 0)

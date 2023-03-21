@@ -114,6 +114,5 @@ namespace AngelSix.SolidDna.DocumentManager
             }
             return false;
         }
-
     }
 }
