@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using System.IO;
 
 namespace AngelSix.SolidDna
 {
@@ -28,7 +25,7 @@ namespace AngelSix.SolidDna
             {
                 if (!FullPath.Equals(""))
                 {
-                    var split = FullPath.Split('\\');
+                    var split = FullPath.Split(Path.DirectorySeparatorChar);
                     if (split.Length > 0)
                     {
                         return split[split.Length - 1].Replace(DEFAULT_EXTENSION, "");
