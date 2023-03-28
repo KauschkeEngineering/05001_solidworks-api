@@ -424,41 +424,50 @@ namespace AngelSix.SolidDna
                 {
                     // Hook into the save and destroy events to keep data fresh
                     case DocumentType.Assembly:
-                        AsAssembly().ActiveConfigChangePostNotify -= ActiveConfigChangePostNotify;
-                        AsAssembly().DestroyNotify -= FileDestroyedNotify;
-                        AsAssembly().FileSaveAsNotify2 -= FileSaveAsPreNotify;
-                        AsAssembly().FileSavePostCancelNotify -= FileSaveCanceled;
-                        AsAssembly().FileSavePostNotify -= FileSavePostNotify;
-                        AsAssembly().ModifyNotify -= FileModified;
-                        AsAssembly().RegenPostNotify2 -= AssemblyOrPartRebuilt;
-                        AsAssembly().UserSelectionPostNotify -= UserSelectionPostNotify;
-                        AsAssembly().ClearSelectionsNotify -= UserSelectionPostNotify;
+                    {
+                        var assembly = AsAssembly();
+                        assembly.ActiveConfigChangePostNotify -= ActiveConfigChangePostNotify;
+                        assembly.DestroyNotify -= FileDestroyedNotify;
+                        assembly.FileSaveAsNotify2 -= FileSaveAsPreNotify;
+                        assembly.FileSavePostCancelNotify -= FileSaveCanceled;
+                        assembly.FileSavePostNotify -= FileSavePostNotify;
+                        assembly.ModifyNotify -= FileModified;
+                        assembly.RegenPostNotify2 -= AssemblyOrPartRebuilt;
+                        assembly.UserSelectionPostNotify -= UserSelectionPostNotify;
+                        assembly.ClearSelectionsNotify -= UserSelectionPostNotify;
                         break;
+                    }
                     case DocumentType.Part:
-                        AsPart().ActiveConfigChangePostNotify -= ActiveConfigChangePostNotify;
-                        AsPart().DestroyNotify -= FileDestroyedNotify;
-                        AsPart().FileSaveAsNotify2 -= FileSaveAsPreNotify;
-                        AsPart().FileSavePostCancelNotify -= FileSaveCanceled;
-                        AsPart().FileSavePostNotify -= FileSavePostNotify;
-                        AsPart().ModifyNotify -= FileModified;
-                        AsPart().RegenPostNotify2 -= AssemblyOrPartRebuilt;
-                        AsPart().UserSelectionPostNotify -= UserSelectionPostNotify;
-                        AsPart().ClearSelectionsNotify -= UserSelectionPostNotify;
+                    {
+                        var part = AsPart();
+                        part.ActiveConfigChangePostNotify -= ActiveConfigChangePostNotify;
+                        part.DestroyNotify -= FileDestroyedNotify;
+                        part.FileSaveAsNotify2 -= FileSaveAsPreNotify;
+                        part.FileSavePostCancelNotify -= FileSaveCanceled;
+                        part.FileSavePostNotify -= FileSavePostNotify;
+                        part.ModifyNotify -= FileModified;
+                        part.RegenPostNotify2 -= AssemblyOrPartRebuilt;
+                        part.UserSelectionPostNotify -= UserSelectionPostNotify;
+                        part.ClearSelectionsNotify -= UserSelectionPostNotify;
                         break;
+                    }
                     case DocumentType.Drawing:
-                        AsDrawing().ActivateSheetPostNotify -= SheetActivatePostNotify;
-                        AsDrawing().ActivateSheetPreNotify -= SheetActivatePreNotify;
-                        AsDrawing().AddItemNotify -= DrawingItemAddNotify;
-                        AsDrawing().DeleteItemNotify -= DrawingDeleteItemNotify;
-                        AsDrawing().DestroyNotify -= FileDestroyedNotify;
-                        AsDrawing().FileSaveAsNotify2 -= FileSaveAsPreNotify;
-                        AsDrawing().FileSavePostCancelNotify -= FileSaveCanceled;
-                        AsDrawing().FileSavePostNotify -= FileSavePostNotify;
-                        AsDrawing().ModifyNotify -= FileModified;
-                        AsDrawing().RegenPostNotify -= DrawingRebuilt;
-                        AsDrawing().UserSelectionPostNotify -= UserSelectionPostNotify;
-                        AsDrawing().ClearSelectionsNotify -= UserSelectionPostNotify;
+                    {
+                        var drawing = AsDrawing();
+                        drawing.ActivateSheetPostNotify -= SheetActivatePostNotify;
+                        drawing.ActivateSheetPreNotify -= SheetActivatePreNotify;
+                        drawing.AddItemNotify -= DrawingItemAddNotify;
+                        drawing.DeleteItemNotify -= DrawingDeleteItemNotify;
+                        drawing.DestroyNotify -= FileDestroyedNotify;
+                        drawing.FileSaveAsNotify2 -= FileSaveAsPreNotify;
+                        drawing.FileSavePostCancelNotify -= FileSaveCanceled;
+                        drawing.FileSavePostNotify -= FileSavePostNotify;
+                        drawing.ModifyNotify -= FileModified;
+                        drawing.RegenPostNotify -= DrawingRebuilt;
+                        drawing.UserSelectionPostNotify -= UserSelectionPostNotify;
+                        drawing.ClearSelectionsNotify -= UserSelectionPostNotify;
                         break;
+                    }
                 }
             }
         }
@@ -834,6 +843,7 @@ namespace AngelSix.SolidDna
             using (var editor = Extension.CustomPropertyEditor(configuration))
             {
                 // Add the property
+                Logger.LogDebug($"AddCustomPropertyValue of model: {Name} property: {name} value: {value}");
                 return editor.AddCustomPropertyValue(name, type, value, option);
             }
         }
