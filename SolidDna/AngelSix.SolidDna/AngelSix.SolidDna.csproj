@@ -1,80 +1,88 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.2.0.0</Version>
-    <Authors>Luke Malpass, Maximilian Burkhardt</Authors>
-    <Company>AngelSix Ltd</Company>
-    <Description>The new SolidDNA SDK, making the SolidWorks API easier, well behaved and modern</Description>
-    <Copyright>Copyright © 2023 - Kauschke Engineering Systems GmbH</Copyright>
-    <PackageProjectUrl>https://github.com/angelsix/solidworks-api</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/KauschkeEngineering/05001_solidworks-api/</RepositoryUrl>
-    <PackageTags>soliddna solidworks angelsix luke malpass api</PackageTags>
-    <AssemblyVersion>1.0.1.13</AssemblyVersion>
-    <BaseOutputPath>.\bin\x64\</BaseOutputPath>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net48</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Version>0.2.0.0</Version>
+		<Authors>Luke Malpass, Maximilian Burkhardt</Authors>
+		<Company>AngelSix Ltd</Company>
+		<Description>The new SolidDNA SDK, making the SolidWorks API easier, well behaved and modern</Description>
+		<Copyright>Copyright © 2023 - Kauschke Engineering Systems GmbH</Copyright>
+		<PackageProjectUrl>https://github.com/angelsix/solidworks-api</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/KauschkeEngineering/05001_solidworks-api/</RepositoryUrl>
+		<PackageTags>soliddna solidworks angelsix luke malpass api</PackageTags>
+		<AssemblyVersion>1.0.1.13</AssemblyVersion>
+		<BaseOutputPath>.\bin\x64\</BaseOutputPath>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile></DocumentationFile>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DocumentationFile></DocumentationFile>
+		<AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\net471\AngelSix.SolidDna.xml</DocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DocumentationFile>bin\Release\net471\AngelSix.SolidDna.xml</DocumentationFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Localization\Strings\Strings-en-US.xml" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="Localization\Strings\Strings-en-US.xml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Strings\Strings-en-US.xml" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Localization\Strings\Strings-en-US.xml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="System.Net.Http" Version="4.3.4" />
+		<PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\05001_DevelopmentFramework\DevelopmentFramework.csproj" />
-    <ProjectReference Include="..\..\..\05001_dna-framework\Source\Dna.Framework\Dna.Framework.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\05001_DevelopmentFramework\DevelopmentFramework.csproj" />
+		<ProjectReference Include="..\..\..\05001_dna-framework\Source\Dna.Framework\Dna.Framework.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="SolidWorks.Interop.sldworks">
-      <HintPath>..\..\References\2022\SolidWorks.Interop.sldworks.dll</HintPath>
-    </Reference>
-    <Reference Include="SolidWorks.Interop.sw3dprinter">
-      <HintPath>..\..\References\2022\SolidWorks.Interop.sw3dprinter.dll</HintPath>
-    </Reference>
-    <Reference Include="SolidWorks.Interop.swcommands">
-      <HintPath>..\..\References\2022\SolidWorks.Interop.swcommands.dll</HintPath>
-    </Reference>
-    <Reference Include="SolidWorks.Interop.swconst">
-      <HintPath>..\..\References\2022\SolidWorks.Interop.swconst.dll</HintPath>
-    </Reference>
-    <Reference Include="SolidWorks.Interop.swdimxpert">
-      <HintPath>..\..\References\2022\SolidWorks.Interop.swdimxpert.dll</HintPath>
-    </Reference>
-    <Reference Include="SolidWorks.Interop.swdocumentmgr">
-      <HintPath>..\..\References\2022\SolidWorks.Interop.swdocumentmgr.dll</HintPath>
-    </Reference>
-    <Reference Include="SolidWorks.Interop.swmotionstudy">
-      <HintPath>..\..\References\2022\SolidWorks.Interop.swmotionstudy.dll</HintPath>
-    </Reference>
-    <Reference Include="SolidWorks.Interop.swpublished">
-      <HintPath>..\..\References\2022\SolidWorks.Interop.swpublished.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="WindowsFormsIntegration" />
-  </ItemGroup>
-  
+	<ItemGroup>
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="PresentationCore" />
+		<Reference Include="PresentationFramework" />
+		<Reference Include="SolidWorks.Interop.sldworks">
+			<HintPath>..\..\References\2022\SolidWorks.Interop.sldworks.dll</HintPath>
+		</Reference>
+		<Reference Include="SolidWorks.Interop.sw3dprinter">
+			<HintPath>..\..\References\2022\SolidWorks.Interop.sw3dprinter.dll</HintPath>
+		</Reference>
+		<Reference Include="SolidWorks.Interop.swcommands">
+			<HintPath>..\..\References\2022\SolidWorks.Interop.swcommands.dll</HintPath>
+		</Reference>
+		<Reference Include="SolidWorks.Interop.swconst">
+			<HintPath>..\..\References\2022\SolidWorks.Interop.swconst.dll</HintPath>
+		</Reference>
+		<Reference Include="SolidWorks.Interop.swdimxpert">
+			<HintPath>..\..\References\2022\SolidWorks.Interop.swdimxpert.dll</HintPath>
+		</Reference>
+		<Reference Include="SolidWorks.Interop.swdocumentmgr">
+			<HintPath>..\..\References\2022\SolidWorks.Interop.swdocumentmgr.dll</HintPath>
+		</Reference>
+		<Reference Include="SolidWorks.Interop.swmotionstudy">
+			<HintPath>..\..\References\2022\SolidWorks.Interop.swmotionstudy.dll</HintPath>
+		</Reference>
+		<Reference Include="SolidWorks.Interop.swpublished">
+			<HintPath>..\..\References\2022\SolidWorks.Interop.swpublished.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Windows.Forms" />
+		<Reference Include="WindowsBase" />
+		<Reference Include="WindowsFormsIntegration" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="SolidWorks\CustomProperties\custom_property_en.texpr">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="SolidWorks\CustomProperties\custom_property_de.texpr">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>

@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfTextExpression xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <TextExpression>
+    <Name>Material</Name>
+    <Expression>SW-Material@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Mass</Name>
+    <Expression>SW-Mass@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Density</Name>
+    <Expression>SW-Density@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Volume</Name>
+    <Expression>SW-Volume@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Surface Area</Name>
+    <Expression>SW-SurfaceArea@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Cost - Total Cost</Name>
+    <Expression>SW-Cost-TotalCost@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Cost - Material Cost</Name>
+    <Expression>SW-Cost-MaterialCost@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Cost - Manufacturing Cost</Name>
+    <Expression>SW-Cost-ManufacturingCost@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Cost - Material Name</Name>
+    <Expression>SW-Cost-MaterialName@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Cost - Template Name</Name>
+    <Expression>SW-Cost-TemplateName@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Cost - Stock Type</Name>
+    <Expression>SW-Cost-StockType@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Cost - Stock Size</Name>
+    <Expression>SW-Cost-StockSize@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Cost - Cost Calculation Time</Name>
+    <Expression>SW-Cost-CostCalculationTime@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Center of Mass X</Name>
+    <Expression>SW-CenterofMassX@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Center of Mass Y</Name>
+    <Expression>SW-CenterofMassY@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Center of Mass Z</Name>
+    <Expression>SW-CenterofMassZ@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Ix</Name>
+    <Expression>SW-Ix@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Iy</Name>
+    <Expression>SW-Iy@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Iz</Name>
+    <Expression>SW-Iz@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Px</Name>
+    <Expression>SW-Px@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Py</Name>
+    <Expression>SW-Py@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Pz</Name>
+    <Expression>SW-Pz@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Lxx</Name>
+    <Expression>SW-Lxx@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Lxy</Name>
+    <Expression>SW-Lxy@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Lxz</Name>
+    <Expression>SW-Lxz@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Lyx</Name>
+    <Expression>SW-Lyx@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Lyy</Name>
+    <Expression>SW-Lyy@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Lyz</Name>
+    <Expression>SW-Lyz@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Lzx</Name>
+    <Expression>SW-Lzx@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Lzy</Name>
+    <Expression>SW-Lzy@</Expression>
+  </TextExpression>
+  <TextExpression>
+    <Name>Lzz</Name>
+    <Expression>SW-Lzz@</Expression>
+  </TextExpression>
+</ArrayOfTextExpression>
