@@ -2,6 +2,7 @@
 using SolidWorks.Interop.swconst;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 
 namespace AngelSix.SolidDna
@@ -11,14 +12,26 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class CustomPropertyEditor : SolidDnaObject<CustomPropertyManager>
     {
+        private readonly string usedConfiguration;
+
+        public bool IsConfigurationSpecific
+        {
+            get
+            {
+                if (usedConfiguration != null && usedConfiguration.Equals("") == false)
+                    return true;
+                return false;
+            }
+        }
+
         #region Constructor
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        public CustomPropertyEditor(CustomPropertyManager model) : base(model)
+        public CustomPropertyEditor(CustomPropertyManager model, string configuration = null) : base(model)
         {
-
+            usedConfiguration = configuration;
         }
 
         #endregion
@@ -108,7 +121,10 @@ namespace AngelSix.SolidDna
             //       To mimic the Set behaviour of the SolidWorks API
             //       Simply do CustomPropertyExists() to check first if it exists
             //
-            return (CustomPropertySetResult)BaseObject.Set2(name, value);
+            //lock (name)
+            {
+                return (CustomPropertySetResult)BaseObject.Set2(name, value);
+            }
         }
 
         /// <summary>
@@ -129,8 +145,10 @@ namespace AngelSix.SolidDna
             //       To mimic the Set behaviour of the SolidWorks API
             //       Simply do CustomPropertyExists() to check first if it exists
             //
-
-            return (CustomPropertyAddResult)BaseObject.Add3(name, (int)type, value, (int)option);
+            lock (AddInIntegration.SolidWorks.CustomPropertyLock)
+            {
+                return (CustomPropertyAddResult)BaseObject.Add3(name, (int)type, value, (int)option);
+            }
         }
 
         /// <summary>
@@ -151,8 +169,10 @@ namespace AngelSix.SolidDna
         public CustomPropertyDeleteResult DeleteCustomPropertyWithResult(string name)
         {
             // TODO: Add error checking and exception catching
-
-            return (CustomPropertyDeleteResult)BaseObject.Delete2(name);
+            //lock (name)
+            {
+                return (CustomPropertyDeleteResult)BaseObject.Delete2(name);
+            }
         }
 
         /// <summary>
@@ -234,5 +254,10 @@ namespace AngelSix.SolidDna
             return CustomPropertyTypes.Unknown;
         }
 
+        public void DisposeEditor()
+        {
+            base.Dispose();
+        }
     }
 }
+
