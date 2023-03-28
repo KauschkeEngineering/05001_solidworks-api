@@ -80,7 +80,7 @@ namespace AngelSix.SolidDna
         /// </summary>
         /// <returns></returns>
         public string[] SheetNames() => (string[])mBaseObject.GetSheetNames();
-        
+
         public void ForEachSheet(Action<DrawingSheet> sheetsCallback)
         {
             // Get each sheet name
@@ -301,29 +301,27 @@ namespace AngelSix.SolidDna
             // Get the sheets in the drawing document
             sheetNames = (string[])mBaseObject.GetSheetNames();
 
-            // Traverse the sheets and determine whether
-
-            // they're loaded
-
-            for (i = 0; i < sheetNames.Length; i++)
-
+            if (sheetNames != null)
             {
-
-                sheetName = (string)sheetNames[i];
-
-                bRet = mBaseObject.ActivateSheet(sheetName);
-                var swSheet = mBaseObject.get_Sheet(sheetNames[i]);
-
-                // TODO: Check if swSheet can be casted to SwDMSheet2
-                mDrawingSheets.Add(new DrawingSheet((Sheet)swSheet, this));
-
-                if (swSheet.IsLoaded())
+                // Traverse the sheets and determine whether they're loaded
+                for (i = 0; i < sheetNames.Length; i++)
                 {
+                    sheetName = sheetNames[i];
 
-                }
-                else
-                {
+                    bRet = mBaseObject.ActivateSheet(sheetName);
+                    var swSheet = (Sheet)mBaseObject.GetCurrentSheet();
 
+                    // TODO: Check if swSheet can be casted to SwDMSheet2
+                    mDrawingSheets.Add(new DrawingSheet(swSheet, this));
+
+                    if (swSheet.IsLoaded())
+                    {
+
+                    }
+                    else
+                    {
+
+                    }
                 }
             }
             return mDrawingSheets;
