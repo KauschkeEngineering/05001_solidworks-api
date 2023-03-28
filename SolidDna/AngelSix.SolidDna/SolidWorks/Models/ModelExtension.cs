@@ -50,7 +50,7 @@ namespace AngelSix.SolidDna
         {
             // TODO: Add error checking and exception catching
 
-            return new CustomPropertyEditor(BaseObject.CustomPropertyManager[configuration]);
+            return new CustomPropertyEditor(BaseObject.CustomPropertyManager[configuration], configuration);
         }
 
         #endregion
