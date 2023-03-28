@@ -44,10 +44,13 @@ namespace AngelSix.SolidDna
         /// </summary>
         private readonly object _disposingLock = new object();
         private readonly object _openCloseModelLock = new object();
+        private readonly object _customPropertyLock = new object();
 
         #endregion
 
         #region Public Properties
+
+        public object CustomPropertyLock => _customPropertyLock;
 
         /// <summary>
         /// The currently active model
