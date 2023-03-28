@@ -1,7 +1,9 @@
 ﻿using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AngelSix.SolidDna
 {
@@ -49,7 +51,7 @@ namespace AngelSix.SolidDna
 
         public string FilePath => BaseObject.GetPathName();
 
-        public ComponentSuppressionStates SuppressionState => (ComponentSuppressionStates)BaseObject.GetSuppression();
+        public ComponentSuppressionStates SuppressionState => (ComponentSuppressionStates)BaseObject.GetSuppression2();
 
         public bool IsSuppressed => BaseObject.IsSuppressed();
 
@@ -76,6 +78,16 @@ namespace AngelSix.SolidDna
         {
             get => BaseObject.ReferencedConfiguration;
             set => BaseObject.ReferencedConfiguration = value;
+        }
+
+        public bool IsComponentVisible
+        {
+            get => BaseObject != null ? Convert.ToBoolean(BaseObject.Visible) : false;
+            set
+            {
+                if (BaseObject != null)
+                    BaseObject.Visible = Convert.ToInt32(value);
+            }
         }
 
         #endregion
@@ -126,9 +138,25 @@ namespace AngelSix.SolidDna
             return new Component(BaseObject.GetParent());
         }
 
+        public async Task<ExcludeFromBOMError> StartExcludeFromBOMAsync()
+        {
+            return await Task.Run(() =>
+            {
+                return ExcludeFromBOM();
+            });
+        }
+
         public ExcludeFromBOMError ExcludeFromBOM()
         {
             return (ExcludeFromBOMError)BaseObject.SetExcludeFromBOM2(true, (int)ModelConfigurationOptions.ThisConfiguration, null);
+        }
+
+        public async Task<ExcludeFromBOMError> StartIncludeToBOMAsync()
+        {
+            return await Task.Run(() =>
+            {
+                return IncludeToBOM();
+            });
         }
 
         public ExcludeFromBOMError IncludeToBOM()
@@ -146,6 +174,11 @@ namespace AngelSix.SolidDna
         {
             var result = BaseObject.GetExcludeFromBOM2((int)ModelConfigurationOptions.ThisConfiguration, null);
             return true;
+        }
+
+        public void GetIsVisible()
+        {
+            var visibi = BaseObject.GetVisibility(1, null);
         }
 
         #region Dispose
