@@ -163,5 +163,7 @@ namespace AngelSix.SolidDna
         }
 
         public object PLMObjectSpecification => mDocumentSpecification.PLMObjectSpecification;
+
+        public int AddToRecentDocumentList { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
     }
 }

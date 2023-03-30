@@ -51,7 +51,8 @@ namespace AngelSix.SolidDna
             SOLIDWORKS_2019 = 12000,
             SOLIDWORKS_2020 = 13000,
             SOLIDWORKS_2021 = 14000,
-            SOLIDWORKS_2022 = 15000
+            SOLIDWORKS_2022 = 15000,
+            SOLIDWORKS_2023 = 16000
         }
 
         #region Public Properties

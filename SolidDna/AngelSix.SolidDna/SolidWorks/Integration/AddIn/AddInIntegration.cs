@@ -24,7 +24,8 @@ namespace AngelSix.SolidDna
         SW_2019,
         SW_2020,
         SW_2021,
-        SW_2022
+        SW_2022,
+        SW_2023
     }
 
     /// <summary>
@@ -36,7 +37,7 @@ namespace AngelSix.SolidDna
     public abstract class AddInIntegration : ISwAddin
     {
         private const uint SOLIDWORKS_APP_SUPPORTED_START_YEAR = 2016;
-        private const uint SOLIDWORKS_APP_SUPPORTED_END_YEAR = 2022;
+        private const uint SOLIDWORKS_APP_SUPPORTED_END_YEAR = 2023;
 
         public const string SOLIDWORKS_PROCESS_NAME = "SLDWORKS";
 
@@ -636,6 +637,9 @@ namespace AngelSix.SolidDna
                                 case 2022:
                                     installedSolidWorksVersions.Add(new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2022, registryValue.ToString()));
                                     break;
+                                case 2023:
+                                    installedSolidWorksVersions.Add(new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2023, registryValue.ToString()));
+                                    break;
                             }
                         }
                     }
@@ -670,6 +674,9 @@ namespace AngelSix.SolidDna
                 case SWProgIdVersion.SW_2022:
                     version = "2022";
                     break;
+                case SWProgIdVersion.SW_2023:
+                    version = "2023";
+                    break;
             }
             if (version.Equals("") == false)
             {
@@ -696,6 +703,8 @@ namespace AngelSix.SolidDna
                                     return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2021, registryValue.ToString());
                                 case SWProgIdVersion.SW_2022:
                                     return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2022, registryValue.ToString());
+                                case SWProgIdVersion.SW_2023:
+                                    return new Tuple<SWProgIdVersion, string>(SWProgIdVersion.SW_2023, registryValue.ToString());
                             }
                         }
                     }
