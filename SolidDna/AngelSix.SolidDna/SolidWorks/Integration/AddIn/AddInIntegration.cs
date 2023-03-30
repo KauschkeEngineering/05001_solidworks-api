@@ -862,10 +862,7 @@ namespace AngelSix.SolidDna
                 SolidWorks?.Dispose();
             }
 
-            if (SolidWorksProcess != null)
-            {
-                SolidWorksProcess.Dispose();
-            }
+            SolidWorksProcess?.Dispose();
 
             // Set to null
             SolidWorks = null;
