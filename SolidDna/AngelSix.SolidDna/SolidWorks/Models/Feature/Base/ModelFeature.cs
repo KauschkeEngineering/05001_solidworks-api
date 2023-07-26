@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using DevelopmentFramework.Logging;
 using SolidWorks.Interop.sldworks;
 
 namespace AngelSix.SolidDna
@@ -46,6 +49,10 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class ModelFeature : SharedSolidDnaObject<Feature>
     {
+        #region Private Members
+
+        #endregion
+
         #region Protected Members
 
         /// <summary>
@@ -291,7 +298,7 @@ namespace AngelSix.SolidDna
         /// Checks if this feature's specific type is Cam Follower Mate data
         /// </summary>
         public bool IsCamFollowerMateData => FeatureType == ModelFeatureType.CamFollowerMateData;
-        
+
         /// <summary>
         /// Checks if this feature's specific type is Cavity data
         /// </summary>
@@ -1056,23 +1063,6 @@ namespace AngelSix.SolidDna
         }
 
         /// <summary>
-        /// Gets a custom property by the given name. 
-        /// Only works for Cut List Folders and the Weldment feature.
-        /// </summary>
-        /// <param name="name">The name of the custom property</param>
-        ///<param name="resolved">True to get the resolved value of the property, false to get the actual text</param>
-        /// <returns></returns>
-        public Tuple<CustomPropertyGetResult, string> GetCustomPropertyWithResult(string name, bool resolved = false)
-        {
-            // Get the custom property editor
-            using (var editor = GetCustomPropertyEditor())
-            {
-                // Get the property
-                return editor.GetCustomPropertyValue(name, resolve: resolved);
-            }
-        }
-
-        /// <summary>
         /// Gets all of the custom properties in this feature.
         /// Only works for Cut List Folders and the Weldment feature.
         /// </summary>
@@ -1155,9 +1145,14 @@ namespace AngelSix.SolidDna
         {
             if (BaseObject != null)
             {
-                var nextFeature = BaseObject.GetNextFeature();
-                if (nextFeature != null)
-                    return new ModelFeature(nextFeature);
+                lock (AddInIntegration.SolidWorks.GetFeatureLock)
+                {
+                    var nextFeature = BaseObject.GetNextFeature();
+                    ModelFeature modelFeature = null;
+                    if (nextFeature != null)
+                        modelFeature = new ModelFeature(nextFeature);
+                    return modelFeature;
+                }
             }
             return null;
         }
@@ -1183,10 +1178,15 @@ namespace AngelSix.SolidDna
             }
             return null;
         }
-
         public Component GetComponent()
         {
-            return SpecificFeature != null && SpecificFeature is Component2 component ? new Component(component) : null;
+            Component newComponent = null;
+            lock (AddInIntegration.SolidWorks.GetComponentLock)
+            {
+                if (SpecificFeature != null && SpecificFeature is Component2 component)
+                    newComponent = new Component(component);
+            }
+            return newComponent;
         }
 
         public bool SelectFirst()
