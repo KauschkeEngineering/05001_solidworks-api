@@ -18,12 +18,12 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// A semaphore to lock the semaphore list
         /// </summary>
-        private static SemaphoreSlim SelfLock = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim SelfLock = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// A list of all semaphore locks (one per key)
         /// </summary>
-        private static Dictionary<string, SemaphoreDetails> Semaphores = new Dictionary<string, SemaphoreDetails>();
+        private static readonly Dictionary<string, SemaphoreDetails> Semaphores = new Dictionary<string, SemaphoreDetails>();
 
         #endregion
 
