@@ -12,12 +12,13 @@ namespace AngelSix.SolidDna
     /// </summary>
     public class Component : SolidDnaObject<Component2>
     {
+
         #region Public Properties
 
         /// <summary>
         /// Get the Model from the component
         /// </summary>
-        public Model AsModel => new Model (BaseObject.GetModelDoc2() as ModelDoc2);
+        public Model AsModel => new Model(BaseObject.GetModelDoc2() as ModelDoc2);
 
         /// <summary>
         /// Check if the Component is Root
@@ -51,7 +52,16 @@ namespace AngelSix.SolidDna
 
         public string FilePath => BaseObject.GetPathName();
 
-        public ComponentSuppressionStates SuppressionState => (ComponentSuppressionStates)BaseObject.GetSuppression2();
+        public ComponentSuppressionStates SuppressionState
+        {
+            get
+            {
+                if (AddInIntegration.SolidWorks.SolidWorksVersion.Version <= 2018)
+                    return (ComponentSuppressionStates)BaseObject.GetSuppression();
+                else
+                    return (ComponentSuppressionStates)BaseObject.GetSuppression2();
+            }
+        }
 
         public bool IsSuppressed => BaseObject.IsSuppressed();
 
@@ -119,7 +129,8 @@ namespace AngelSix.SolidDna
 
         public ComponentSuppressionErrors SetSupressionState(ComponentSuppressionStates suppressionState)
         {
-            return (ComponentSuppressionErrors)BaseObject.SetSuppression2((int)suppressionState);
+            lock (AddInIntegration.SolidWorks.SetSuppressionLock)
+                return (ComponentSuppressionErrors)BaseObject.SetSuppression2((int)suppressionState);
         }
 
         public static Component GetComponent(object component)
@@ -148,7 +159,13 @@ namespace AngelSix.SolidDna
 
         public ExcludeFromBOMError ExcludeFromBOM()
         {
-            return (ExcludeFromBOMError)BaseObject.SetExcludeFromBOM2(true, (int)ModelConfigurationOptions.ThisConfiguration, null);
+            if (AddInIntegration.SolidWorks.SolidWorksVersion.Version <= 2018)
+            {
+                BaseObject.ExcludeFromBOM = true;
+                return ExcludeFromBOMError.Success;
+            }
+            else
+                return (ExcludeFromBOMError)BaseObject.SetExcludeFromBOM2(true, (int)ModelConfigurationOptions.ThisConfiguration, null);
         }
 
         public async Task<ExcludeFromBOMError> StartIncludeToBOMAsync()
@@ -161,24 +178,25 @@ namespace AngelSix.SolidDna
 
         public ExcludeFromBOMError IncludeToBOM()
         {
-            return (ExcludeFromBOMError)BaseObject.SetExcludeFromBOM2(false, (int)ModelConfigurationOptions.ThisConfiguration, null);
+            if (AddInIntegration.SolidWorks.SolidWorksVersion.Version <= 2018)
+            {
+                BaseObject.ExcludeFromBOM = false;
+                return ExcludeFromBOMError.Success;
+            }
+            else
+                return (ExcludeFromBOMError)BaseObject.SetExcludeFromBOM2(false, (int)ModelConfigurationOptions.ThisConfiguration, null);
+
         }
 
         public bool IsExcludedFromBOM()
         {
-            var result = (bool[])BaseObject.GetExcludeFromBOM2((int)ModelConfigurationOptions.ThisConfiguration, null);
-            return result[0];
-        }
-
-        public bool IsIncludedToBOM()
-        {
-            var result = BaseObject.GetExcludeFromBOM2((int)ModelConfigurationOptions.ThisConfiguration, null);
-            return true;
-        }
-
-        public void GetIsVisible()
-        {
-            var visibi = BaseObject.GetVisibility(1, null);
+            if (AddInIntegration.SolidWorks.SolidWorksVersion.Version <= 2018)
+                return BaseObject.ExcludeFromBOM;
+            else
+            {
+                var result = (bool[])BaseObject.GetExcludeFromBOM2((int)ModelConfigurationOptions.ThisConfiguration, null);
+                return result[0];
+            }
         }
 
         #region Dispose
