@@ -9,6 +9,7 @@ using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swdocumentmgr;
 using DevelopmentFramework.Logging;
 using AngelSix.SolidDna.DocumentManager;
+using System.Threading;
 
 namespace AngelSix.SolidDna
 {
@@ -42,15 +43,22 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Locking object for synchronizing the disposing of SolidWorks and reloading active model info.
         /// </summary>
+
         private readonly object _disposingLock = new object();
+        private readonly object _setSuppressionLock = new object();
+        private readonly object _getComponentLock = new object();
         private readonly object _openCloseModelLock = new object();
         private readonly object _customPropertyLock = new object();
+        private readonly object _getFeatureLock = new object();
+        private readonly object _activateModelLock = new object();
 
         #endregion
 
         #region Public Properties
 
-        public object CustomPropertyLock => _customPropertyLock;
+        internal object SetSuppressionLock => _setSuppressionLock;
+        internal object GetComponentLock => _getComponentLock;
+        internal object GetFeatureLock => _getFeatureLock;
 
         /// <summary>
         /// The currently active model
@@ -65,7 +73,7 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Gets the current SolidWorks version information
         /// </summary>
-        public SolidWorksVersion SolidWorksVersion => GetSolidWorksVersion();
+        public SolidWorksVersion SolidWorksVersion { get; protected set; }
 
         /// <summary>
         /// The SolidWorks instance cookie
@@ -126,6 +134,7 @@ namespace AngelSix.SolidDna
         {
             try
             {
+                SolidWorksVersion = GetSolidWorksVersion();
                 // Set preferences
                 Preferences = new SolidWorksPreferences();
 
@@ -406,6 +415,12 @@ namespace AngelSix.SolidDna
         private void CleanActiveModelData()
         {
             // Active model
+            if (mActiveModel != null)
+            {
+                mActiveModel.ModelSaved -= ActiveModel_Saved;
+                mActiveModel.ModelInformationChanged -= ActiveModel_InformationChanged;
+                mActiveModel.ModelClosing -= ActiveModel_Closing;
+            }
             mActiveModel?.Dispose();
         }
 
@@ -520,6 +535,30 @@ namespace AngelSix.SolidDna
         }
 
         /// <summary>
+        /// Loops all open documents with an active view (=loaded) returning a safe <see cref="Model"/> for each document,
+        /// disposing of the COM reference after its use
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Model> ActiveOpenDocuments(DocumentType documentType)
+        {
+            // Loop each child
+            var openDocuments = BaseObject.GetDocuments();
+            if (openDocuments != null)
+            {
+                foreach (ModelDoc2 modelDoc in (object[])openDocuments)
+                {
+                    if (modelDoc.ActiveView != null && (DocumentType)modelDoc.GetType() == documentType)
+                    {
+                        // Create safe model
+                        using (var model = new Model(modelDoc))
+                            // Return it
+                            yield return model;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Opens a file
         /// </summary>
         /// <param name="filePath">The path to the file</param>
@@ -592,7 +631,7 @@ namespace AngelSix.SolidDna
                     lock (_openCloseModelLock)
                     {
                         BaseObject.CloseDoc(modelToClose.FilePath);
-                        modelToClose.DisposeModel();
+                        modelToClose.Dispose();
                     }
                 }
             },
@@ -891,12 +930,17 @@ namespace AngelSix.SolidDna
         {
             lock (_disposingLock)
             {
-
                 // Flag as disposing
                 Disposing = true;
 
+                BaseObject.ActiveModelDocChangeNotify -= ActiveModelChanged;
+                BaseObject.FileOpenPreNotify -= FileOpenPreNotify;
+                BaseObject.FileOpenPostNotify -= FileOpenPostNotify;
+                BaseObject.FileNewNotify2 -= FileNewPostNotify;
+                BaseObject.OnIdleNotify -= OnIdleNotify;
+
                 // Clean active model
-                ActiveModel?.Dispose();
+                CleanActiveModelData();
 
                 // Dispose command manager
                 CommandManager?.Dispose();
@@ -907,66 +951,6 @@ namespace AngelSix.SolidDna
         }
 
         #endregion
-
-        //private static SwDmDocumentType GetDocumentType(string filePath)
-        //{
-        //    // Determine type of SOLIDWORKS file based on file extension
-        //    if (filePath.ToLower().EndsWith(PartDocument.FILE_EXTENSION))
-        //    {
-        //        return SwDmDocumentType.swDmDocumentPart;
-        //    }
-        //    else if (filePath.ToLower().EndsWith(AssemblyDocument.FILE_EXTENSION))
-        //    {
-        //        return SwDmDocumentType.swDmDocumentAssembly;
-        //    }
-        //    else if (filePath.ToLower().EndsWith(DrawingDocument.FILE_EXTENSION))
-        //    {
-        //        return SwDmDocumentType.swDmDocumentDrawing;
-        //    }
-        //    else
-        //    {
-        //        return SwDmDocumentType.swDmDocumentUnknown;
-        //    }
-        //}
-
-        public object GetPreviewBitmap(string filePath, bool isDrawingSheet = false, string drawingSheetName = "")
-        {
-            var swClassFact = new SwDMClassFactory();
-            var swDocMgr = (SwDMApplication)swClassFact.GetApplication(Credential.GetSolidWorksLicenseAPIKey());
-            if (swDocMgr != null)
-            {
-                var ver = (Model.MajorSolidWorksVersions)swDocMgr.GetLatestSupportedFileVersion();
-                var swDoc = (SwDMDocument12)swDocMgr.GetDocument(filePath, Application.GetInstance().GetDocumentType(filePath), true, out var nRetVal);
-                if (swDoc != null)
-                {
-                    if (isDrawingSheet)
-                    {
-                        var drawingSheets = (object[])swDoc.GetSheets();
-                        foreach (var drawingSheet in drawingSheets)
-                        {
-                            if (((SwDMSheet2)drawingSheet).Name.Equals(drawingSheetName))
-                                return ((SwDMSheet2)drawingSheet).GetPreviewPNGBitmap(out var error);
-                        }
-                    }
-                    else
-                        return swDoc.GetPreviewBitmap(out var error);
-                }
-            }
-            // SwDMDocument10::GetPreviewBitmap throws an unmanaged COM exception 
-            // for out-of-process C# console applications
-            // Use the following code in SOLIDWORKS C# macros and add-ins  
-            return null;
-        }
-
-        public object GetDPreviewBitmap(string drawingFilePath)
-        {
-            return ((SwDMSheet2)mBaseObject).GetPreviewPNGBitmap(out var error);
-        }
-
-        public void CloseVisibleDocumentUnsaved(string documentPath)
-        {
-            BaseObject.QuitDoc(documentPath);
-        }
 
         /// <summary>
         /// Opens a file
@@ -994,9 +978,7 @@ namespace AngelSix.SolidDna
 
         public OpenDocumentSpecification GetDocumentSpecification(string fullDocumentFilePath)
         {
-            return BaseObject != null
-                ? new OpenDocumentSpecification((DocumentSpecification)BaseObject.GetOpenDocSpec(fullDocumentFilePath))
-                : null;
+            return BaseObject != null ? new OpenDocumentSpecification((DocumentSpecification)BaseObject.GetOpenDocSpec(fullDocumentFilePath)) : null;
         }
 
         public Model GetModelByDocumentName(string documentFilePath)
@@ -1184,12 +1166,15 @@ namespace AngelSix.SolidDna
             return new IntPtr(-1);
         }
 
-        public Model ActivateDocument(string documentName)
+        public Model ActivateDocument(string documentName, RebuildOnActivationOptions rebuildOnActivationOption)
         {
             if (BaseObject != null)
             {
                 var error = 0;
-                return new Model((ModelDoc2)BaseObject.ActivateDoc3(documentName, false, (int)RebuildOnActivationOptions.RebuildActiveDoc, ref error));
+                Model model;
+                lock (_activateModelLock)
+                    model = new Model((ModelDoc2)BaseObject.ActivateDoc3(documentName, false, (int)rebuildOnActivationOption, ref error));
+                return model;
             }
             return null;
         }
@@ -1225,6 +1210,5 @@ namespace AngelSix.SolidDna
                 var title = swModelWindow.Title;
             }
         }
-
     }
 }
