@@ -1124,6 +1124,11 @@ namespace AngelSix.SolidDna
 
         #region Dispose
 
+        public void DisposeModelFeature()
+        {
+            Dispose();
+        }
+
         /// <summary>
         /// Disposing
         /// </summary>
