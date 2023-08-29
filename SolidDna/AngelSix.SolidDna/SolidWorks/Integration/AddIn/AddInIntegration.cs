@@ -46,11 +46,6 @@ namespace AngelSix.SolidDna
         #region Protected Members
 
         /// <summary>
-        /// A list of assemblies to use when resolving any missing references
-        /// </summary>
-        protected List<AssemblyName> mReferencedAssemblies = new List<AssemblyName>();
-
-        /// <summary>
         /// Flag if we have loaded into memory (as ConnectedToSolidWorks can happen multiple times if unloaded/reloaded)
         /// </summary>
         protected static bool mLoaded = false;
@@ -76,9 +71,6 @@ namespace AngelSix.SolidDna
 
         /// <summary>
         /// Gets the list of all known reference assemblies in this solution
-
-        /// </summary>
-        public AssemblyName[] ReferencedAssemblies => mReferencedAssemblies.ToArray();
 
         /// <summary>
         /// If true, loads the plug-ins in their own app-domain
@@ -123,9 +115,6 @@ namespace AngelSix.SolidDna
         {
             try
             {
-                // Help resolve any assembly references
-                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-
                 // Get the path to this actual add-in dll
                 var assemblyFilePath = this.AssemblyFilePath();
                 var assemblyPath = this.AssemblyPath();
@@ -549,10 +538,10 @@ namespace AngelSix.SolidDna
         public static bool ConnectToActiveSolidWorks()
         {
             // Create new blank add-in
-            var addin = new BlankAddInIntegration();
+            var addIn = new BlankAddInIntegration();
 
             // Return if we successfully got an instance
-            return addin.ConnectToActiveSolidWork();
+            return addIn.ConnectToActiveSolidWork();
         }
 
         /// <summary>
@@ -563,10 +552,10 @@ namespace AngelSix.SolidDna
         public static bool ConnectToActiveSolidWorks(SWProgIdVersion progIdVersion)
         {
             // Create new blank add-in
-            var addin = new BlankAddInIntegration();
+            var addIn = new BlankAddInIntegration();
 
             // Return if we successfully got an instance
-            return addin.ConnectToActiveSolidWork(progIdVersion);
+            return addIn.ConnectToActiveSolidWork(progIdVersion);
         }
 
         public bool StartSolidWork(string solidWorksExePath)
@@ -597,8 +586,8 @@ namespace AngelSix.SolidDna
 
         public static bool StartSolidWorks(string solidWorksExePath)
         {
-            var addin = new BlankAddInIntegration();
-            return addin.StartSolidWork(solidWorksExePath);
+            var addIn = new BlankAddInIntegration();
+            return addIn.StartSolidWork(solidWorksExePath);
         }
 
         public static List<Tuple<SWProgIdVersion, string>> GetInstalledSolidWorksVersionExePaths()
@@ -785,75 +774,6 @@ namespace AngelSix.SolidDna
         }
         #endregion
 
-        #region Assembly Resolve Methods
-
-        /// <summary>
-        /// Adds any reference assemblies to the assemblies that get resolved when loading assemblies
-        /// based on the reference type. To add all references from a project, pass in any type that is
-        /// contained in the project as the reference type
-        /// </summary>
-        /// <typeparam name="ReferenceType">The type contained in the assembly where the references are</typeparam>
-        public void AddReferenceAssemblies<ReferenceType>()
-        {
-            // Find all reference assemblies from the type
-            var referencedAssemblies = typeof(ReferenceType).Assembly.GetReferencedAssemblies();
-
-            // If there are any references
-            if (referencedAssemblies?.Length > 0)
-                // Add them
-                mReferencedAssemblies.AddRange(referencedAssemblies);
-        }
-
-        /// <summary>
-        /// Attempts to resolve missing assemblies based on a list of known references
-        /// primarily from SolidDna and the Add-in project itself
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            // Try and find a reference assembly that matches...
-            var resolvedAssembly = mReferencedAssemblies.FirstOrDefault(f => string.Equals(f.FullName, args.Name, StringComparison.InvariantCultureIgnoreCase));
-
-            // If we didn't find any assembly
-            if (resolvedAssembly == null)
-                // Return null
-                return null;
-
-            // If we found a match...
-            try
-            {
-                // Try and load the assembly
-                var assembly = Assembly.Load(resolvedAssembly.Name);
-
-                // If it loaded...
-                if (assembly != null)
-                    // Return it
-                    return assembly;
-
-                // Otherwise, throw file not found
-                throw new FileNotFoundException();
-            }
-            catch
-            {
-                //
-                // Try to load by filename - split out the filename of the full assembly name
-                // and append the base path of the original assembly (i.e. look in the same directory)
-                //
-                // NOTE: this doesn't account for special search paths but then that never
-                //       worked before either
-                //
-                var parts = resolvedAssembly.Name.Split(',');
-                var filePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\" + parts[0].Trim() + ".dll";
-
-                // Try and load assembly and let it throw FileNotFound if not there 
-                // as it's an expected failure if not found
-                return Assembly.LoadFrom(filePath);
-            }
-        }
-
-        #endregion
         #region Tear Down
 
         /// <summary>
@@ -861,16 +781,9 @@ namespace AngelSix.SolidDna
         /// </summary>
         public static void TearDown()
         {
-            // If we have an reference...
-            if (SolidWorks != null)
-            {
-                // Log it
-                Logger.LogDebug($"Disposing SolidWorks COM reference...");
-
-                // Dispose SolidWorks COM
-                SolidWorks?.Dispose();
-            }
-
+            Logger.LogDebug($"Disposing SolidWorks COM reference...");
+            // Dispose SolidWorks COM
+            SolidWorks?.Dispose();
             SolidWorksProcess?.Dispose();
 
             // Set to null
