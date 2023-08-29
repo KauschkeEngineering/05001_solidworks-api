@@ -201,6 +201,11 @@ namespace AngelSix.SolidDna
 
         #region Dispose
 
+        public void DisposeComponent()
+        {
+            Dispose();
+        }
+
         public override void Dispose()
         {
             // Clean up embedded objects
