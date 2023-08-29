@@ -85,4 +85,6 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+
+	<ProjectExtensions><VisualStudio><UserProperties Reactor_Commands="" Reactor_Configuration="Debug" Reactor_Deploy="0" Reactor_Enabled="0" Reactor_Output="&lt;AssemblyLocation&gt;\&lt;AssemblyFileName&gt;" Reactor_Project="" /></VisualStudio></ProjectExtensions>
 </Project>
