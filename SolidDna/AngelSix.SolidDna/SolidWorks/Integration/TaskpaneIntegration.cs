@@ -89,7 +89,7 @@ namespace AngelSix.SolidDna
             ThreadHelpers.Enable((Control)mHostControl);
 
             // Hook into disconnect event of SolidWorks to unload ourselves automatically
-            AddInIntegration.DisconnectedFromSolidWorks += () => RemoveFromTaskpane();
+            AddInIntegration.DisconnectedFromSolidWorks += DisconnectedFromSolidWorks;
 
             // Add WPF control if we have one
             if (WpfControl != null)
@@ -135,7 +135,7 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Cleanup the taskpane when we disconnect/unload
         /// </summary>
-        public void RemoveFromTaskpane()
+        public void DisconnectedFromSolidWorks()
         {
             if (mTaskpaneView == null)
                 return;
@@ -146,6 +146,7 @@ namespace AngelSix.SolidDna
 
             // Remove taskpane view
             mTaskpaneView.Dispose();
+            AddInIntegration.DisconnectedFromSolidWorks -= DisconnectedFromSolidWorks;
         }
 
         #endregion
