@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AngelSix.SolidDna
@@ -235,7 +236,7 @@ namespace AngelSix.SolidDna
         {
             Logger.Log(LogLevel.INFO, "Reload model data");
             // Clean up any previous data
-            DisposeAllReferences();
+            //DisposeAllReferences();
 
             // Can't do much if there is no document
             if (BaseObject == null)
@@ -900,7 +901,7 @@ namespace AngelSix.SolidDna
             }
         }
 
-        public Type GetCustomPropertyType(string name, string configuration = null)
+        public CustomPropertyTypes GetCustomPropertyType(string name, string configuration = null)
         {
             // Get the custom property editor
             using (var editor = Extension.CustomPropertyEditor(configuration))
@@ -1092,8 +1093,9 @@ namespace AngelSix.SolidDna
 
         public ModelFeature GetFirstFeature()
         {
-            if (UnsafeObject != null)
-                return new ModelFeature((Feature)UnsafeObject.FirstFeature());
+            if (BaseObject != null)
+                lock (AddInIntegration.SolidWorks.GetFeatureLock)
+                    return new ModelFeature((Feature)BaseObject.FirstFeature());
             return null;
         }
 
@@ -1103,7 +1105,7 @@ namespace AngelSix.SolidDna
         /// <param name="featureAction">The callback action that is called for each feature in the model</param>
         public void Features(Action<ModelFeature, int> featureAction)
         {
-            RecurseFeatures(featureAction, UnsafeObject.FirstFeature() as Feature);
+            RecurseFeatures(featureAction, BaseObject.FirstFeature() as Feature);
         }
 
         #region Private Feature Helpers
@@ -1457,6 +1459,10 @@ namespace AngelSix.SolidDna
             SelectionManager?.Dispose();
             SelectionManager = null;
 
+            // Model view
+            ActiveModelView?.Dispose();
+            ActiveModelView = null;
+
             // Unhook all events
             ClearModelEventHandlers();
         }
@@ -1585,10 +1591,16 @@ namespace AngelSix.SolidDna
 
         public Component GetComponentOfFeature(ModelFeature modelFeature)
         {
+
             if (modelFeature.FeatureType == ModelFeatureType.MateReference)
             {
-                modelFeature.SelectFirst();
-                return SelectionManager.GetComponent(1, -1);
+                Component component;
+                lock (AddInIntegration.SolidWorks.GetComponentLock)
+                {
+                    modelFeature.SelectFirst();
+                    component = SelectionManager.GetComponent(1, -1);
+                }
+                return component;
             }
             return null;
         }
@@ -1742,13 +1754,16 @@ namespace AngelSix.SolidDna
             BaseObject?.SetSaveFlag();
         }
 
-        public bool SwitchConfiguation(string configurationName)
+        public bool SwitchConfiguration(string configurationName)
         {
-            if (BaseObject.ShowConfiguration2(configurationName))
+            lock (AddInIntegration.SolidWorks.GetComponentLock)
             {
-                if (Extension.NeedRebuild == 1)
+                if (BaseObject.ShowConfiguration2(configurationName))
                 {
-                    return Rebuild();
+                    if (Extension.NeedRebuild == 1)
+                    {
+                        return Rebuild();
+                    }
                 }
             }
             return false;
