@@ -520,12 +520,7 @@ namespace AngelSix.SolidDna
             // If we failed to get active instance...
             catch (COMException ex)
             {
-                // Log it
-                //Logger.LogDebugSource($"Failed to get active instance of SolidWorks in Stand-Alone mode");
-                //Logger.LogException($"Failed to get active instance of SolidWorks in Stand-Alone mode", ex);
-                // TODOdaka
-
-                // Return failure
+                Logger.LogException($"COM error while connecting to active SOLIDWORKS with progid: {progIdVersion}", ex);
                 return false;
             }
         }
@@ -558,7 +553,7 @@ namespace AngelSix.SolidDna
             return addIn.ConnectToActiveSolidWork(progIdVersion);
         }
 
-        public bool StartSolidWork(string solidWorksExePath)
+        public bool StartSolidWorkProcess(string solidWorksExePath)
         {
             if (!solidWorksExePath.Equals(string.Empty))
             {
@@ -575,19 +570,19 @@ namespace AngelSix.SolidDna
                     // set the priorty to high for SOLIDWORKS to gain more CPU time
                     _solidWorksProcess.PriorityClass = ProcessPriorityClass.High;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-
+                    Logger.LogException($"Error while starting SOLIDWORKS process with exe path: {solidWorksExePath}", ex);
                 }
             }
 
             return true;
         }
 
-        public static bool StartSolidWorks(string solidWorksExePath)
+        public static bool StartSolidWorksProcess(string solidWorksExePath)
         {
             var addIn = new BlankAddInIntegration();
-            return addIn.StartSolidWork(solidWorksExePath);
+            return addIn.StartSolidWorkProcess(solidWorksExePath);
         }
 
         public static List<Tuple<SWProgIdVersion, string>> GetInstalledSolidWorksVersionExePaths()
@@ -724,7 +719,7 @@ namespace AngelSix.SolidDna
                 }
                 catch (COMException ex)
                 {
-
+                    Logger.LogException($"COM error while getting running SOLIDWORKS version prog ids.", ex);
                 }
             }
             return runningSolidWorksVersionProgIds;
@@ -747,6 +742,7 @@ namespace AngelSix.SolidDna
             catch (COMException ex)
             {
                 // if there is no SOLIDWORKS application is available this error will occur
+                Logger.LogException($"COM error while checking if SOLIDWORKS application is running.", ex);
             }
             return false;
         }
@@ -867,8 +863,9 @@ namespace AngelSix.SolidDna
                         {
                             curMoniker.GetDisplayName(context, null, out name);
                         }
-                        catch (UnauthorizedAccessException)
+                        catch (UnauthorizedAccessException ex)
                         {
+                            Logger.LogException($"Unauthorized access error while getting SOLIDWORKS application from process with pid: {processId}", ex);
                         }
                     }
 
@@ -881,9 +878,9 @@ namespace AngelSix.SolidDna
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-
+                Logger.LogException($"Error while getting SOLIDWORKS application from process with pid: {processId}", ex);
             }
             return null;
         }
