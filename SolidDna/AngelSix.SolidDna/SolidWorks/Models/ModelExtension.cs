@@ -119,8 +119,7 @@ namespace AngelSix.SolidDna
         {
             // Clear reference to be safe
             Parent = null;
-
-            base.Dispose();
+            base.Dispose(); 
         }
 
         #endregion

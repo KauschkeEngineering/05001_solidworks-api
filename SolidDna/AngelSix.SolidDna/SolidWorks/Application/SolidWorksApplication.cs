@@ -422,6 +422,7 @@ namespace AngelSix.SolidDna
                 mActiveModel.ModelClosing -= ActiveModel_Closing;
             }
             mActiveModel?.Dispose();
+            mActiveModel = null;
         }
 
         #region Event Callbacks
@@ -930,23 +931,32 @@ namespace AngelSix.SolidDna
         {
             lock (_disposingLock)
             {
-                // Flag as disposing
-                Disposing = true;
+                try
+                {
+                    // Flag as disposing
+                    Disposing = true;
 
-                BaseObject.ActiveModelDocChangeNotify -= ActiveModelChanged;
-                BaseObject.FileOpenPreNotify -= FileOpenPreNotify;
-                BaseObject.FileOpenPostNotify -= FileOpenPostNotify;
-                BaseObject.FileNewNotify2 -= FileNewPostNotify;
-                BaseObject.OnIdleNotify -= OnIdleNotify;
+                    BaseObject.ActiveModelDocChangeNotify -= ActiveModelChanged;
+                    BaseObject.FileOpenPreNotify -= FileOpenPreNotify;
+                    BaseObject.FileOpenPostNotify -= FileOpenPostNotify;
+                    BaseObject.FileNewNotify2 -= FileNewPostNotify;
+                    BaseObject.OnIdleNotify -= OnIdleNotify;
+                }
+                catch (Exception)
+                {
 
-                // Clean active model
-                CleanActiveModelData();
+                }
+                finally
+                {
+                    // Clean active model
+                    CleanActiveModelData();
 
-                // Dispose command manager
-                CommandManager?.Dispose();
+                    // Dispose command manager
+                    CommandManager?.Dispose();
 
-                // NOTE: Don't dispose the application, SolidWorks does that itself
-                //base.Dispose();
+                    // NOTE: Don't dispose the application, SolidWorks does that itself
+                    //base.Dispose();
+                }
             }
         }
 
