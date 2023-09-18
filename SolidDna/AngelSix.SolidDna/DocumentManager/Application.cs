@@ -2,6 +2,7 @@
 using Serilog;
 using SolidWorks.Interop.swdocumentmgr;
 using System.Linq;
+using System.Security;
 using static AngelSix.SolidDna.Model;
 
 namespace AngelSix.SolidDna.DocumentManager
@@ -10,21 +11,21 @@ namespace AngelSix.SolidDna.DocumentManager
     {
         private static Application _instance = null;
         private static readonly SwDMClassFactory _classFactory = new SwDMClassFactory();
-        private readonly SwDMApplication _documentManagerApplication;
+        private SwDMApplication _documentManagerApplication;
 
-
-        private Application(string licKey)
-        {
-            _documentManagerApplication = _classFactory.GetApplication(licKey);
-        }
 
         public static Application GetInstance()
         {
             if (_instance == null)
             {
-                _instance = new Application(Credential.GetSolidWorksLicenseAPIKey());
+                _instance = new Application();
             }
             return _instance;
+        }
+
+        public void SetApiKey(string apiKey) 
+        {
+            _documentManagerApplication = _classFactory.GetApplication(apiKey);
         }
 
         public SwDmDocumentType GetDocumentType(string filePath)
