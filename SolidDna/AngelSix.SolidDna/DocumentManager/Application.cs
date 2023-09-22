@@ -1,8 +1,6 @@
 ﻿using DevelopmentFramework.Logging;
-using Serilog;
 using SolidWorks.Interop.swdocumentmgr;
 using System.Linq;
-using System.Security;
 using static AngelSix.SolidDna.Model;
 
 namespace AngelSix.SolidDna.DocumentManager
@@ -11,7 +9,7 @@ namespace AngelSix.SolidDna.DocumentManager
     {
         private static Application _instance = null;
         private static readonly SwDMClassFactory _classFactory = new SwDMClassFactory();
-        private SwDMApplication _documentManagerApplication;
+        private ISwDMApplication4 _documentManagerApplication;
 
 
         public static Application GetInstance()
@@ -23,9 +21,9 @@ namespace AngelSix.SolidDna.DocumentManager
             return _instance;
         }
 
-        public void SetApiKey(string apiKey) 
+        public void SetApiKey(string apiKey)
         {
-            _documentManagerApplication = _classFactory.GetApplication(apiKey);
+            _documentManagerApplication = (SwDMApplication4)_classFactory.GetApplication(apiKey);
         }
 
         public SwDmDocumentType GetDocumentType(string filePath)
@@ -98,6 +96,43 @@ namespace AngelSix.SolidDna.DocumentManager
             return null;
         }
 
+        public string ReplaceComponentReference(string documentFileName, string missingReferencePath, string replacementReferencePath)
+        {
+            if (_documentManagerApplication != null)
+            {
+                SwDmDocumentType _docType;
+                switch (GetDocumentType(documentFileName))
+                {
+                    case SwDmDocumentType.swDmDocumentUnknown:
+                        return null;
+                    case SwDmDocumentType.swDmDocumentPart:
+                        _docType = SwDmDocumentType.swDmDocumentPart;
+                        break;
+                    case SwDmDocumentType.swDmDocumentAssembly:
+                        _docType = SwDmDocumentType.swDmDocumentAssembly;
+                        break;
+                    case SwDmDocumentType.swDmDocumentDrawing:
+                        _docType = SwDmDocumentType.swDmDocumentDrawing;
+                        break;
+                    default:
+                        return null;
+                }
+
+                var dmSearchOpt = _documentManagerApplication.GetSearchOptionObject();
+                dmSearchOpt = _documentManagerApplication.GetSearchOptionObject();
+                dmSearchOpt.SearchFilters = (int)SwDmSearchFilters.SwDmSearchExternalReference + (int)SwDmSearchFilters.SwDmSearchRootAssemblyFolder + (int)SwDmSearchFilters.SwDmSearchSubfolders + (int)SwDmSearchFilters.SwDmSearchInContextReference + (int)SwDmSearchFilters.SwDmSearchForPart;
+
+                SwDmDocumentOpenError nRetVal;
+                var swDoc = (SwDMDocument19)_documentManagerApplication.GetDocument(documentFileName, _docType, false, out nRetVal);
+
+                var numExtRefs = swDoc.GetAllExternalReferences4(dmSearchOpt, out var brokenRefVar, out var isVirtual, out var timeStamp);
+
+                swDoc.ReplaceReference(missingReferencePath, replacementReferencePath);
+
+                swDoc.Save();
+            }
+            return "";
+        }
 
         public bool IsTopParentAssembly(string assemblyFilePath, string searchPath)
         {
