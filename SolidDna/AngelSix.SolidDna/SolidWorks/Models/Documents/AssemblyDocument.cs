@@ -1,5 +1,6 @@
 ﻿using SolidWorks.Interop.sldworks;
 using System;
+using System.Windows.Forms;
 
 namespace AngelSix.SolidDna
 {
@@ -80,6 +81,21 @@ namespace AngelSix.SolidDna
         public bool ResolveAllLightWeightChildComponents()
         {
             return mBaseObject.ResolveAllLightweight();
+        }
+
+        public bool ReplaceComponentReference(string newComponentFilePath, string configuration = "", bool replaceAllInstances = true, ReplaceComponentsConfiguration replaceComponentsConfiguration = ReplaceComponentsConfiguration.MatchName, bool reAttachMates = true)
+        {
+            // for SOLIDWORK 2016 use ReplaceComponents
+            if (AddInIntegration.SolidWorks.SolidWorksVersion.Version <= 2016)
+            {
+                return mBaseObject.ReplaceComponents(newComponentFilePath, configuration, replaceAllInstances, reAttachMates);
+            }
+            // for all newer SOLIDWORKS use ReplaceComponents2.
+            else
+            {
+                return mBaseObject.ReplaceComponents2(newComponentFilePath, configuration, replaceAllInstances, (int)replaceComponentsConfiguration, reAttachMates);
+
+            }
         }
 
         #endregion

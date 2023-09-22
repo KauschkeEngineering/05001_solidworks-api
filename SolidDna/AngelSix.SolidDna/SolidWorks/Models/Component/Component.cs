@@ -199,6 +199,12 @@ namespace AngelSix.SolidDna
             }
         }
 
+        public bool Select()
+        {
+            SelectData swSelectData = default(SelectData);
+            return BaseObject.Select4(false, swSelectData, false);
+        }
+
         #region Dispose
 
         public void DisposeComponent()
