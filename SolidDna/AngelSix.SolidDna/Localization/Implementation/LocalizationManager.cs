@@ -113,18 +113,18 @@ namespace AngelSix.SolidDna
         public static string GetString(string name, string culture = null)
         {
             return name;
-            Logger.Log(LogLevel.DEBUG, "GetString from Localization Manager");
-            // NOTE: No null check because it should always be injected or throw if not as the expected result would be the actual resource string
-            //       We do not want to fail silently
-            if (IoC.Localization == null)
-            {
-                //Logger.log(LogLevel.WARN, "IoC.Localization string is null");
-                return "ioc.localization is null"; // TODO:daka: null if running solidworks object is get by moniker object from running object table (rot)
-            }
-            else
-            {
-                return AsyncHelpers.RunSync(() => IoC.Localization.GetStringAsync(name, culture));
-            }
+            //Logger.Log(LogLevel.DEBUG, "GetString from Localization Manager");
+            //// NOTE: No null check because it should always be injected or throw if not as the expected result would be the actual resource string
+            ////       We do not want to fail silently
+            //if (IoC.Localization == null)
+            //{
+            //    //Logger.log(LogLevel.WARN, "IoC.Localization string is null");
+            //    return "ioc.localization is null"; // TODO:daka: null if running solidworks object is get by moniker object from running object table (rot)
+            //}
+            //else
+            //{
+            //    return AsyncHelpers.RunSync(() => IoC.Localization.GetStringAsync(name, culture));
+            //}
         }
     }
 }
