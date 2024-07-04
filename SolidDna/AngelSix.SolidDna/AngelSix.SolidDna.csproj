@@ -12,7 +12,7 @@
 		<RepositoryUrl>https://github.com/KauschkeEngineering/05001_solidworks-api/</RepositoryUrl>
 		<PackageTags>soliddna solidworks angelsix luke malpass api</PackageTags>
 		<AssemblyVersion>0.3.0.0</AssemblyVersion>
-		<BaseOutputPath>.\bin\x64\</BaseOutputPath>
+		<BaseOutputPath></BaseOutputPath>
 		<PlatformTarget>x64</PlatformTarget>
 		<Platforms>x64</Platforms>
 	</PropertyGroup>
