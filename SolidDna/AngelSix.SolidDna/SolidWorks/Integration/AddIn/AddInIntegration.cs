@@ -836,15 +836,15 @@ namespace AngelSix.SolidDna
         private static SldWorks GetSwAppFromProcess(int processId)
         {
             var monikerName = "SolidWorks_PID_" + processId.ToString();
-            IBindCtx context = null;
-            IRunningObjectTable rot = null;
-            IEnumMoniker monikers = null;
 
             try
             {
+                IBindCtx context;
                 CreateBindCtx(0, out context);
 
+                IRunningObjectTable rot;
                 context.GetRunningObjectTable(out rot);
+                IEnumMoniker monikers;
                 rot.EnumRunning(out monikers);
 
                 var moniker = new IMoniker[1];
@@ -894,14 +894,7 @@ namespace AngelSix.SolidDna
                 _solidWorksProcess = Process.GetProcessById(processId);
             }
 
-            if (SolidWorks != null)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return SolidWorks != null;
         }
 
         public static void ActivateBoundSolidWorks(Process solidWorksProcess, SolidWorksApplication solidWorksApplication)
