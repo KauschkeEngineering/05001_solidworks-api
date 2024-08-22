@@ -559,38 +559,32 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Structure system corner feature
         /// </summary>
-        // TODO: Add after upgrading to SOLIDWORKS 2023 binary reference files
-        //StructureSystemCornerFeature = swFeatureNameID_e.swFmStrctSysCnrFeat,
+        StructureSystemCornerFeature = swFeatureNameID_e.swFmStrctSysCnrFeat,
 
         /// <summary>
         /// Structure system corner group feature
         /// </summary>
-        // TODO: Add after upgrading to SOLIDWORKS 2023 binary reference files
-        //StructureSystemCornerGroupFeature = swFeatureNameID_e.swFmStrctSysCnrGrpFeat,
+        StructureSystemCornerGroupFeature = swFeatureNameID_e.swFmStrctSysCnrGrpFeat,
 
         /// <summary>
         /// Structure system corner management feature
         /// </summary>
-        // TODO: Add after upgrading to SOLIDWORKS 2023 binary reference files
-        //StructureSystemCornerManagementFeature = swFeatureNameID_e.swFmStrctSysCnrMgmtFeat,
+        StructureSystemCornerManagementFeature = swFeatureNameID_e.swFmStrctSysCnrMgmtFeat,
 
         /// <summary>
         /// Structure system feature
         /// </summary>
-        // TODO: Add after upgrading to SOLIDWORKS 2023 binary reference files
-        //StructureSystemFeature = swFeatureNameID_e.swFmStrctSysFeat,
+        StructureSystemFeature = swFeatureNameID_e.swFmStrctSysFeat,
 
         /// <summary>
         /// Structure system group feature
         /// </summary>
-        // TODO: Add after upgrading to SOLIDWORKS 2023 binary reference files
-        //StructureSystemGroupFeature = swFeatureNameID_e.swFmStrctSysGrpFeat,
+        StructureSystemGroupFeature = swFeatureNameID_e.swFmStrctSysGrpFeat,
 
         /// <summary>
         /// Structure system member feature
         /// </summary>
-        // TODO: Add after upgrading to SOLIDWORKS 2023 binary reference files
-        //StructureSystemMemberFeature = swFeatureNameID_e.swFmStrctSysMbrFeat,
+        StructureSystemMemberFeature = swFeatureNameID_e.swFmStrctSysMbrFeat,
 
         /// <summary>
         /// Surface body folder
@@ -656,8 +650,5 @@ namespace AngelSix.SolidDna
         /// Weldment feature
         /// </summary>
         WeldMemberFeat = swFeatureNameID_e.swFmWeldMemberFeat
-
-
-
     }
 }

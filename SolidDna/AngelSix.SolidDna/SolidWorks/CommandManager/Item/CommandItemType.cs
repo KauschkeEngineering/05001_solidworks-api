@@ -17,6 +17,6 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// The item is a toolbar item
         /// </summary>
-        ToolbarItem = swCommandItemType_e.swToolbarItem,
+        ToolbarItem = swCommandItemType_e.swToolbarItem
     }
 }

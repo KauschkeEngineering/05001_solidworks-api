@@ -214,7 +214,7 @@
         /// <summary>
         /// There was an error calling the SetSheets option on the export data object
         /// </summary>
-        SolidWorksExportDataPdfSetSheetsError = 13001,
+        SolidWorksExportDataPdfSetSheetsError = 13001
 
         #endregion
     }

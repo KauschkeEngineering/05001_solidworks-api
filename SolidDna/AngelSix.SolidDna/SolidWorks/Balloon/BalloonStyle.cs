@@ -1,4 +1,6 @@
-﻿namespace AngelSix.SolidDna
+﻿using SolidWorks.Interop.swconst;
+
+namespace AngelSix.SolidDna
 {
     /// <summary>
     /// The style of a balloon
@@ -13,101 +15,101 @@
         /// <summary>
         /// Circular
         /// </summary>
-        Circular = 1,
+        Circular = swBalloonStyle_e.swBS_Circular,
 
         /// <summary>
         /// Triangle
         /// </summary>
-        Triangle = 2,
+        Triangle = swBalloonStyle_e.swBS_Triangle,
 
         /// <summary>
         /// Hexagon
         /// </summary>
-        Hexagon = 3,
+        Hexagon = swBalloonStyle_e.swBS_Hexagon,
 
         /// <summary>
         /// Box
         /// </summary>
-        Box = 4,
+        Box = swBalloonStyle_e.swBS_Box,
 
         /// <summary>
         /// Diamond
         /// </summary>
-        Diamond = 5,
+        Diamond = swBalloonStyle_e.swBS_Diamond,
 
         /// <summary>
         /// Pentagon. Can be used for label location selection Circular Spit Line
         /// </summary>
-        Pentagon = 6,
+        Pentagon = swBalloonStyle_e.swBS_Pentagon,
 
         /// <summary>
         /// Split circle. Not valid for notes; only valid for balloons
         /// </summary>
-        SplitCircle = 7,
+        SplitCircle = swBalloonStyle_e.swBS_SplitCirc,
 
         /// <summary>
         /// Flag pentagon
         /// </summary>
-        FlagPentagon = 8,
+        FlagPentagon = swBalloonStyle_e.swBS_FlagPentagon,
 
         /// <summary>
         /// Flag triangle
         /// </summary>
-        FlagTriangle = 9,
+        FlagTriangle = swBalloonStyle_e.swBS_FlagTriangle,
 
         /// <summary>
         /// Underline
         /// </summary>
-        Underline = 10,
+        Underline = swBalloonStyle_e.swBS_Underline,
 
         /// <summary>
         /// Square
         /// </summary>
-        Square = 11,
+        Square = swBalloonStyle_e.swBS_Square,
 
         /// <summary>
         /// Square circle
         /// </summary>
-        SquareCircle = 12,
+        SquareCircle = swBalloonStyle_e.swBS_SCircle,
 
         /// <summary>
         /// Inspection
         /// </summary>
-        Inspection = 13,
+        Inspection = swBalloonStyle_e.swBS_Inspection,
 
         /// <summary>
         /// Arc bracket
         /// </summary>
-        ArcBracket = 14,
+        ArcBracket = swBalloonStyle_e.swBS_ArcBracket,
 
         /// <summary>
         /// Rectangle bracket
         /// </summary>
-        RectangleBracket = 15,
+        RectangleBracket = swBalloonStyle_e.swBS_RectBracket,
 
         /// <summary>
         /// Arc length symbol
         /// </summary>
-        ArcLengthSymbol = 16,
+        ArcLengthSymbol = swBalloonStyle_e.swBS_ArclenSym,
 
         /// <summary>
         /// Fixed symbol
         /// </summary>
-        FixedSymbol = 17,
+        FixedSymbol = swBalloonStyle_e.swBS_FixedSym,
 
         /// <summary>
         /// Double arrow
         /// </summary>
-        DoubleArrow = 18,
+        DoubleArrow = swBalloonStyle_e.swBS_DoubleArrow,
 
         /// <summary>
         /// Split square. Can be used for label location selection Square Spit Line
         /// </summary>
-        SplitSquare = 19,
+        SplitSquare = swBalloonStyle_e.swBS_SplitSquare,
 
         /// <summary>
         /// Verbose
         /// </summary>
-        Verbose = 20
+        Verbose = swBalloonStyle_e.swBS_Verbose
     }
 }

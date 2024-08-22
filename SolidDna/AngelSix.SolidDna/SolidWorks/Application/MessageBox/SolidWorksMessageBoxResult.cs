@@ -10,36 +10,36 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Abort was clicked
         /// </summary>
-        Abort = 1,
+        Abort = swMessageBoxResult_e.swMbHitAbort,
 
         /// <summary>
         /// Ignore was clicked
         /// </summary>
-        Ignore = 2,
+        Ignore = swMessageBoxResult_e.swMbHitIgnore,
 
         /// <summary>
         /// No was clicked
         /// </summary>
-        No = 3,
+        No = swMessageBoxResult_e.swMbHitNo,
 
         /// <summary>
         /// Ok was clicked
         /// </summary>
-        Ok = 4,
+        Ok = swMessageBoxResult_e.swMbHitOk,
 
         /// <summary>
         /// Retry was clicked
         /// </summary>
-        Retry = 5,
+        Retry = swMessageBoxResult_e.swMbHitRetry,
 
         /// <summary>
         /// Yes was clicked
         /// </summary>
-        Yes = 6,
+        Yes = swMessageBoxResult_e.swMbHitYes,
 
         /// <summary>
         /// Cancel was clicked
         /// </summary>
-        Cancel = 7
+        Cancel = swMessageBoxResult_e.swMbHitCancel
     }
 }

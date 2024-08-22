@@ -1,4 +1,6 @@
-﻿namespace AngelSix.SolidDna
+﻿using SolidWorks.Interop.swconst;
+
+namespace AngelSix.SolidDna
 {
     /// <summary>
     /// Arrangements for automatic BOM balloons in relation to the drawing views
@@ -14,31 +16,31 @@
         /// <summary>
         /// In a box around the drawing view
         /// </summary>
-        Square = 1,
+        Square = swBalloonLayoutType_e.swDetailingBalloonLayout_Square,
 
         /// <summary>
         /// In a circle around the drawing view
         /// </summary>
-        Circle = 2,
+        Circle = swBalloonLayoutType_e.swDetailingBalloonLayout_Circle,
 
         /// <summary>
         /// Along the top edge of the drawing view
         /// </summary>
-        Top = 3,
+        Top = swBalloonLayoutType_e.swDetailingBalloonLayout_Top,
 
         /// <summary>
         /// Along the bottom edge of the drawing view
         /// </summary>
-        Bottom = 4,
+        Bottom = swBalloonLayoutType_e.swDetailingBalloonLayout_Bottom,
 
         /// <summary>
         /// Along the right edge of the drawing view
         /// </summary>
-        Right = 5,
+        Right = swBalloonLayoutType_e.swDetailingBalloonLayout_Right,
 
         /// <summary>
         /// Along the left edge of the drawing view
         /// </summary>
-        Left = 6
+        Left = swBalloonLayoutType_e.swDetailingBalloonLayout_Left
     }
 }

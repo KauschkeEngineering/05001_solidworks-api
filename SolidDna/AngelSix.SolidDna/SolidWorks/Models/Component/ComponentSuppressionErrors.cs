@@ -17,5 +17,4 @@ namespace AngelSix.SolidDna
         // change failed, even though the arguments were okay
         ChangeFailed = swSuppressionError_e.swSuppressionChangeFailed
     }
-
 }

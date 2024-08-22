@@ -109,6 +109,6 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// You cannot rename patterned components
         /// </summary>
-        PatternedComponent = swRenameDocumentError_e.swRenameDocumentError_PatternedComponent,
+        PatternedComponent = swRenameDocumentError_e.swRenameDocumentError_PatternedComponent
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace AngelSix.SolidDna
+﻿using SolidWorks.Interop.swconst;
+
+namespace AngelSix.SolidDna
 {
     /// <summary>
     /// Options for the <see cref="AutoBalloonOptions.EditBalloonOption"/>
@@ -8,11 +10,11 @@
         /// <summary>
         /// Replaces existing balloons
         /// </summary>
-        Replace = 0,
+        Replace = swEditBalloonOption_e.swEditBalloonOption_Replace,
 
         /// <summary>
         /// Re-sequences existing balloons
         /// </summary>
-        Resequence = 1
+        Resequence = swEditBalloonOption_e.swEditBalloonOption_Resequence
     }
 }

@@ -11,11 +11,11 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Attaches the selected annotation to the sheet
         /// </summary>
-        Sheet = 1,
+        Sheet = swAttachAnnotationOption_e.swAttachAnnotationOption_Sheet,
 
         /// <summary>
         /// Attaches the selected annotation to the view
         /// </summary>
-        View = 2
+        View = swAttachAnnotationOption_e.swAttachAnnotationOption_View
     }
 }

@@ -10,21 +10,21 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// A warning icon
         /// </summary>
-        Warning = 1,
+        Warning = swMessageBoxIcon_e.swMbWarning,
 
         /// <summary>
         /// An information icon
         /// </summary>
-        Information = 2,
+        Information = swMessageBoxIcon_e.swMbInformation,
 
         /// <summary>
         /// A question mark icon
         /// </summary>
-        Question = 3,
+        Question = swMessageBoxIcon_e.swMbQuestion,
 
         /// <summary>
         /// An exclamation icon
         /// </summary>
-        Stop = 4
+        Stop = swMessageBoxIcon_e.swMbStop
     }
 }

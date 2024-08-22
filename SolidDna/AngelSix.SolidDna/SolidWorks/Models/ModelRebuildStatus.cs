@@ -22,8 +22,6 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Model is not fully rebuild so rebuild is necessary
         /// </summary>
-        FrozenFeatureNeedsRebuild = swModelRebuildStatus_e.swModelRebuildStatus_FrozenFeatureNeedsRebuild,
-
-
+        FrozenFeatureNeedsRebuild = swModelRebuildStatus_e.swModelRebuildStatus_FrozenFeatureNeedsRebuild
     }
 }

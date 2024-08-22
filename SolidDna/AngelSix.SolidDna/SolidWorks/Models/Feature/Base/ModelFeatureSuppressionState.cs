@@ -23,7 +23,6 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Unsuppress the children of the feature
         /// </summary>
-        UnSuppressDependent = swFeatureSuppressionAction_e.swUnSuppressDependent,
-
+        UnSuppressDependent = swFeatureSuppressionAction_e.swUnSuppressDependent
     }
 }

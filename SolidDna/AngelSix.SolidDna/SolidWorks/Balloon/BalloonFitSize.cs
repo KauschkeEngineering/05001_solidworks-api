@@ -1,4 +1,6 @@
-﻿namespace AngelSix.SolidDna
+﻿using SolidWorks.Interop.swconst;
+
+namespace AngelSix.SolidDna
 {
     /// <summary>
     /// Types of balloon and label location fits
@@ -8,36 +10,36 @@
         /// <summary>
         /// Tightest fit (not available for a label location)
         /// </summary>
-        Tightest = 0,
+        Tightest = swBalloonFit_e.swBF_Tightest,
 
         /// <summary>
         /// Fits a single character
         /// </summary>
-        Character1 = 1,
+        Character1 = swBalloonFit_e.swBF_1Char,
 
         /// <summary>
         /// Fits 2 characters
         /// </summary>
-        Character2 = 2,
+        Character2 = swBalloonFit_e.swBF_2Chars,
 
         /// <summary>
         /// Fits 3 characters
         /// </summary>
-        Character3 = 3,
+        Character3 = swBalloonFit_e.swBF_3Chars,
 
         /// <summary>
         /// Fits 4 characters
         /// </summary>
-        Character4 = 4,
+        Character4 = swBalloonFit_e.swBF_4Chars,
 
         /// <summary>
         /// Fits 5 characters
         /// </summary>
-        Character5 = 5,
+        Character5 = swBalloonFit_e.swBF_5Chars,
 
         /// <summary>
         /// Size defined by <see cref="AutoBalloonOptions.CustomSize"/>
         /// </summary>
-        UserDefined = 6
+        UserDefined = swBalloonFit_e.swBF_UserDef
     }
 }

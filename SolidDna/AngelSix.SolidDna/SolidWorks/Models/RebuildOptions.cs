@@ -52,6 +52,6 @@ namespace AngelSix.SolidDna
         /// Drawing only
         /// Only rebuilds drawing views that are dirty when OR'd with swCurrentSheetDisp option
         /// </summary>
-        UpdateDirtyOnly = swRebuildOptions_e.swUpdateDirtyOnly,
+        UpdateDirtyOnly = swRebuildOptions_e.swUpdateDirtyOnly
     }
 }

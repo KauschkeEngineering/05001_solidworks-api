@@ -43,7 +43,6 @@
         /// <summary>
         /// An error occurred trying to perform a SolidWorks API call on export data
         /// </summary>
-        ExportData = 14,
-
+        ExportData = 14
     }
 }

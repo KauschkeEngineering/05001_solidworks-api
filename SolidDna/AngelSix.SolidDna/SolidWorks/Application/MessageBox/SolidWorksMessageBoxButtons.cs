@@ -10,31 +10,31 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// An Abort, Retry and Ignore button
         /// </summary>
-        AbortRetryIgnore = 1,
+        AbortRetryIgnore = swMessageBoxBtn_e.swMbAbortRetryIgnore,
 
         /// <summary>
         /// A single OK button
         /// </summary>
-        Ok = 2,
+        Ok = swMessageBoxBtn_e.swMbOk,
 
         /// <summary>
         /// An OK and Cancel button
         /// </summary>
-        OkCancel = 3,
+        OkCancel = swMessageBoxBtn_e.swMbOkCancel,
 
         /// <summary>
         /// A single Retry button
         /// </summary>
-        Retry = 4,
+        RetryCancel = swMessageBoxBtn_e.swMbRetryCancel,
 
         /// <summary>
         /// A Yes and No button
         /// </summary>
-        YesNo = 5,
+        YesNo = swMessageBoxBtn_e.swMbYesNo,
 
         /// <summary>
         /// A Yes, No and Cancel button
         /// </summary>
-        YesNoCancel = 6
+        YesNoCancel = swMessageBoxBtn_e.swMbYesNoCancel
     }
 }

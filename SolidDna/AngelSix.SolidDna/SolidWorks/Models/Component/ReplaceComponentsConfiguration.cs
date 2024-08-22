@@ -13,5 +13,4 @@ namespace AngelSix.SolidDna
         // Use the specified configuration
         ManuallySelect = swReplaceComponentsConfiguration_e.swReplaceComponentsConfiguration_ManuallySelect
     }
-
 }

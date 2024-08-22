@@ -15,5 +15,4 @@ namespace AngelSix.SolidDna
         // replace the value of an existing custom property having the same name
         ReplaceValue = swCustomPropertyAddOption_e.swCustomPropertyReplaceValue
     }
-
 }

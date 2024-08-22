@@ -6,28 +6,13 @@ using SolidWorks.Interop.swpublished;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using DevelopmentFramework.Logging;
 using System.Runtime.InteropServices.ComTypes;
 
 namespace AngelSix.SolidDna
 {
-    public enum SWProgIdVersion
-    {
-        UNKNOWN = -1,
-        SW_2016 = 24,
-        SW_2017,
-        SW_2018,
-        SW_2019,
-        SW_2020,
-        SW_2021,
-        SW_2022,
-        SW_2023
-    }
-
     /// <summary>
     /// Integrates into SolidWorks as an add-in and registers for callbacks provided by SolidWorks
     /// 

@@ -10,7 +10,6 @@ namespace AngelSix.SolidDna
     {
         Fail = swExcludeFromBOMError_e.swExcludeFromBOM_Fail,
         Success = swExcludeFromBOMError_e.swExcludeFromBOM_Success,
-        EnvelopedComponent = swExcludeFromBOMError_e.swExcludeFromBOM_EnvelopedComponent,
+        EnvelopedComponent = swExcludeFromBOMError_e.swExcludeFromBOM_EnvelopedComponent
     }
-
 }

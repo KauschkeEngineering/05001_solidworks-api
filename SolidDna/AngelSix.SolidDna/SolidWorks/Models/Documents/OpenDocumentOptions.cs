@@ -84,6 +84,6 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Open document in Large Design Review mode only (assemblies only).
         /// </summary>
-        ViewOnly = swOpenDocOptions_e.swOpenDocOptions_ViewOnly,
+        ViewOnly = swOpenDocOptions_e.swOpenDocOptions_ViewOnly
     }
 }

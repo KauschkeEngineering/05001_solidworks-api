@@ -1,4 +1,6 @@
-﻿namespace AngelSix.SolidDna
+﻿using SolidWorks.Interop.swconst;
+
+namespace AngelSix.SolidDna
 {
     /// <summary>
     /// Style of the text contents of balloon notes
@@ -13,68 +15,66 @@
         /// <summary>
         /// Custom text
         /// </summary>
-        Custom = 0,
+        Custom = swBalloonTextContent_e.swBalloonTextCustom,
 
         /// <summary>
         /// Item number
         /// </summary>
-        ItemNumber = 1,
+        ItemNumber = swBalloonTextContent_e.swBalloonTextItemNumber,
 
         /// <summary>
         /// Quantity
         /// </summary>
-        Quantity = 2,
+        Quantity = swBalloonTextContent_e.swBalloonTextQuantity,
 
         /// <summary>
         /// Custom properties
         /// </summary>
-        CustomProperties = 3,
+        CustomProperties = swBalloonTextContent_e.swBalloonTextCustomProperties,
 
         /// <summary>
         /// Component reference
         /// </summary>
-        ComponentReference = 4,
+        ComponentReference = swBalloonTextContent_e.swBalloonTextComponentReference,
 
         /// <summary>
         /// Spool reference
         /// </summary>
-        SpoolReference = 5,
+        SpoolReference = swBalloonTextContent_e.swBalloonTextSpoolReference,
 
         /// <summary>
         /// Part number BOM
         /// </summary>
-        PartNumberBOM = 6,
+        PartNumberBOM = swBalloonTextContent_e.swBalloonTextPartNumberBOM,
 
         /// <summary>
         /// File name
         /// </summary>
-        FileName = 7,
+        FileName = swBalloonTextContent_e.swBalloonTextFileName,
 
         /// <summary>
         /// Cutlist properties
         /// </summary>
-        CutlistProperties = 8,
+        CutlistProperties = swBalloonTextContent_e.swBalloonTextCutlistProperties,
 
         /// <summary>
         /// View sheet
         /// </summary>
-        ViewSheet = 9,
+        ViewSheet = swBalloonTextContent_e.swBalloonTextViewSheet,
 
         /// <summary>
         /// View sheet with label
         /// </summary>
-        ViewSheetWithLabel = 10,
+        ViewSheetWithLabel = swBalloonTextContent_e.swBalloonTextViewSheetWithLabel,
 
         /// <summary>
         /// View zone
         /// </summary>
-        ViewZone = 11,
+        ViewZone = swBalloonTextContent_e.swBalloonTextViewZone,
 
         /// <summary>
         /// View letter
         /// </summary>
-        ViewLetter = 12,
-
-
+        ViewLetter = swBalloonTextContent_e.swBalloonTextViewViewLetter
     }
 }

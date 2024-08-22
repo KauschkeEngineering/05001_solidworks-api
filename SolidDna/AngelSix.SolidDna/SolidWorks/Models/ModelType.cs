@@ -40,6 +40,6 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Imported Assembly
         /// </summary>
-        ImportedAssembly = swDocumentTypes_e.swDocIMPORTED_ASSEMBLY,
+        ImportedAssembly = swDocumentTypes_e.swDocIMPORTED_ASSEMBLY
     }
 }

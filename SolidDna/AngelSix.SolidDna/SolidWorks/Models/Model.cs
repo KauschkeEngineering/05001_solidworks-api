@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace AngelSix.SolidDna
@@ -19,42 +18,6 @@ namespace AngelSix.SolidDna
         private FeatureManager featureManager;
         private SelectionManager selectionManager;
         private ConfigurationManager configurationManager;
-
-        public enum MajorSolidWorksVersions
-        {
-            UNKNOWN = 0,
-            SOLIDWORKS_95 = 44,
-            SOLIDWORKS_96 = 243,
-            SOLIDWORKS_97 = 483,
-            SOLIDWORKS_97Plus = 629,
-            SOLIDWORKS_98 = 822,
-            SOLIDWORKS_98Plus = 1008,
-            SOLIDWORKS_99 = 1137,
-            SOLIDWORKS_2000 = 1500,
-            SOLIDWORKS_2001 = 1750,
-            SOLIDWORKS_2001Plus = 1950,
-            SOLIDWORKS_2003 = 2200,
-            SOLIDWORKS_2004 = 2500,
-            SOLIDWORKS_2005 = 2800,
-            SOLIDWORKS_2006 = 3100,
-            SOLIDWORKS_2007 = 3400,
-            SOLIDWORKS_2008 = 3800,
-            SOLIDWORKS_2009 = 4100,
-            SOLIDWORKS_2010 = 4400,
-            SOLIDWORKS_2011 = 4700,
-            SOLIDWORKS_2012 = 5000,
-            SOLIDWORKS_2013 = 6000,
-            SOLIDWORKS_2014 = 7000,
-            SOLIDWORKS_2015 = 8000,
-            SOLIDWORKS_2016 = 9000,
-            SOLIDWORKS_2017 = 10000,
-            SOLIDWORKS_2018 = 11000,
-            SOLIDWORKS_2019 = 12000,
-            SOLIDWORKS_2020 = 13000,
-            SOLIDWORKS_2021 = 14000,
-            SOLIDWORKS_2022 = 15000,
-            SOLIDWORKS_2023 = 16000
-        }
 
         #region Public Properties
 

@@ -1,8 +1,4 @@
-﻿using AngelSix.SolidDna.SolidWorks.Models.Units;
-using AngelSix.SolidDna.SolidWorks.Models.Units.BasicUnits;
-using AngelSix.SolidDna.SolidWorks.Models.Units.MassSectionUnits;
-using AngelSix.SolidDna.SolidWorks.Models.Units.MotionUnits;
-using SolidWorks.Interop.sldworks;
+﻿using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using System;
 
@@ -143,10 +139,7 @@ namespace AngelSix.SolidDna
 
         public void SetIsometricZoomToFitView(bool showIsometric)
         {
-            if (BaseObject != null)
-            {
-                BaseObject.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swImageQualityZoomToFitForPreviewImages, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, showIsometric);
-            }
+            BaseObject?.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swImageQualityZoomToFitForPreviewImages, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, showIsometric);
         }
 
         public void ZoomToSheet()

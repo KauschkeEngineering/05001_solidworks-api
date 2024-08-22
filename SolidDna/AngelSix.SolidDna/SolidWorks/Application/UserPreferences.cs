@@ -141,5 +141,4 @@ namespace AngelSix.SolidDna
         FileLocationsInspectionExports = swUserPreferenceStringValue_e.swFileLocationsInspectionExports,
         FileLocationsStructureSystemsConnectionElements = swUserPreferenceStringValue_e.swFileLocationsStructureSystemsConnectionElements
     }
-
 }

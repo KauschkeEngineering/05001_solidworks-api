@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SolidWorks.Interop.swconst;
+using System;
 
 namespace AngelSix.SolidDna
 {
@@ -11,16 +12,16 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Do not change the item numbers
         /// </summary>
-        DoNotChangeItemNumbers = 1,
+        DoNotChangeItemNumbers = swBalloonItemNumbersOrder_e.swBalloonItemNumbers_DoNotChangeItemNumbers,
 
         /// <summary>
         /// Follow the same order as the assembly
         /// </summary>
-        FollowAssemblyOrder = 2,
+        FollowAssemblyOrder = swBalloonItemNumbersOrder_e.swBalloonItemNumbers_FollowAssemblyOrder,
 
         /// <summary>
         /// Order sequentially
         /// </summary>
-        OrderSequentially = 4
+        OrderSequentially = swBalloonItemNumbersOrder_e.swBalloonItemNumbers_OrderSequentially
     }
 }

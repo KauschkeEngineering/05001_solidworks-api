@@ -15,5 +15,4 @@ namespace AngelSix.SolidDna
         // defer to ISldWorks::EnableBackgroundProcessing setting
         BackgroundProcessingDeferToApplication = swBackgroundProcessOption_e.swBackgroundProcessing_DeferToApplication
     }
-
 }
