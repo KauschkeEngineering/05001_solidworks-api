@@ -333,8 +333,7 @@ namespace AngelSix.SolidDna
         /// <summary>
         /// Mate controller
         /// </summary>
-        // TODO: Add after upgrading to SOLIDWORKS 2023 binary reference files
-        //MateController = swFeatureNameID_e.swFmMateController,
+        MateController = swFeatureNameID_e.swFmMateController,
 
         /// <summary>
         /// Distance mate
