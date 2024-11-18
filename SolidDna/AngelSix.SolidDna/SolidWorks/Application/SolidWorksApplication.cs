@@ -8,8 +8,6 @@ using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swdocumentmgr;
 using DevelopmentFramework.Logging;
-using AngelSix.SolidDna.DocumentManager;
-using System.Threading;
 
 namespace AngelSix.SolidDna
 {
@@ -112,6 +110,11 @@ namespace AngelSix.SolidDna
         /// Called when a file has been opened
         /// </summary>
         public event Action<string, Model> FileOpened = (path, model) => { };
+
+        /// <summary>
+        /// Called when a file has been opened
+        /// </summary>
+        public event Action<Model> ActiveModelClosing = (model) => { };
 
         /// <summary>
         /// Called when the currently active file has been saved
@@ -384,6 +387,23 @@ namespace AngelSix.SolidDna
 
         #endregion
 
+        public bool HasOpenVisibleAssemblyDocuments()
+        {
+            object[] openDocuments = (object[])BaseObject.GetDocuments();
+            if (openDocuments != null)
+            {
+                foreach (var openDocument in openDocuments)
+                {
+                    using (Model openModel = new Model((ModelDoc2)openDocument))
+                    {
+                        if (openModel.IsAssembly && openModel.IsVisible)
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         #region Active Model
 
         /// <summary>
@@ -459,6 +479,8 @@ namespace AngelSix.SolidDna
             // Check for every file if it may have been the last one.
             Task.Run(async () =>
             {
+                ActiveModelClosing(ActiveModel);
+
                 // Wait for it to close
                 await Task.Delay(200);
 
